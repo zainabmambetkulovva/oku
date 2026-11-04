@@ -1,10 +1,14 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import type { Request } from 'express';
+import { AuthenticatedUser } from '../auth/authenticated-user';
 
 /**
- * Возвращает пользователя, которого JwtStrategy положила в request.user.
- * Работает только на маршрутах, защищённых JWT-guard (появится в этапе Б3).
+ * Текущий пользователь (request.user), которого положила JwtStrategy.
+ * Доступен на всех маршрутах, кроме помеченных @Public().
  */
-export const AuthUser = createParamDecorator((_data: unknown, ctx: ExecutionContext) => {
-  const request = ctx.switchToHttp().getRequest();
-  return request.user;
-});
+export const AuthUser = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): AuthenticatedUser => {
+    const request = ctx.switchToHttp().getRequest<Request & { user: AuthenticatedUser }>();
+    return request.user;
+  },
+);

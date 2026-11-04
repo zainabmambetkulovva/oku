@@ -19,10 +19,18 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `PORT` | Порт HTTP-сервера |
 | `DATABASE_URL` | Подключение к PostgreSQL для работы приложения. Neon — строка с connection pooling и `?sslmode=require` |
 | `DIRECT_URL` | Прямое подключение (без pooling) — используется для миграций. Локально совпадает с `DATABASE_URL` |
-| `JWT_SECRET` | Секрет подписи JWT. В production — не короче 32 символов |
-| `JWT_EXPIRES_IN` | Срок жизни токена, например `7d` |
+| `JWT_SECRET` | Секрет подписи access-токенов. В production — не короче 32 символов |
+| `JWT_ACCESS_EXPIRES_IN` | Срок жизни access-токена: `15m`, `1h` и т.п. |
+| `REFRESH_TOKEN_TTL_DAYS` | Срок жизни refresh-токена (сессии) в днях |
+| `COOKIE_SECURE` | `true` — cookie только по HTTPS. В production обязательно `true` |
+| `COOKIE_SAMESITE` | `lax` (по умолчанию), `strict` или `none`. `none` нужен, если frontend и API на разных доменах; требует `COOKIE_SECURE=true` |
+| `FRONTEND_URL` | Адрес frontend — для ссылок в письмах |
 | `CORS_ORIGINS` | Адреса frontend через запятую, которым разрешены запросы к API |
 | `THROTTLE_TTL_MS`, `THROTTLE_LIMIT` | Ограничение частоты запросов: не больше `LIMIT` запросов за `TTL` мс с одного IP |
+| `AUTH_THROTTLE_TTL_MS`, `AUTH_THROTTLE_LIMIT` | Более строгий лимит для входа, регистрации и восстановления пароля |
+| `MAIL_TRANSPORT` | `log` — письма в лог (разработка), `smtp` — отправка через SMTP |
+| `MAIL_FROM` | Отправитель писем, например `OKU_24 <no-reply@oku24.kg>` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` | Параметры SMTP-сервера. `SMTP_HOST` обязателен при `MAIL_TRANSPORT=smtp` |
 | `SWAGGER_ENABLED` | `true` / `false` — публиковать ли документацию на `/api/docs` |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET` | S3-совместимое хранилище (этап Б4) |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_USER_EMAIL`, `SEED_USER_PASSWORD` | Пользователи для `pnpm db:seed`, только разработка |

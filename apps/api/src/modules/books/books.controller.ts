@@ -1,7 +1,9 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Public } from '../../common/decorators/public.decorator';
 import { BooksService } from './books.service';
 import { CategoriesService } from '../categories/categories.service';
 
+@Public()
 @Controller('books')
 export class BooksController {
   constructor(

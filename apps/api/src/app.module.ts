@@ -3,18 +3,22 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 import { ResponseEnvelopeInterceptor } from './common/interceptors/response-envelope.interceptor';
 import { createValidationPipe } from './common/pipes/validation.pipe';
 import { Env, validateEnv } from './config/env';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
+import { MailModule } from './modules/mail/mail.module';
+import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BooksModule } from './modules/books/books.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
 
-// Модули users, audiobooks, payments, favorites, reviews, notifications,
+// Модули audiobooks, payments, favorites, reviews, notifications,
 // listening-progress, admin, analytics подключаются по мере реализации (этапы Б3–Б8).
 @Module({
   imports: [
@@ -34,15 +38,21 @@ import { OrdersModule } from './modules/orders/orders.module';
       ],
     }),
     PrismaModule,
+    MailModule,
     HealthModule,
     AuthModule,
+    UsersModule,
     BooksModule,
     CategoriesModule,
     CartModule,
     OrdersModule,
   ],
   providers: [
+    // Порядок важен: лимит запросов → проверка токена → проверка роли.
+    // Все маршруты закрыты по умолчанию, открытые помечены @Public().
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_PIPE, useFactory: createValidationPipe },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseEnvelopeInterceptor },

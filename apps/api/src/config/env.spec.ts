@@ -12,7 +12,10 @@ describe('validateEnv', () => {
 
     expect(env.NODE_ENV).toBe('development');
     expect(env.PORT).toBe(3000);
-    expect(env.JWT_EXPIRES_IN).toBe('7d');
+    expect(env.JWT_ACCESS_EXPIRES_IN).toBe('15m');
+    expect(env.REFRESH_TOKEN_TTL_DAYS).toBe(30);
+    expect(env.COOKIE_SAMESITE).toBe('lax');
+    expect(env.MAIL_TRANSPORT).toBe('log');
     expect(env.CORS_ORIGINS).toEqual(['http://localhost:3001']);
     expect(env.THROTTLE_LIMIT).toBe(100);
     expect(env.SWAGGER_ENABLED).toBe(true);
@@ -41,10 +44,40 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ ...base, DATABASE_URL: 'not a url' })).toThrow(/DATABASE_URL/);
   });
 
-  it('requires a long JWT secret in production', () => {
-    expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(/JWT_SECRET/);
+  it('requires a long JWT secret and secure cookies in production', () => {
+    expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(
+      /JWT_SECRET[\s\S]*COOKIE_SECURE/,
+    );
     expect(() =>
-      validateEnv({ ...base, NODE_ENV: 'production', JWT_SECRET: 'x'.repeat(32) }),
+      validateEnv({
+        ...base,
+        NODE_ENV: 'production',
+        JWT_SECRET: 'x'.repeat(32),
+        COOKIE_SECURE: 'true',
+      }),
+    ).not.toThrow();
+  });
+
+  it('validates the access token lifetime format', () => {
+    expect(validateEnv({ ...base, JWT_ACCESS_EXPIRES_IN: '30m' }).JWT_ACCESS_EXPIRES_IN).toBe(
+      '30m',
+    );
+    expect(() => validateEnv({ ...base, JWT_ACCESS_EXPIRES_IN: '15 minutes' })).toThrow(
+      /JWT_ACCESS_EXPIRES_IN/,
+    );
+  });
+
+  it('requires secure cookies for SameSite=None', () => {
+    expect(() => validateEnv({ ...base, COOKIE_SAMESITE: 'none' })).toThrow(/COOKIE_SAMESITE/);
+    expect(() =>
+      validateEnv({ ...base, COOKIE_SAMESITE: 'none', COOKIE_SECURE: 'true' }),
+    ).not.toThrow();
+  });
+
+  it('requires an SMTP host for the smtp mail transport', () => {
+    expect(() => validateEnv({ ...base, MAIL_TRANSPORT: 'smtp' })).toThrow(/SMTP_HOST/);
+    expect(() =>
+      validateEnv({ ...base, MAIL_TRANSPORT: 'smtp', SMTP_HOST: 'smtp.example.com' }),
     ).not.toThrow();
   });
 });

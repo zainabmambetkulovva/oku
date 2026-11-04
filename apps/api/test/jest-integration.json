@@ -7,5 +7,6 @@
   },
   "testEnvironment": "node",
   "globalSetup": "<rootDir>/helpers/global-setup.ts",
-  "setupFiles": ["<rootDir>/helpers/setup-env.ts"]
+  "setupFiles": ["<rootDir>/helpers/setup-env.ts"],
+  "testTimeout": 30000
 }

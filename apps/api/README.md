@@ -57,7 +57,11 @@ src/
 ├── app.setup.ts            # Префикс /api/v1, helmet, CORS, Swagger
 ├── config/env.ts           # Проверка переменных окружения
 ├── common/
-│   ├── decorators/         # @AuthUser()
+│   ├── auth/               # Тип пользователя запроса
+│   ├── decorators/         # @AuthUser(), @Public(), @Roles()
+│   ├── guards/             # JwtAuthGuard (все маршруты закрыты по умолчанию), RolesGuard
+│   ├── throttle/           # Строгий лимит для маршрутов авторизации
+│   ├── validation/         # Общие правила валидации (e-mail, пароль, телефон)
 │   ├── filters/            # Единый формат ошибок
 │   ├── interceptors/       # Единый формат ответов { data, meta }
 │   ├── pipes/              # Валидация входных данных
@@ -65,7 +69,9 @@ src/
 ├── prisma/                 # Глобальный PrismaModule и PrismaService
 └── modules/
     ├── health/
-    ├── auth/
+    ├── mail/               # Отправка писем (лог или SMTP)
+    ├── auth/               # Регистрация, вход, токены, сессии, почта, сброс пароля
+    ├── users/              # Профиль, смена пароля, адреса
     ├── books/
     ├── categories/
     ├── cart/
@@ -80,7 +86,7 @@ test/
 └── helpers/
 ```
 
-Остальные модули из ТЗ (users, audiobooks, payments, favorites, reviews, notifications,
+Остальные модули из ТЗ (audiobooks, payments, favorites, reviews, notifications,
 listening-progress, admin, analytics) добавляются на этапах Б3–Б8.
 
 ## API Documentation

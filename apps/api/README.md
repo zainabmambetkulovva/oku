@@ -53,10 +53,18 @@ pnpm start:prod
 ```
 src/
 ├── main.ts                 # Точка входа
-├── app.module.ts           # Корневой модуль
-├── common/                 # Общие декораторы, guards, фильтры
-├── prisma/                 # PrismaModule и PrismaService
-└── modules/                # Модули приложения
+├── app.module.ts           # Корневой модуль: конфигурация, глобальные pipe/filter/interceptor/guard
+├── app.setup.ts            # Префикс /api/v1, helmet, CORS, Swagger
+├── config/env.ts           # Проверка переменных окружения
+├── common/
+│   ├── decorators/         # @AuthUser()
+│   ├── filters/            # Единый формат ошибок
+│   ├── interceptors/       # Единый формат ответов { data, meta }
+│   ├── pipes/              # Валидация входных данных
+│   └── http/               # Типы ответов API
+├── prisma/                 # Глобальный PrismaModule и PrismaService
+└── modules/
+    ├── health/
     ├── auth/
     ├── books/
     ├── categories/
@@ -64,7 +72,12 @@ src/
     └── orders/
 prisma/
 ├── schema.prisma           # Схема базы данных
+├── migrations/             # Миграции (CHECK-ограничения — в *_init/migration.sql)
 └── seed.ts                 # Тестовые данные (только для разработки)
+test/
+├── integration/            # Ограничения базы данных на настоящей PostgreSQL
+├── e2e/                    # HTTP-тесты приложения
+└── helpers/
 ```
 
 Остальные модули из ТЗ (users, audiobooks, payments, favorites, reviews, notifications,
@@ -74,12 +87,13 @@ listening-progress, admin, analytics) добавляются на этапах �
 
 После запуска сервера доступна Swagger документация:
 ```
-http://localhost:3000/api
+http://localhost:3000/api/docs
 ```
 
 ## Тестирование
 
 ```bash
-pnpm test
+pnpm test               # unit-тесты
 pnpm test:cov
+pnpm test:integration   # интеграционные и e2e (база с именем *_test, см. корневой README)
 ```

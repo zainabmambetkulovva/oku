@@ -9,14 +9,14 @@ export class CategoriesService {
     return this.prisma.category.findMany({
       where: parentId ? { parentId } : { parentId: null },
       orderBy: { sortOrder: 'asc' },
-      include: { bookCategories: true, audiobookCategories: true },
+      include: { children: true, bookCategories: true, audiobookCategories: true },
     });
   }
 
   async findOne(slug: string) {
     const category = await this.prisma.category.findUnique({
       where: { slug },
-      include: { bookCategories: true, audiobookCategories: true },
+      include: { children: true, bookCategories: true, audiobookCategories: true },
     });
 
     if (!category) {

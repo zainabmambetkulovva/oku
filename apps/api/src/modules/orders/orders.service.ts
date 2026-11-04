@@ -46,7 +46,7 @@ export class OrdersService {
           currency: 'KGS',
           recipientName: data.recipientName,
           recipientPhone: data.recipientPhone,
-          deliveryAddress: data.deliveryAddress || '',
+          deliveryAddress: data.deliveryAddress || null,
           deliveryMethod: data.deliveryMethod || 'COURIER',
           paymentMethod: data.paymentMethod || 'ONLINE',
           comment: data.comment,
@@ -65,6 +65,7 @@ export class OrdersService {
         await tx.orderItem.create({
           data: {
             orderId: newOrder.id,
+            productType: item.bookId ? 'BOOK' : 'AUDIOBOOK',
             bookId: item.bookId,
             audiobookId: item.audiobookId,
             productTitle,

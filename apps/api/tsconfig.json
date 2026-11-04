@@ -6,13 +6,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "types": [
-      "node",
-      "jest"
-    ]
+    "types": ["node", "jest"]
   },
-  "include": [
-    "src/**/*",
-    "prisma/**/*"
-  ]
+  "include": ["src/**/*", "prisma/**/*", "test/**/*"]
 }

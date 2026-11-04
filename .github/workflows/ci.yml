@@ -14,10 +14,28 @@ jobs:
   check:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: oku
+          POSTGRES_PASSWORD: oku
+          POSTGRES_DB: oku_24_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U oku -d oku_24_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     env:
-      # Фиктивная строка подключения: нужна только для prisma validate,
-      # к базе CI на этом этапе не подключается.
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      # Тестовая база в контейнере CI. Имя должно оканчиваться на _test:
+      # интеграционные тесты очищают таблицы и на другой базе не запустятся.
+      DATABASE_URL: postgresql://oku:oku@localhost:5432/oku_24_test?schema=public
+      DIRECT_URL: postgresql://oku:oku@localhost:5432/oku_24_test?schema=public
+
     steps:
       - uses: actions/checkout@v4
 
@@ -40,8 +58,17 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Test
+      - name: Unit tests
         run: pnpm test
+
+      - name: Apply migrations to a clean database
+        run: pnpm db:migrate:deploy
+
+      - name: Check that migrations match the schema
+        run: pnpm db:drift
+
+      - name: Integration and e2e tests
+        run: pnpm test:integration
 
       - name: Build
         run: pnpm build

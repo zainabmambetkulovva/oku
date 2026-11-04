@@ -1,6 +1,6 @@
 packages:
-  - "apps/*"
-  - "packages/*"
+  - 'apps/*'
+  - 'packages/*'
 
 # Зависимости, которым разрешено выполнять install-скрипты.
 # prisma/@prisma/* скачивают движки, bcrypt собирает нативный модуль.

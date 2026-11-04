@@ -39,10 +39,12 @@ corepack enable
 pnpm install                                   # также генерирует Prisma Client
 cp apps/api/.env.example apps/api/.env         # заполнить переменные
 pnpm docker:up                                 # PostgreSQL :5432 и Redis :6379
-pnpm dev:api                                   # http://localhost:3000, Swagger — /api
+pnpm db:migrate:deploy                         # применить миграции
+pnpm db:seed                                   # тестовые данные (необязательно)
+pnpm dev:api                                   # http://localhost:3000/api/v1
 ```
 
-Миграции базы данных появятся на этапе Б2.
+Swagger-документация: http://localhost:3000/api/docs, проверка работоспособности: `GET /api/v1/health`.
 
 ## Команды
 
@@ -54,26 +56,47 @@ pnpm dev:api                                   # http://localhost:3000, Swagger 
 | `pnpm build` | Сборка всех пакетов и приложений |
 | `pnpm lint` | ESLint + Prettier |
 | `pnpm typecheck` | Проверка типов TypeScript |
-| `pnpm test` | Тесты |
+| `pnpm test` | Unit-тесты |
+| `pnpm test:integration` | Интеграционные и e2e-тесты (нужна тестовая база, см. ниже) |
 | `pnpm format` | Форматирование кода |
 | `pnpm docker:up` / `pnpm docker:down` | Запуск и остановка локальных PostgreSQL и Redis |
 | `pnpm db:generate` | Генерация Prisma Client |
 | `pnpm db:validate` | Проверка Prisma-схемы |
 | `pnpm db:migrate:dev` | Создание и применение миграции (разработка) |
 | `pnpm db:migrate:deploy` | Применение миграций (production) |
+| `pnpm db:drift` | Проверка, что база совпадает со схемой |
 | `pnpm db:seed` | Тестовые данные (только для разработки) |
 | `pnpm db:studio` | Prisma Studio |
 
+## Тесты
+
+- **Unit-тесты** (`apps/api/src/**/*.spec.ts`) — без базы данных: `pnpm test`.
+- **Интеграционные и e2e-тесты** (`apps/api/test/`) — на настоящей PostgreSQL. Тесты очищают таблицы, поэтому имя базы обязано оканчиваться на `_test`, иначе тесты не запустятся:
+
+```bash
+docker compose -f docker/docker-compose.yml exec postgres createdb -U oku oku_24_test
+export DATABASE_URL="postgresql://oku:oku@localhost:5432/oku_24_test?schema=public"
+export DIRECT_URL="$DATABASE_URL"
+pnpm db:migrate:deploy
+pnpm test:integration
+```
+
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull request в `main` выполняет: установку зависимостей, проверку Prisma-схемы, lint, typecheck, тесты и сборку.
+GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull request в `main` выполняет: установку зависимостей, проверку Prisma-схемы, lint, typecheck, unit-тесты, применение миграций к чистой базе, проверку соответствия миграций схеме, интеграционные и e2e-тесты, сборку.
+
+## API
+
+- Все маршруты — `/api/v1/...`.
+- Успешный ответ: `{ "data": ..., "meta": ... }` (`meta` — только у списков с пагинацией).
+- Ошибка: `{ "statusCode", "error", "message", "details"?, "path", "timestamp" }`.
 
 ## Статус разработки
 
 | Этап | Статус |
 |---|---|
 | Б1. Подготовка monorepo | ✅ |
-| Б2. База данных и каркас API | ⏳ |
+| Б2. База данных и каркас API | ✅ |
 | Б3–Б8. Backend-модули | ⏳ |
 | Ф1–Ф7. Frontend | ⏳ |
 | Интеграция, тестирование, запуск | ⏳ |

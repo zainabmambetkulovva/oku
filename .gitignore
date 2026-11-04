@@ -1,0 +1,17 @@
+node_modules
+.DS_Store
+*.log
+.DS_Store
+.pnpm-debug.log
+.nx
+.cache
+coverage
+dist
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.db
+*.sqlite
+*.sqlite3

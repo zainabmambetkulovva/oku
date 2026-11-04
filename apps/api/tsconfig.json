@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/apps/api",
+    "baseUrl": "./",
+    "paths": {
+      "@oku_24/config/*": ["../../packages/config/src/*"],
+      "@oku_24/types/*": ["../../packages/types/src/*"],
+      "@oku_24/validators/*": ["../../packages/validators/src/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@common/*": ["./src/common/*"],
+      "@prisma/*": ["./src/prisma/*"]
+    },
+    "types": ["node", "jest"],
+    "allowJs": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
+}

@@ -1,0 +1,629 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enum: User Status
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+// Enum: User Role
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// Enum: Product Status
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+// Enum: Order Status
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+// Enum: Payment Status
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+// Enum: Payment Method
+enum PaymentMethod {
+  CARD
+  CASH
+  TERMINAL
+  ONLINE
+  QR
+}
+
+// Enum: Delivery Method
+enum DeliveryMethod {
+  COURIER
+  PICKUP
+  POST
+}
+
+// Enum: Review Status
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Enum: Notification Type
+enum NotificationType {
+  ORDER_CREATED
+  ORDER_PAID
+  ORDER_SHIPPED
+  ORDER_COMPLETED
+  ORDER_CANCELLED
+  ACCESS_GRANTED
+  REVIEW_CREATED
+  PROMOTION
+  SYSTEM
+}
+
+// Model: Users
+model User {
+  id                      String                       @id @default(uuid()) @map("id")
+  email                   String                       @unique @map("email")
+  passwordHash            String?                      @map("password_hash")
+  firstName               String?                      @map("first_name")
+  lastName                String?                      @map("last_name")
+  phone                   String?                      @map("phone")
+  avatarKey               String?                      @map("avatar_key")
+  status                  UserStatus                   @default(ACTIVE)
+  role                    UserRole                     @default(USER)
+  emailVerifiedAt         DateTime?                    @map("email_verified_at")
+  deletedAt               DateTime?                    @map("deleted_at")
+  createdAt               DateTime                     @default(now()) @map("created_at")
+  updatedAt               DateTime                     @updatedAt @map("updated_at")
+
+  addresses               Address[]
+  sessions                Session[]
+  orders                  Order[]
+  cart                    Cart?
+  favorites               Favorite[]
+  reviews                 Review[]
+  notifications           Notification[]
+  listeningProgress       ListeningProgress[]
+  audioAccess             AudioAccess[]
+  auditLogs               AuditLog[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+
+  @@map("users")
+}
+
+// Model: Sessions
+model Session {
+  id          String    @id @default(uuid()) @map("id")
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @map("user_id")
+  tokenHash   String    @map("token_hash")
+  expiresAt   DateTime  @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  revokedAt   DateTime? @map("revoked_at")
+
+  @@index([userId], name: "idx_sessions_user_id")
+  @@index([tokenHash], name: "idx_sessions_token_hash")
+  @@index([expiresAt], name: "idx_sessions_expires_at")
+  @@map("sessions")
+}
+
+// Model: Addresses
+model Address {
+  id              String   @id @default(uuid()) @map("id")
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String   @map("user_id")
+  title           String   @map("title")
+  recipientName   String   @map("recipient_name")
+  phone           String   @map("phone")
+  country         String   @map("country")
+  city            String   @map("city")
+  street          String   @map("street")
+  building        String   @map("building")
+  apartment       String?  @map("apartment")
+  postalCode      String?  @map("postal_code")
+  comment         String?  @map("comment")
+  isDefault       Boolean  @default(false) @map("is_default")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([userId], name: "idx_addresses_user_id")
+  @@index([isDefault], name: "idx_addresses_is_default")
+  @@map("addresses")
+}
+
+// Model: Email Verification Tokens
+model EmailVerificationToken {
+  id        String   @id @default(uuid()) @map("id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId], name: "uniq_email_verification_user")
+  @@index([tokenHash], name: "idx_email_verification_token_hash")
+  @@index([expiresAt], name: "idx_email_verification_expires_at")
+  @@map("email_verification_tokens")
+}
+
+// Model: Password Reset Tokens
+model PasswordResetToken {
+  id        String   @id @default(uuid()) @map("id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId], name: "uniq_password_reset_user")
+  @@index([tokenHash], name: "idx_password_reset_token_hash")
+  @@index([expiresAt], name: "idx_password_reset_expires_at")
+  @@map("password_reset_tokens")
+}
+
+// Model: Categories
+model Category {
+  id          String               @id @default(uuid()) @map("id")
+  name        String               @map("name")
+  slug        String               @unique @map("slug")
+  description String?              @map("description")
+  imageKey    String?              @map("image_key")
+  parentId    String?              @map("parent_id")
+  isActive    Boolean              @default(true) @map("is_active")
+  sortOrder   Int                  @default(0) @map("sort_order")
+  deletedAt   DateTime?            @map("deleted_at")
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+
+  bookCategories      BookCategory[]
+  audiobookCategories AudiobookCategory[]
+
+  @@index([parentId], name: "idx_categories_parent_id")
+  @@index([slug], name: "idx_categories_slug")
+  @@index([isActive], name: "idx_categories_is_active")
+  @@index([sortOrder], name: "idx_categories_sort_order")
+  @@map("categories")
+}
+
+// Model: Books
+model Book {
+  id               String        @id @default(uuid()) @map("id")
+  title            String        @map("title")
+  slug             String        @unique @map("slug")
+  author           String        @map("author")
+  description      String?       @map("description")
+  coverKey         String?       @map("cover_key")
+  publisher        String?       @map("publisher")
+  publicationYear  Int?          @map("publication_year")
+  pages            Int?          @map("pages")
+  language         String?       @map("language")
+  isbn             String?       @unique @map("isbn")
+  price            Int           @map("price")
+  currency         String        @default("KGS") @map("currency")
+  stockQuantity    Int           @default(0) @map("stock_quantity")
+  status           ProductStatus @default(DRAFT) @map("status")
+  deletedAt        DateTime?     @map("deleted_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  bookCategories BookCategory[]
+  bookImages     BookImage[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  favorites      Favorite[]
+  reviews        Review[]
+
+  @@index([slug], name: "idx_books_slug")
+  @@index([title], name: "idx_books_title")
+  @@index([author], name: "idx_books_author")
+  @@index([status], name: "idx_books_status")
+  @@index([price], name: "idx_books_price")
+  @@map("books")
+}
+
+// Model: Book Categories (Many-to-Many)
+model BookCategory {
+  bookId     String @map("book_id")
+  categoryId String @map("category_id")
+
+  book     Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id(fields: [bookId, categoryId], name: "pk_book_categories")
+  @@index([bookId], name: "idx_book_categories_book_id")
+  @@index([categoryId], name: "idx_book_categories_category_id")
+  @@map("book_categories")
+}
+
+// Model: Book Images
+model BookImage {
+  id         String   @id @default(uuid()) @map("id")
+  book       Book     @relation(fields: [bookId], references: [id])
+  bookId     String   @map("book_id")
+  storageKey String   @map("storage_key")
+  altText    String?  @map("alt_text")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([bookId], name: "idx_book_images_book_id")
+  @@index([sortOrder], name: "idx_book_images_sort_order")
+  @@map("book_images")
+}
+
+// Model: Audiobooks
+model Audiobook {
+  id               String        @id @default(uuid()) @map("id")
+  title            String        @map("title")
+  slug             String        @unique @map("slug")
+  author           String        @map("author")
+  narrator         String?       @map("narrator")
+  description      String?       @map("description")
+  coverKey         String?       @map("cover_key")
+  language         String?       @map("language")
+  durationSeconds  Int           @map("duration_seconds")
+  price            Int           @map("price")
+  currency         String        @default("KGS") @map("currency")
+  status           ProductStatus @default(DRAFT) @map("status")
+  deletedAt        DateTime?     @map("deleted_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  audioChapters     AudioChapter[]
+  audiobookCategories AudiobookCategory[]
+  audioAccess       AudioAccess[]
+  listeningProgress ListeningProgress[]
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+  favorites         Favorite[]
+  reviews           Review[]
+
+  @@index([slug], name: "idx_audiobooks_slug")
+  @@index([title], name: "idx_audiobooks_title")
+  @@index([author], name: "idx_audiobooks_author")
+  @@index([status], name: "idx_audiobooks_status")
+  @@map("audiobooks")
+}
+
+// Model: Audio Chapters
+model AudioChapter {
+  id              String   @id @default(uuid()) @map("id")
+  audiobook       Audiobook @relation(fields: [audiobookId], references: [id])
+  audiobookId     String   @map("audiobook_id")
+  title           String   @map("title")
+  description     String?  @map("description")
+  chapterNumber   Int      @map("chapter_number")
+  durationSeconds Int      @map("duration_seconds")
+  storageKey      String   @map("storage_key")
+  isFreePreview   Boolean  @default(false) @map("is_free_preview")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  listeningProgress ListeningProgress[]
+
+  @@index([audiobookId, chapterNumber], name: "idx_audio_chapters_audiobook_chapter")
+  @@index([audiobookId], name: "idx_audio_chapters_audiobook_id")
+  @@index([isFreePreview], name: "idx_audio_chapters_free_preview")
+  @@map("audio_chapters")
+}
+
+// Model: Audiobook Categories (Many-to-Many)
+model AudiobookCategory {
+  audiobookId String @map("audiobook_id")
+  categoryId  String @map("category_id")
+
+  audiobook Audiobook @relation(fields: [audiobookId], references: [id], onDelete: Cascade)
+  category  Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id(fields: [audiobookId, categoryId], name: "pk_audiobook_categories")
+  @@index([audiobookId], name: "idx_audiobook_categories_audiobook_id")
+  @@index([categoryId], name: "idx_audiobook_categories_category_id")
+  @@map("audiobook_categories")
+}
+
+// Model: Audio Access
+model AudioAccess {
+  id           String    @id @default(uuid()) @map("id")
+  user         User      @relation(fields: [userId], references: [id])
+  userId       String    @map("user_id")
+  audiobook    Audiobook @relation(fields: [audiobookId], references: [id])
+  audiobookId  String    @map("audiobook_id")
+  orderItemId  String?   @map("order_item_id")
+  grantedAt    DateTime  @default(now()) @map("granted_at")
+  expiresAt    DateTime? @map("expires_at")
+  revokedAt    DateTime? @map("revoked_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@unique([userId, audiobookId], name: "uniq_audio_access_user_audiobook")
+  @@index([userId], name: "idx_audio_access_user_id")
+  @@index([audiobookId], name: "idx_audio_access_audiobook_id")
+  @@map("audio_access")
+}
+
+// Model: Carts
+model Cart {
+  id        String   @id @default(uuid()) @map("id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  items CartItem[]
+
+  @@map("carts")
+}
+
+// Model: Cart Items
+model CartItem {
+  id           String    @id @default(uuid()) @map("id")
+  cart         Cart      @relation(fields: [cartId], references: [id])
+  cartId       String    @map("cart_id")
+  book         Book?     @relation(fields: [bookId], references: [id])
+  bookId       String?   @map("book_id")
+  audiobook    Audiobook? @relation(fields: [audiobookId], references: [id])
+  audiobookId  String?   @map("audiobook_id")
+  quantity     Int       @default(1) @map("quantity")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([cartId], name: "idx_cart_items_cart_id")
+  @@index([bookId], name: "idx_cart_items_book_id")
+  @@index([audiobookId], name: "idx_cart_items_audiobook_id")
+  @@map("cart_items")
+}
+
+// Model: Orders
+model Order {
+  id                String         @id @default(uuid()) @map("id")
+  user              User           @relation(fields: [userId], references: [id])
+  userId            String         @map("user_id")
+  orderNumber       String         @unique @map("order_number")
+  status            OrderStatus    @default(PENDING) @map("status")
+  subtotal          Int            @map("subtotal")
+  deliveryPrice     Int            @default(0) @map("delivery_price")
+  discount          Int            @default(0) @map("discount")
+  total             Int            @map("total")
+  currency          String         @default("KGS") @map("currency")
+  recipientName     String         @map("recipient_name")
+  recipientPhone    String         @map("recipient_phone")
+  deliveryAddress   String         @map("delivery_address")
+  deliveryMethod    DeliveryMethod @default(COURIER) @map("delivery_method")
+  paymentMethod     PaymentMethod  @default(ONLINE) @map("payment_method")
+  comment           String?        @map("comment")
+  completedAt       DateTime?      @map("completed_at")
+  cancelledAt       DateTime?      @map("cancelled_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  items          OrderItem[]
+  payments       Payment[]
+  statusHistory  OrderStatusHistory[]
+
+  @@index([userId], name: "idx_orders_user_id")
+  @@index([orderNumber], name: "idx_orders_order_number")
+  @@index([status], name: "idx_orders_status")
+  @@index([createdAt], name: "idx_orders_created_at")
+  @@map("orders")
+}
+
+// Model: Order Items
+model OrderItem {
+  id               String   @id @default(uuid()) @map("id")
+  order            Order    @relation(fields: [orderId], references: [id])
+  orderId          String   @map("order_id")
+  book             Book?    @relation(fields: [bookId], references: [id])
+  bookId           String?  @map("book_id")
+  audiobook        Audiobook? @relation(fields: [audiobookId], references: [id])
+  audiobookId      String?  @map("audiobook_id")
+  productTitle     String   @map("product_title")
+  productAuthor    String   @map("product_author")
+  productCoverKey  String?  @map("product_cover_key")
+  quantity         Int      @map("quantity")
+  unitPrice        Int      @map("unit_price")
+  totalPrice       Int      @map("total_price")
+  currency         String   @default("KGS") @map("currency")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([orderId], name: "idx_order_items_order_id")
+  @@index([bookId], name: "idx_order_items_book_id")
+  @@index([audiobookId], name: "idx_order_items_audiobook_id")
+  @@map("order_items")
+}
+
+// Model: Order Status History
+model OrderStatusHistory {
+  id         String      @id @default(uuid()) @map("id")
+  order      Order       @relation(fields: [orderId], references: [id])
+  orderId    String      @map("order_id")
+  oldStatus  OrderStatus @map("old_status")
+  newStatus  OrderStatus @map("new_status")
+  changedBy  String?     @map("changed_by")
+  comment    String?     @map("comment")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  @@index([orderId], name: "idx_order_status_history_order_id")
+  @@index([oldStatus], name: "idx_order_status_history_old_status")
+  @@index([newStatus], name: "idx_order_status_history_new_status")
+  @@map("order_status_history")
+}
+
+// Model: Payments
+model Payment {
+  id                 String        @id @default(uuid()) @map("id")
+  order              Order         @relation(fields: [orderId], references: [id])
+  orderId            String        @map("order_id")
+  provider           String        @map("provider")
+  providerPaymentId  String?       @unique @map("provider_payment_id")
+  amount             Int           @map("amount")
+  currency           String        @default("KGS") @map("currency")
+  status             PaymentStatus @default(PENDING) @map("status")
+  paymentMethod      PaymentMethod @default(ONLINE) @map("payment_method")
+  paidAt             DateTime?     @map("paid_at")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  paymentEvents PaymentEvent[]
+
+  @@index([orderId], name: "idx_payments_order_id")
+  @@index([providerPaymentId], name: "idx_payments_provider_payment_id")
+  @@index([status], name: "idx_payments_status")
+  @@index([createdAt], name: "idx_payments_created_at")
+  @@map("payments")
+}
+
+// Model: Payment Events
+model PaymentEvent {
+  id               String        @id @default(uuid()) @map("id")
+  provider         String        @map("provider")
+  externalEventId  String        @map("external_event_id")
+  payment          Payment?      @relation(fields: [paymentId], references: [id])
+  paymentId        String?       @map("payment_id")
+  eventType        String        @map("event_type")
+  processedAt      DateTime?     @map("processed_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+
+  @@unique([provider, externalEventId], name: "uniq_payment_events_provider_event")
+  @@index([paymentId], name: "idx_payment_events_payment_id")
+  @@index([externalEventId], name: "idx_payment_events_external_event_id")
+  @@map("payment_events")
+}
+
+// Model: Favorites
+model Favorite {
+  id          String    @id @default(uuid()) @map("id")
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @map("user_id")
+  book        Book?     @relation(fields: [bookId], references: [id])
+  bookId      String?   @map("book_id")
+  audiobook   Audiobook? @relation(fields: [audiobookId], references: [id])
+  audiobookId String?   @map("audiobook_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@unique([userId, bookId], name: "uniq_favorites_user_book")
+  @@unique([userId, audiobookId], name: "uniq_favorites_user_audiobook")
+  @@index([userId], name: "idx_favorites_user_id")
+  @@index([bookId], name: "idx_favorites_book_id")
+  @@index([audiobookId], name: "idx_favorites_audiobook_id")
+  @@map("favorites")
+}
+
+// Model: Reviews
+model Review {
+  id          String        @id @default(uuid()) @map("id")
+  user        User            @relation(fields: [userId], references: [id])
+  userId      String        @map("user_id")
+  book        Book?         @relation(fields: [bookId], references: [id])
+  bookId      String?       @map("book_id")
+  audiobook   Audiobook?    @relation(fields: [audiobookId], references: [id])
+  audiobookId String?       @map("audiobook_id")
+  rating      Int           @map("rating")
+  text        String?       @map("text")
+  status      ReviewStatus  @default(PENDING) @map("status")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@unique([userId, bookId], name: "uniq_reviews_user_book")
+  @@unique([userId, audiobookId], name: "uniq_reviews_user_audiobook")
+  @@index([userId], name: "idx_reviews_user_id")
+  @@index([bookId], name: "idx_reviews_book_id")
+  @@index([audiobookId], name: "idx_reviews_audiobook_id")
+  @@index([status], name: "idx_reviews_status")
+  @@map("reviews")
+}
+
+// Model: Listening Progress
+model ListeningProgress {
+  id               String    @id @default(uuid()) @map("id")
+  user             User      @relation(fields: [userId], references: [id])
+  userId           String    @map("user_id")
+  audiobook        Audiobook @relation(fields: [audiobookId], references: [id])
+  audiobookId      String    @map("audiobook_id")
+  chapter          AudioChapter? @relation(fields: [chapterId], references: [id])
+  chapterId        String?   @map("chapter_id")
+  positionSeconds  Int       @default(0) @map("position_seconds")
+  completed        Boolean   @default(false) @map("completed")
+  lastListenedAt   DateTime? @map("last_listened_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, audiobookId], name: "uniq_listening_progress_user_audiobook")
+  @@index([userId], name: "idx_listening_progress_user_id")
+  @@index([audiobookId], name: "idx_listening_progress_audiobook_id")
+  @@index([chapterId], name: "idx_listening_progress_chapter_id")
+  @@map("listening_progress")
+}
+
+// Model: Notifications
+model Notification {
+  id        String           @id @default(uuid()) @map("id")
+  user      User             @relation(fields: [userId], references: [id])
+  userId    String           @map("user_id")
+  title     String           @map("title")
+  message   String           @map("message")
+  type      NotificationType @map("type")
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+  readAt    DateTime?        @map("read_at")
+
+  @@index([userId], name: "idx_notifications_user_id")
+  @@index([isRead], name: "idx_notifications_is_read")
+  @@index([createdAt], name: "idx_notifications_created_at")
+  @@map("notifications")
+}
+
+// Model: Newsletter Subscribers
+model NewsletterSubscriber {
+  id             String   @id @default(uuid()) @map("id")
+  email          String   @unique @map("email")
+  isActive       Boolean  @default(true) @map("is_active")
+  subscribedAt   DateTime @default(now()) @map("subscribed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+
+  @@map("newsletter_subscribers")
+}
+
+// Model: Audit Logs
+model AuditLog {
+  id        String   @id @default(uuid()) @map("id")
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String? @map("user_id")
+  action    String   @map("action")
+  entityType String  @map("entity_type")
+  entityId  String   @map("entity_id")
+  oldData   String?  @map("old_data")
+  newData   String?  @map("new_data")
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId], name: "idx_audit_logs_user_id")
+  @@index([entityType], name: "idx_audit_logs_entity_type")
+  @@index([entityId], name: "idx_audit_logs_entity_id")
+  @@index([createdAt], name: "idx_audit_logs_created_at")
+  @@map("audit_logs")
+}

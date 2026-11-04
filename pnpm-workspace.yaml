@@ -1,9 +1,13 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Зависимости, которым разрешено выполнять install-скрипты.
+# prisma/@prisma/* скачивают движки, bcrypt собирает нативный модуль.
+# @nestjs/core содержит только рекламный postinstall (opencollective) — не нужен.
 allowBuilds:
-  '@nestjs/core': set this to true or false
-  '@prisma/client': set this to true or false
-  '@prisma/engines': set this to true or false
-  bcrypt: set this to true or false
-  prisma: set this to true or false
+  '@nestjs/core': false
+  '@prisma/client': true
+  '@prisma/engines': true
+  bcrypt: true
+  prisma: true

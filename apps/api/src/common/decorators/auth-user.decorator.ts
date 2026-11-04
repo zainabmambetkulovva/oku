@@ -1,3 +1,10 @@
-import { createDecorator } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-export const AuthUser = () => createDecorator<any>();
+/**
+ * Возвращает пользователя, которого JwtStrategy положила в request.user.
+ * Работает только на маршрутах, защищённых JWT-guard (появится в этапе Б3).
+ */
+export const AuthUser = createParamDecorator((_data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest();
+  return request.user;
+});

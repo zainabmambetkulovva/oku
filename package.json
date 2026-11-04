@@ -3,24 +3,35 @@
   "version": "0.0.0",
   "private": true,
   "description": "OKU_24 — Online bookstore for physical books and audiobooks",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "build": "tsc -p apps/api/tsconfig.json",
-    "start": "node dist/apps/api/main",
-    "start:dev": "cd apps/api && nest start --watch",
-    "test": "jest",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "db:migrate:dev": "cd apps/api && prisma migrate dev",
-    "db:migrate:deploy": "cd apps/api && prisma migrate deploy",
-    "db:push": "cd apps/api && prisma db push",
-    "db:seed": "cd apps/api && ts-node prisma/seed.ts",
-    "db:studio": "cd apps/api && prisma studio"
-  },
+  "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=20.0.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "dev:api": "pnpm --filter @oku_24/api start:dev",
+    "db:generate": "pnpm --filter @oku_24/api exec prisma generate",
+    "db:validate": "pnpm --filter @oku_24/api exec prisma validate",
+    "db:migrate:dev": "pnpm --filter @oku_24/api exec prisma migrate dev",
+    "db:migrate:deploy": "pnpm --filter @oku_24/api exec prisma migrate deploy",
+    "db:seed": "pnpm --filter @oku_24/api exec prisma db seed",
+    "db:studio": "pnpm --filter @oku_24/api exec prisma studio",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-prettier": "^5.5.7",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3"
   }
 }

@@ -9,14 +9,14 @@ export class CategoriesService {
     return this.prisma.category.findMany({
       where: parentId ? { parentId } : { parentId: null },
       orderBy: { sortOrder: 'asc' },
-      include: { children: true, bookCategories: true, audiobookCategories: true },
+      include: { bookCategories: true, audiobookCategories: true },
     });
   }
 
   async findOne(slug: string) {
     const category = await this.prisma.category.findUnique({
       where: { slug },
-      include: { children: true, bookCategories: true, audiobookCategories: true },
+      include: { bookCategories: true, audiobookCategories: true },
     });
 
     if (!category) {
@@ -30,12 +30,13 @@ export class CategoriesService {
     const category = await this.prisma.category.findUnique({
       where: { slug },
       include: {
-        books: {
-          where: { status: 'ACTIVE' },
-          include: { bookImages: true },
+        bookCategories: {
+          where: { book: { status: 'ACTIVE' } },
+          include: { book: { include: { bookImages: true } } },
         },
-        audiobooks: {
-          where: { status: 'ACTIVE' },
+        audiobookCategories: {
+          where: { audiobook: { status: 'ACTIVE' } },
+          include: { audiobook: true },
         },
       },
     });

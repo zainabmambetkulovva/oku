@@ -1,0 +1,19 @@
+{
+  "name": "@oku_24/validators",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Общие схемы валидации (Zod) для frontend и backend",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
+}

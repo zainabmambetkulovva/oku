@@ -22,7 +22,11 @@ export class OrdersController {
   }
 
   @Get()
-  async getUserOrders(@AuthUser() user: any, @Query('page') page: number = 1, @Query('limit') limit: number = 10) {
+  async getUserOrders(
+    @AuthUser() user: any,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
     return this.ordersService.getUserOrders(user.userId, page, limit);
   }
 

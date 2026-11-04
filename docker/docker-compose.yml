@@ -1,0 +1,39 @@
+# Локальное окружение для разработки: PostgreSQL + Redis.
+# Запуск из корня репозитория: pnpm docker:up
+# Учётные данные ниже — только для локальной разработки, не для production.
+name: oku_24
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oku
+      POSTGRES_PASSWORD: oku
+      POSTGRES_DB: oku_24_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U oku -d oku_24_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:

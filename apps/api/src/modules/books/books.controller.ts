@@ -1,9 +1,13 @@
-import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { BooksService } from './books.service';
+import { CategoriesService } from '../categories/categories.service';
 
 @Controller('books')
 export class BooksController {
-  constructor(private booksService: BooksService) {}
+  constructor(
+    private booksService: BooksService,
+    private categoriesService: CategoriesService,
+  ) {}
 
   @Get()
   async findAll(
@@ -21,10 +25,8 @@ export class BooksController {
 
   @Get('category/:slug')
   async findByCategory(@Param('slug') slug: string) {
-    const category = await this.booksService['categoriesService']?.findOne(slug);
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
+    // findOne сам выбрасывает NotFoundException, если категории нет
+    const category = await this.categoriesService.findOne(slug);
     return this.booksService.findAll(1, 10, category.id);
   }
 }

@@ -1,19 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './prisma/prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
 import { BooksModule } from './modules/books/books.module';
-import { AudiobooksModule } from './modules/audiobooks/audiobooks.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
-import { PaymentsModule } from './modules/payments/payments.module';
-import { FavoritesModule } from './modules/favorites/favorites.module';
-import { ReviewsModule } from './modules/reviews/reviews.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
-import { ListeningProgressModule } from './modules/listening-progress/listening-progress.module';
 
+// Модули users, audiobooks, payments, favorites, reviews, notifications,
+// listening-progress, admin, analytics подключаются по мере реализации (этапы Б3–Б8).
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,17 +16,10 @@ import { ListeningProgressModule } from './modules/listening-progress/listening-
       envFilePath: `.env`,
     }),
     AuthModule,
-    UsersModule,
     BooksModule,
-    AudiobooksModule,
     CategoriesModule,
     CartModule,
     OrdersModule,
-    PaymentsModule,
-    FavoritesModule,
-    ReviewsModule,
-    NotificationsModule,
-    ListeningProgressModule,
   ],
   providers: [PrismaService],
 })

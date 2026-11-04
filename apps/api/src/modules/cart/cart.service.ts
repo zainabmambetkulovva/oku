@@ -21,12 +21,7 @@ export class CartService {
     return cart;
   }
 
-  async addItem(
-    userId: string,
-    bookId?: string,
-    audiobookId?: string,
-    quantity: number = 1,
-  ) {
+  async addItem(userId: string, bookId?: string, audiobookId?: string, quantity: number = 1) {
     if (!bookId && !audiobookId) {
       throw new Error('Either bookId or audiobookId must be provided');
     }

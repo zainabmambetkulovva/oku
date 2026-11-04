@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { AuthUser } from '../../common/decorators/auth-user.decorator';
 

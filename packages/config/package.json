@@ -1,0 +1,14 @@
+{
+  "name": "@oku_24/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Общие константы и настройки проекта",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\""
+  }
+}

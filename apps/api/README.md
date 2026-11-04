@@ -10,17 +10,11 @@ pnpm install
 
 ## Конфигурация
 
-Создайте файл `.env` в корневой директории проекта:
+Скопируйте шаблон и заполните переменные (описание — в `docs/deployment.md`):
 
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/okuu_24_dev?schema=public
-NODE_ENV=development
-JWT_SECRET=your-secret-key-change-in-production
-JWT_EXPIRES_IN=7d
-PORT=3000
+```bash
+cp .env.example .env
 ```
-
-Для production используйте реальные учетные данные PostgreSQL и правильные переменные окружения.
 
 ## Использование Prisma
 
@@ -30,6 +24,9 @@ pnpm prisma:generate
 
 # Создание миграции
 pnpm prisma:migrate-dev
+
+# Проверка схемы
+pnpm prisma:validate
 
 # Применение миграций к production-базе
 pnpm prisma:migrate-deploy
@@ -57,23 +54,21 @@ pnpm start:prod
 src/
 ├── main.ts                 # Точка входа
 ├── app.module.ts           # Корневой модуль
-├── prisma/
-│   ├── prisma.service.ts   # Сервис Prisma
-│   └── seed.ts             # Данные для тестирования
+├── common/                 # Общие декораторы, guards, фильтры
+├── prisma/                 # PrismaModule и PrismaService
 └── modules/                # Модули приложения
     ├── auth/
-    ├── users/
     ├── books/
-    ├── audiobooks/
     ├── categories/
     ├── cart/
-    ├── orders/
-    ├── payments/
-    ├── favorites/
-    ├── reviews/
-    ├── notifications/
-    └── listening-progress/
+    └── orders/
+prisma/
+├── schema.prisma           # Схема базы данных
+└── seed.ts                 # Тестовые данные (только для разработки)
 ```
+
+Остальные модули из ТЗ (users, audiobooks, payments, favorites, reviews, notifications,
+listening-progress, admin, analytics) добавляются на этапах Б3–Б8.
 
 ## API Documentation
 

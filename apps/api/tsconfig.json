@@ -1,20 +1,18 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/apps/api",
+    "outDir": "./dist",
     "baseUrl": "./",
-    "paths": {
-      "@oku_24/config/*": ["../../packages/config/src/*"],
-      "@oku_24/types/*": ["../../packages/types/src/*"],
-      "@oku_24/validators/*": ["../../packages/validators/src/*"],
-      "@modules/*": ["./src/modules/*"],
-      "@common/*": ["./src/common/*"],
-      "@prisma/*": ["./src/prisma/*"]
-    },
-    "types": ["node", "jest"],
-    "allowJs": true,
-    "sourceMap": true
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "types": [
+      "node",
+      "jest"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
+  "include": [
+    "src/**/*",
+    "prisma/**/*"
+  ]
 }

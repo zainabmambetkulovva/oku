@@ -16,13 +16,17 @@ export class OrdersService {
     }
 
     // Calculate totals
+    const productOf = (item: (typeof cart.items)[number]) => {
+      const product = item.book ?? item.audiobook;
+      if (!product) {
+        throw new BadRequestException(`Cart item "${item.id}" has no product`);
+      }
+      return product;
+    };
+
     let subtotal = 0;
     for (const item of cart.items) {
-      if (item.bookId) {
-        subtotal += item.book.price * item.quantity;
-      } else if (item.audiobookId) {
-        subtotal += item.audiobook.price * item.quantity;
-      }
+      subtotal += productOf(item).price * item.quantity;
     }
 
     const deliveryPrice = data.deliveryMethod === 'COURIER' ? 300 : 0;
@@ -52,10 +56,11 @@ export class OrdersService {
 
       // Create order items
       for (const item of cart.items) {
-        const productTitle = item.bookId ? item.book.title : item.audiobook.title;
-        const productAuthor = item.bookId ? item.book.author : item.audiobook.author;
-        const productCoverKey = item.bookId ? item.book.coverKey : item.audiobook.coverKey;
-        const unitPrice = item.bookId ? item.book.price : item.audiobook.price;
+        const product = productOf(item);
+        const productTitle = product.title;
+        const productAuthor = product.author;
+        const productCoverKey = product.coverKey;
+        const unitPrice = product.price;
 
         await tx.orderItem.create({
           data: {

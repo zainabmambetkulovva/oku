@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -8,7 +9,7 @@ export class BooksService {
   async findAll(page: number = 1, limit: number = 10, categoryId?: string) {
     const skip = (page - 1) * limit;
 
-    const where: any = { status: 'ACTIVE' };
+    const where: Prisma.BookWhereInput = { status: 'ACTIVE' };
 
     if (categoryId) {
       where.bookCategories = { some: { categoryId } };

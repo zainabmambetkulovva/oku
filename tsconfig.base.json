@@ -1,24 +1,18 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "rootDir": ".",
-    "sourceMap": true,
-    "declaration": false,
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
     "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "ES2021",
-    "module": "ESNext",
-    "lib": ["ES2021", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@oku_24/types/*": ["packages/types/src/*"],
-      "@oku_24/validators/*": ["packages/validators/src/*"],
-      "@oku_24/config/*": ["packages/config/src/*"]
-    }
+    "sourceMap": true,
+    "declaration": false
   },
-  "exclude": ["node_modules", "tmp", ".nx", "dist"]
+  "exclude": ["node_modules", "dist", "coverage"]
 }

@@ -1,111 +1,82 @@
-# OKU_24 — Онлайн-магазин физических книг и аудиокниг
+# OKU_24 — онлайн-магазин физических книг и аудиокниг
 
-Современная платформа для продажи книг и аудиокниг с интерактивной 3D-презентацией и полноценным аудиоплеером.
+Платформа для продажи печатных книг и аудиокниг с интерактивной 3D-презентацией и встроенным аудиоплеером.
 
-## Архитектура
+## Документация
 
-Проект разработан в формате Monorepo:
+- [Техническое задание](docs/technical-specification.md)
+- [Спецификация базы данных](docs/database-specification.md)
+- [Развёртывание](docs/deployment.md)
 
-```
+## Структура репозитория
+
+```text
 oku_24/
 ├── apps/
-│   ├── web/       # Next.js Frontend (не реализовано)
-│   └── api/       # NestJS Backend (создано)
+│   ├── api/              # NestJS Backend
+│   └── web/              # Next.js Frontend (этап Ф1)
 ├── packages/
-│   ├── types/     # Общие TypeScript-типы (не реализовано)
-│   ├── validators/# Общие схемы валидации (не реализовано)
-│   └── config/    # Общие настройки (не реализовано)
-└── docker/        # Docker-конфигурации
+│   ├── types/            # Общие TypeScript-типы
+│   ├── validators/       # Общие схемы валидации (Zod)
+│   └── config/           # Общие константы и настройки
+├── docker/               # Docker-конфигурации (локальные PostgreSQL и Redis)
+├── docs/                 # Документация проекта
+└── .github/workflows/    # CI
 ```
 
-## Технологический стек
-
-- **Frontend:** Next.js, React, TypeScript, Tailwind CSS, React Three Fiber
-- **Backend:** NestJS, Node.js, TypeScript, Prisma ORM
-- **Database:** Neon PostgreSQL
-- **Storage:** S3 Storage для медиафайлов
-
-## Установка
-
-```bash
-pnpm install
-```
-
-## Команды для разработки
-
-### Backend (NestJS)
-
-```bash
-cd apps/api
-
-# Установка зависимостей
-pnpm install
-
-# Создание миграции Prisma
-npx prisma migrate dev --name <migration_name>
-
-# Применение миграций
-npx prisma migrate deploy
-
-# Генерация Prisma Client
-npx prisma generate
-
-# Открытие Prisma Studio
-npx prisma studio
-
-# Запуск в режиме разработки
-npx nest start --watch
-
-# Сборка для продакшена
-npm run build
-node dist/apps/api/main
-```
-
-## Структура базы данных
-
-См. `DATABASEokuu-24.md` для полной спецификации.
-
-Основные сущности:
-- Users — Пользователи
-- Books — Физические книги
-- Audiobooks — Аудиокниги
-- Categories — Категории
-- Cart — Корзина
-- Orders — Заказы
-- Payments — Платежи
-- AudioAccess — Доступ к аудиокнигам
-- Favorites — Избранное
-- Reviews — Отзывы
+Monorepo управляется через pnpm Workspaces. Backend — Modular Monolith на NestJS + Prisma ORM, база данных — Neon PostgreSQL.
 
 ## Требования
 
-- Node.js >= 20.0.0
-- pnpm >= 8.0.0
-- PostgreSQL (Neon PostgreSQL)
+- Node.js 22 (см. `.nvmrc`), минимум 20
+- pnpm 10 (`corepack enable` установит нужную версию из `package.json`)
+- Docker — для локальных PostgreSQL и Redis
 
-## Настройка DATABASE_URL
-
-Для работы необходимо указать переменную DATABASE_URL в файле `apps/api/.env`:
-
-```
-DATABASE_URL=postgresql://user:password@localhost:5432/okuu_24_dev?schema=public
-```
-
-Для production используйте строку подключения Neon PostgreSQL:
-
-```
-DATABASE_URL=postgresql://user:password@ep-xxx-xxx.neon.tech/okuu_24?sslmode=require
-```
-
-## Миграции
-
-После изменения схемы в `prisma/schema.prisma`:
+## Быстрый старт
 
 ```bash
-cd apps/api
-npx prisma migrate dev --name <description>
-npx prisma migrate deploy
+corepack enable
+pnpm install                                   # также генерирует Prisma Client
+cp apps/api/.env.example apps/api/.env         # заполнить переменные
+pnpm docker:up                                 # PostgreSQL :5432 и Redis :6379
+pnpm dev:api                                   # http://localhost:3000, Swagger — /api
 ```
+
+Миграции базы данных появятся на этапе Б2.
+
+## Команды
+
+Все команды запускаются из корня репозитория.
+
+| Команда | Что делает |
+|---|---|
+| `pnpm dev:api` | Backend в режиме разработки |
+| `pnpm build` | Сборка всех пакетов и приложений |
+| `pnpm lint` | ESLint + Prettier |
+| `pnpm typecheck` | Проверка типов TypeScript |
+| `pnpm test` | Тесты |
+| `pnpm format` | Форматирование кода |
+| `pnpm docker:up` / `pnpm docker:down` | Запуск и остановка локальных PostgreSQL и Redis |
+| `pnpm db:generate` | Генерация Prisma Client |
+| `pnpm db:validate` | Проверка Prisma-схемы |
+| `pnpm db:migrate:dev` | Создание и применение миграции (разработка) |
+| `pnpm db:migrate:deploy` | Применение миграций (production) |
+| `pnpm db:seed` | Тестовые данные (только для разработки) |
+| `pnpm db:studio` | Prisma Studio |
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull request в `main` выполняет: установку зависимостей, проверку Prisma-схемы, lint, typecheck, тесты и сборку.
+
+## Статус разработки
+
+| Этап | Статус |
+|---|---|
+| Б1. Подготовка monorepo | ✅ |
+| Б2. База данных и каркас API | ⏳ |
+| Б3–Б8. Backend-модули | ⏳ |
+| Ф1–Ф7. Frontend | ⏳ |
+| Интеграция, тестирование, запуск | ⏳ |
 
 ## Лицензия
 

@@ -11,6 +11,10 @@ import { Env, validateEnv } from './config/env';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
 import { MailModule } from './modules/mail/mail.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { CacheModule } from './modules/cache/cache.module';
+import { StorageModule } from './modules/storage/storage.module';
+import { AudiobooksModule } from './modules/audiobooks/audiobooks.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BooksModule } from './modules/books/books.module';
@@ -18,7 +22,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
 
-// Модули audiobooks, payments, favorites, reviews, notifications,
+// Модули payments, favorites, reviews, notifications,
 // listening-progress, admin, analytics подключаются по мере реализации (этапы Б3–Б8).
 @Module({
   imports: [
@@ -39,11 +43,15 @@ import { OrdersModule } from './modules/orders/orders.module';
     }),
     PrismaModule,
     MailModule,
+    CacheModule,
+    StorageModule,
+    AuditModule,
     HealthModule,
     AuthModule,
     UsersModule,
-    BooksModule,
     CategoriesModule,
+    BooksModule,
+    AudiobooksModule,
     CartModule,
     OrdersModule,
   ],

@@ -1,34 +1,32 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
+import { BookCatalogQueryDto } from '../catalog/catalog-query.dto';
 import { BooksService } from './books.service';
-import { CategoriesService } from '../categories/categories.service';
 
+@ApiTags('catalog / books')
 @Public()
 @Controller('books')
 export class BooksController {
-  constructor(
-    private booksService: BooksService,
-    private categoriesService: CategoriesService,
-  ) {}
+  constructor(private readonly books: BooksService) {}
 
+  /**
+   * Каталог физических книг: поиск, фильтры, сортировка, пагинация.
+   * Цены — в тыйынах (65000 = 650 сом).
+   */
   @Get()
-  async findAll(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-    @Query('categoryId') categoryId?: string,
-  ) {
-    return this.booksService.findAll(page, limit, categoryId);
+  list(@Query() query: BookCatalogQueryDto) {
+    return this.books.list(query);
   }
 
   @Get(':slug')
-  async findOne(@Param('slug') slug: string) {
-    return this.booksService.findOne(slug);
+  findBySlug(@Param('slug') slug: string) {
+    return this.books.findBySlug(slug);
   }
 
-  @Get('category/:slug')
-  async findByCategory(@Param('slug') slug: string) {
-    // findOne сам выбрасывает NotFoundException, если категории нет
-    const category = await this.categoriesService.findOne(slug);
-    return this.booksService.findAll(1, 10, category.id);
+  /** Похожие книги: общие категории или тот же автор. */
+  @Get(':slug/similar')
+  similar(@Param('slug') slug: string) {
+    return this.books.similar(slug);
   }
 }

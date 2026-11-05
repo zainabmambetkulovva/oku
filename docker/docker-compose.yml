@@ -1,4 +1,4 @@
-# Локальное окружение для разработки: PostgreSQL + Redis.
+# Локальное окружение для разработки: PostgreSQL, Redis и S3-совместимое хранилище.
 # Запуск из корня репозитория: pnpm docker:up
 # Учётные данные ниже — только для локальной разработки, не для production.
 name: oku_24
@@ -34,6 +34,22 @@ services:
       timeout: 5s
       retries: 10
 
+  # S3-совместимое хранилище (SeaweedFS) вместо S3 в разработке: http://localhost:8333
+  # Учётные данные и права — docker/seaweedfs/s3.json (только для разработки):
+  #  - бакет oku-24-public (обложки) читается без авторизации, как через CDN;
+  #  - бакет oku-24-private (аудиофайлы) закрыт, файлы выдаются по подписанным ссылкам.
+  # Бакеты создаёт backend при старте, если S3_CREATE_BUCKETS=true.
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.50
+    restart: unless-stopped
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json
+    ports:
+      - '8333:8333'
+    volumes:
+      - seaweedfs_data:/data
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+
 volumes:
   postgres_data:
   redis_data:
+  seaweedfs_data:

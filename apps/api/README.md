@@ -62,6 +62,8 @@ src/
 │   ├── guards/             # JwtAuthGuard (все маршруты закрыты по умолчанию), RolesGuard
 │   ├── throttle/           # Строгий лимит для маршрутов авторизации
 │   ├── validation/         # Общие правила валидации (e-mail, пароль, телефон)
+│   ├── pagination/         # page/limit и формат { data, meta }
+│   ├── utils/              # slug, ключи кэша
 │   ├── filters/            # Единый формат ошибок
 │   ├── interceptors/       # Единый формат ответов { data, meta }
 │   ├── pipes/              # Валидация входных данных
@@ -70,10 +72,15 @@ src/
 └── modules/
     ├── health/
     ├── mail/               # Отправка писем (лог или SMTP)
+    ├── storage/            # S3-хранилище, загрузка файлов по подписанной форме
+    ├── cache/              # Кэш каталога в Redis
+    ├── audit/              # Журнал действий администраторов
+    ├── catalog/            # Общее для каталога: фильтры, сортировка, языки
+    ├── categories/         # Дерево категорий, админка категорий
+    ├── books/              # Каталог книг, админка книг
+    ├── audiobooks/         # Каталог аудиокниг, админка аудиокниг и глав
     ├── auth/               # Регистрация, вход, токены, сессии, почта, сброс пароля
     ├── users/              # Профиль, смена пароля, адреса
-    ├── books/
-    ├── categories/
     ├── cart/
     └── orders/
 prisma/
@@ -86,7 +93,7 @@ test/
 └── helpers/
 ```
 
-Остальные модули из ТЗ (audiobooks, payments, favorites, reviews, notifications,
+Остальные модули из ТЗ (payments, favorites, reviews, notifications,
 listening-progress, admin, analytics) добавляются на этапах Б3–Б8.
 
 ## API Documentation

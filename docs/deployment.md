@@ -32,7 +32,15 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `MAIL_FROM` | Отправитель писем, например `OKU_24 <no-reply@oku24.kg>` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` | Параметры SMTP-сервера. `SMTP_HOST` обязателен при `MAIL_TRANSPORT=smtp` |
 | `SWAGGER_ENABLED` | `true` / `false` — публиковать ли документацию на `/api/docs` |
-| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_S3_BUCKET` | S3-совместимое хранилище (этап Б4) |
+| `S3_ENDPOINT` | Адрес S3-совместимого сервиса. Пустой — AWS S3. Для Cloudflare R2, Yandex Object Storage и т.п. — их адрес |
+| `S3_REGION` | Регион (`us-east-1`, `auto` для R2, `ru-central1` для Yandex) |
+| `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Ключи доступа к хранилищу |
+| `S3_PUBLIC_BUCKET` | Бакет для обложек и изображений — открыт на чтение, за CDN |
+| `S3_PRIVATE_BUCKET` | Бакет для аудиофайлов — закрыт, файлы выдаются только по подписанным ссылкам |
+| `S3_FORCE_PATH_STYLE` | `true` для SeaweedFS/MinIO и некоторых провайдеров |
+| `S3_CREATE_BUCKETS` | `true` — создавать бакеты при старте (только разработка) |
+| `MEDIA_PUBLIC_BASE_URL` | Адрес, по которому браузер получает файлы публичного бакета — адрес CDN |
+| `REDIS_URL` | Redis для кэша каталога. Пустой — кэш отключён |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_USER_EMAIL`, `SEED_USER_PASSWORD` | Пользователи для `pnpm db:seed`, только разработка |
 
 Переменные проверяются при старте: если чего-то не хватает или значение некорректно, приложение не запустится и выведет список проблем.
@@ -54,6 +62,18 @@ pnpm dev:api
 2. Скопировать строку подключения с connection pooling — это `DATABASE_URL`.
 3. Скопировать прямую строку подключения — это `DIRECT_URL`.
 4. Расширение `pg_trgm` (поиск по названию и автору) создаётся первой миграцией автоматически.
+
+## Файловое хранилище и CDN
+
+Провайдер для production выбирается к запуску. Подойдёт любой S3-совместимый: AWS S3, Cloudflare R2, Yandex Object Storage и т.п.
+
+1. Создать два бакета: публичный (обложки) и закрытый (аудио).
+2. Публичный бакет: разрешить анонимное чтение и поставить перед ним CDN; адрес CDN — в `MEDIA_PUBLIC_BASE_URL`.
+3. Закрытый бакет: без публичного доступа.
+4. Для загрузки из браузера разрешить CORS на публичном и закрытом бакетах: метод `POST`, origin — адрес админки.
+5. Создать ключи доступа только к этим двум бакетам.
+
+Локально вместо S3 работает SeaweedFS из `docker/docker-compose.yml` (`http://localhost:8333`), учётные данные — `docker/seaweedfs/s3.json`.
 
 ## Миграции
 

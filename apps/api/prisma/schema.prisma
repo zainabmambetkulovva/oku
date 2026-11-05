@@ -241,11 +241,14 @@ model Book {
   publisher       String?
   publicationYear Int?          @map("publication_year")
   pages           Int?
+  // Код языка: ru | ky | en (CHECK)
   language        String?
   isbn            String?       @unique
   price           Int
   currency        String        @default("KGS")
   stockQuantity   Int           @default(0) @map("stock_quantity")
+  // Продано экземпляров по оплаченным заказам — для сортировки «популярные»
+  salesCount      Int           @default(0) @map("sales_count")
   status          ProductStatus @default(DRAFT)
   deletedAt       DateTime?     @map("deleted_at")
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -263,6 +266,7 @@ model Book {
   @@index([author(ops: raw("gin_trgm_ops"))], type: Gin, map: "books_author_trgm_idx")
   @@index([status, createdAt])
   @@index([status, price])
+  @@index([status, salesCount])
   @@map("books")
 }
 
@@ -302,11 +306,14 @@ model Audiobook {
   narrator        String?
   description     String?
   coverKey        String?       @map("cover_key")
+  // Код языка: ru | ky | en (CHECK)
   language        String?
   // Сумма длительностей глав. У опубликованной аудиокниги должна быть > 0 (CHECK)
   durationSeconds Int           @default(0) @map("duration_seconds")
   price           Int
   currency        String        @default("KGS")
+  // Продано по оплаченным заказам — для сортировки «популярные»
+  salesCount      Int           @default(0) @map("sales_count")
   status          ProductStatus @default(DRAFT)
   deletedAt       DateTime?     @map("deleted_at")
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -325,6 +332,7 @@ model Audiobook {
   @@index([author(ops: raw("gin_trgm_ops"))], type: Gin, map: "audiobooks_author_trgm_idx")
   @@index([status, createdAt])
   @@index([status, price])
+  @@index([status, salesCount])
   @@map("audiobooks")
 }
 

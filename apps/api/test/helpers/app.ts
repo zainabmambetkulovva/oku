@@ -2,9 +2,12 @@ import { INestApplication, Type } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { AppModule } from '../../src/app.module';
+import { CacheService } from '../../src/modules/cache/cache.service';
+import { UploadKind } from '../../src/modules/storage/upload-kinds';
 import { configureApp } from '../../src/app.setup';
 import { MailService } from '../../src/modules/mail/mail.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { truncateAll } from './database';
 import { MailCollector } from './mail-collector';
 
 export interface TestApp {
@@ -89,3 +92,63 @@ export async function login(t: TestApp, email: string, password: string) {
 }
 
 export const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
+
+/** Чистая база, пустой кэш каталога и почта — перед каждым тестом. */
+export async function resetState(t: TestApp): Promise<void> {
+  await truncateAll(t.prisma);
+  await t.app.get(CacheService).invalidateCatalog();
+  t.mail.clear();
+}
+
+export async function createAdmin(t: TestApp): Promise<RegisteredUser> {
+  const admin = await registerUser(t);
+  await t.prisma.user.update({ where: { id: admin.id }, data: { role: 'ADMIN' } });
+  return admin;
+}
+
+/**
+ * Загрузка файла так, как это делает админка: подписанная форма от API,
+ * затем POST файла напрямую в хранилище. Возвращает ключ файла.
+ */
+export async function uploadFile(
+  t: TestApp,
+  token: string,
+  kind: UploadKind,
+  options: { contentType?: string; bytes?: number; declaredSize?: number } = {},
+): Promise<string> {
+  const contentType = options.contentType ?? 'image/png';
+  const bytes = options.bytes ?? 128;
+  const declaredSize = options.declaredSize ?? bytes;
+  const response = await t
+    .http()
+    .post('/api/v1/admin/uploads')
+    .set(bearer(token))
+    .send({ kind, contentType, size: declaredSize })
+    .expect(201);
+  const { url, fields, key } = response.body.data as {
+    url: string;
+    fields: Record<string, string>;
+    key: string;
+  };
+
+  const status = await postToStorage(url, fields, contentType, bytes);
+  if (status >= 300) {
+    throw new Error(`Upload to storage failed with status ${status}`);
+  }
+  return key;
+}
+
+export async function postToStorage(
+  url: string,
+  fields: Record<string, string>,
+  contentType: string,
+  bytes: number,
+): Promise<number> {
+  const form = new FormData();
+  for (const [name, value] of Object.entries(fields)) {
+    form.append(name, value);
+  }
+  form.append('file', new Blob([Buffer.alloc(bytes, 7)], { type: contentType }), 'file');
+  const response = await fetch(url, { method: 'POST', body: form });
+  return response.status;
+}

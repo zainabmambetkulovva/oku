@@ -1,89 +1,120 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { paginated, skipFor } from '../../common/pagination/pagination';
+import { stableKey } from '../../common/utils/stable-key';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CacheService } from '../cache/cache.service';
+import { BookCatalogQueryDto } from '../catalog/catalog-query.dto';
+import {
+  CATALOG_CACHE_TTL_SECONDS,
+  SIMILAR_LIMIT,
+  catalogOrderBy,
+} from '../catalog/catalog.constants';
+import { priceWhere, searchWhere } from '../catalog/catalog.mapper';
+import { CategoriesService } from '../categories/categories.service';
+import { StorageService } from '../storage/storage.service';
+import { bookInclude, toBookDetails, toBookListItem } from './book.mapper';
 
+const published = { status: 'ACTIVE', deletedAt: null } satisfies Prisma.BookWhereInput;
+
+/** Публичный каталог физических книг: только опубликованные. */
 @Injectable()
 export class BooksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly categories: CategoriesService,
+    private readonly cache: CacheService,
+    private readonly storage: StorageService,
+  ) {}
 
-  async findAll(page: number = 1, limit: number = 10, categoryId?: string) {
-    const skip = (page - 1) * limit;
-
-    const where: Prisma.BookWhereInput = { status: 'ACTIVE' };
-
-    if (categoryId) {
-      where.bookCategories = { some: { categoryId } };
+  async list(query: BookCatalogQueryDto) {
+    if (
+      query.minPrice !== undefined &&
+      query.maxPrice !== undefined &&
+      query.minPrice > query.maxPrice
+    ) {
+      throw new BadRequestException('minPrice must not be greater than maxPrice');
     }
 
-    const books = await this.prisma.book.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        bookImages: true,
-        bookCategories: { include: { category: true } },
-      },
-    });
+    return this.cache.catalog(
+      `books:list:${stableKey(query)}`,
+      CATALOG_CACHE_TTL_SECONDS,
+      async () => {
+        const where: Prisma.BookWhereInput = {
+          ...published,
+          ...searchWhere(query.search),
+          ...priceWhere(query.minPrice, query.maxPrice),
+          ...(query.language && { language: query.language }),
+          ...(query.inStock === true && { stockQuantity: { gt: 0 } }),
+          ...(query.inStock === false && { stockQuantity: 0 }),
+        };
 
-    const total = await this.prisma.book.count({ where });
-    const totalPages = Math.ceil(total / limit);
+        if (query.category) {
+          const categoryIds = await this.categories.idsWithDescendants(query.category);
+          where.bookCategories = { some: { categoryId: { in: categoryIds } } };
+        }
 
-    return {
-      data: books,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages,
+        const [books, total] = await this.prisma.$transaction([
+          this.prisma.book.findMany({
+            where,
+            include: bookInclude,
+            orderBy: catalogOrderBy(query.sort),
+            skip: skipFor(query),
+            take: query.limit,
+          }),
+          this.prisma.book.count({ where }),
+        ]);
+
+        return paginated(
+          books.map((book) => toBookListItem(book, this.storage)),
+          total,
+          query,
+        );
       },
-    };
+    );
   }
 
-  async findOne(slug: string) {
-    const book = await this.prisma.book.findUnique({
-      where: { slug },
-      include: {
-        bookImages: true,
-        bookCategories: { include: { category: true } },
-      },
-    });
-
-    if (!book) {
-      throw new NotFoundException(`Book with slug "${slug}" not found`);
-    }
-
-    return book;
-  }
-
-  async incrementStockQuantity(bookId: string, quantity: number) {
-    await this.prisma.book.update({
-      where: { id: bookId },
-      data: {
-        stockQuantity: { increment: quantity },
-      },
+  findBySlug(slug: string) {
+    return this.cache.catalog(`books:slug:${slug}`, CATALOG_CACHE_TTL_SECONDS, async () => {
+      const book = await this.prisma.book.findFirst({
+        where: { ...published, slug },
+        include: bookInclude,
+      });
+      if (!book) {
+        throw new NotFoundException(`Book "${slug}" not found`);
+      }
+      return toBookDetails(book, this.storage);
     });
   }
 
-  async decrementStockQuantity(bookId: string, quantity: number) {
-    const book = await this.prisma.book.findUnique({
-      where: { id: bookId },
-      select: { stockQuantity: true },
-    });
+  /** Похожие книги: общие категории или тот же автор, сначала популярные. */
+  similar(slug: string) {
+    return this.cache.catalog(`books:similar:${slug}`, CATALOG_CACHE_TTL_SECONDS, async () => {
+      const book = await this.prisma.book.findFirst({
+        where: { ...published, slug },
+        select: { id: true, author: true, bookCategories: { select: { categoryId: true } } },
+      });
+      if (!book) {
+        throw new NotFoundException(`Book "${slug}" not found`);
+      }
 
-    if (!book) {
-      throw new NotFoundException('Book not found');
-    }
-
-    if (book.stockQuantity - quantity < 0) {
-      throw new BadRequestException('Not enough stock');
-    }
-
-    await this.prisma.book.update({
-      where: { id: bookId },
-      data: {
-        stockQuantity: { decrement: quantity },
-      },
+      const categoryIds = book.bookCategories.map(({ categoryId }) => categoryId);
+      const similar = await this.prisma.book.findMany({
+        where: {
+          ...published,
+          id: { not: book.id },
+          OR: [
+            { author: book.author },
+            ...(categoryIds.length
+              ? [{ bookCategories: { some: { categoryId: { in: categoryIds } } } }]
+              : []),
+          ],
+        },
+        include: bookInclude,
+        orderBy: catalogOrderBy('popular'),
+        take: SIMILAR_LIMIT,
+      });
+      return similar.map((item) => toBookListItem(item, this.storage));
     });
   }
 }

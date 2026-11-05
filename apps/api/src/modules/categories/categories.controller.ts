@@ -1,24 +1,23 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { CategoriesService } from './categories.service';
 
+@ApiTags('catalog / categories')
 @Public()
 @Controller('categories')
 export class CategoriesController {
-  constructor(private categoriesService: CategoriesService) {}
+  constructor(private readonly categories: CategoriesService) {}
 
+  /** Дерево активных категорий с количеством опубликованных товаров. */
   @Get()
-  async findAll(@Query('parentId') parentId?: string) {
-    return this.categoriesService.findAll(parentId ? parentId : undefined);
+  tree() {
+    return this.categories.tree();
   }
 
+  /** Категория с подкатегориями и родителем. Товары — GET /books?category=:slug */
   @Get(':slug')
-  async findOne(@Param('slug') slug: string) {
-    return this.categoriesService.findOne(slug);
-  }
-
-  @Get(':slug/books')
-  async findWithBooks(@Param('slug') slug: string) {
-    return this.categoriesService.findWithBooks(slug);
+  findBySlug(@Param('slug') slug: string) {
+    return this.categories.findBySlug(slug);
   }
 }

@@ -29,12 +29,29 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     env:
       # Тестовая база в контейнере CI. Имя должно оканчиваться на _test:
       # интеграционные тесты очищают таблицы и на другой базе не запустятся.
       DATABASE_URL: postgresql://oku:oku@localhost:5432/oku_24_test?schema=public
       DIRECT_URL: postgresql://oku:oku@localhost:5432/oku_24_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      # S3-совместимое хранилище SeaweedFS (запускается отдельным шагом, как в docker-compose)
+      S3_ENDPOINT: http://localhost:8333
+      S3_ACCESS_KEY_ID: oku-s3-key
+      S3_SECRET_ACCESS_KEY: oku-s3-secret
+      S3_PUBLIC_BUCKET: oku-24-public
+      S3_PRIVATE_BUCKET: oku-24-private
+      MEDIA_PUBLIC_BASE_URL: http://localhost:8333/oku-24-public
 
     steps:
       - uses: actions/checkout@v4
@@ -66,6 +83,20 @@ jobs:
 
       - name: Check that migrations match the schema
         run: pnpm db:drift
+
+      # Сервисы GitHub Actions не позволяют задать команду контейнера, поэтому — docker run
+      - name: Start S3-compatible storage (SeaweedFS)
+        run: |
+          docker run -d --name seaweedfs -p 8333:8333 \
+            -v "$PWD/docker/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro" \
+            chrislusf/seaweedfs:4.50 \
+            server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json
+          for i in $(seq 1 60); do
+            curl -s -o /dev/null http://localhost:8333/ && exit 0
+            sleep 1
+          done
+          docker logs seaweedfs
+          exit 1
 
       - name: Integration and e2e tests
         run: pnpm test:integration

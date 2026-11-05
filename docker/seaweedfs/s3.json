@@ -1,0 +1,13 @@
+{
+  "identities": [
+    {
+      "name": "oku-api",
+      "credentials": [{ "accessKey": "oku-s3-key", "secretKey": "oku-s3-secret" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    },
+    {
+      "name": "anonymous",
+      "actions": ["Read:oku-24-public"]
+    }
+  ]
+}

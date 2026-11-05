@@ -38,7 +38,7 @@ Monorepo управляется через pnpm Workspaces. Backend — Modular 
 corepack enable
 pnpm install                                   # также генерирует Prisma Client
 cp apps/api/.env.example apps/api/.env         # заполнить переменные
-pnpm docker:up                                 # PostgreSQL :5432 и Redis :6379
+pnpm docker:up                                 # PostgreSQL :5432, Redis :6379, S3 (SeaweedFS) :8333
 pnpm db:migrate:deploy                         # применить миграции
 pnpm db:seed                                   # тестовые данные (необязательно)
 pnpm dev:api                                   # http://localhost:3000/api/v1
@@ -59,7 +59,7 @@ Swagger-документация: http://localhost:3000/api/docs, проверк
 | `pnpm test` | Unit-тесты |
 | `pnpm test:integration` | Интеграционные и e2e-тесты (нужна тестовая база, см. ниже) |
 | `pnpm format` | Форматирование кода |
-| `pnpm docker:up` / `pnpm docker:down` | Запуск и остановка локальных PostgreSQL и Redis |
+| `pnpm docker:up` / `pnpm docker:down` | Запуск и остановка локальных PostgreSQL, Redis и S3-хранилища |
 | `pnpm db:generate` | Генерация Prisma Client |
 | `pnpm db:validate` | Проверка Prisma-схемы |
 | `pnpm db:migrate:dev` | Создание и применение миграции (разработка) |
@@ -71,7 +71,7 @@ Swagger-документация: http://localhost:3000/api/docs, проверк
 ## Тесты
 
 - **Unit-тесты** (`apps/api/src/**/*.spec.ts`) — без базы данных: `pnpm test`.
-- **Интеграционные и e2e-тесты** (`apps/api/test/`) — на настоящей PostgreSQL. Тесты очищают таблицы, поэтому имя базы обязано оканчиваться на `_test`, иначе тесты не запустятся:
+- **Интеграционные и e2e-тесты** (`apps/api/test/`) — на настоящих PostgreSQL, Redis и S3-хранилище (`pnpm docker:up`). Тесты очищают таблицы, поэтому имя базы обязано оканчиваться на `_test`, иначе тесты не запустятся:
 
 ```bash
 docker compose -f docker/docker-compose.yml exec postgres createdb -U oku oku_24_test
@@ -115,6 +115,43 @@ GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull reque
 | `POST /users/me/password` | авторизованный | Смена пароля, завершает остальные сессии |
 | `GET/POST /users/me/addresses`, `PATCH/DELETE /users/me/addresses/:id` | авторизованный | Адреса доставки |
 
+### Каталог
+
+**Цены — целые числа в тыйынах** (1 сом = 100 тыйын): `"price": 65000` — это 650 сом. Frontend показывает цену как `650 сом`. Так нет ошибок округления.
+
+| Маршрут | Назначение |
+|---|---|
+| `GET /categories` | Дерево активных категорий с количеством опубликованных товаров |
+| `GET /categories/:slug` | Категория с подкатегориями и родителем |
+| `GET /books`, `GET /audiobooks` | Каталог: `page`, `limit` (≤ 50), `search`, `category` (с подкатегориями), `minPrice`, `maxPrice`, `language` (`ru`/`ky`/`en`), `inStock` (книги), `sort` (`newest`, `popular`, `price_asc`, `price_desc`, `title`) |
+| `GET /books/:slug`, `GET /audiobooks/:slug` | Страница товара; у аудиокниги — список глав без доступа к файлам |
+| `GET /books/:slug/similar`, `GET /audiobooks/:slug/similar` | Похожие товары: общие категории или тот же автор |
+
+Публичный каталог показывает только опубликованные товары (`ACTIVE`) и кэшируется в Redis на 60 секунд; любое изменение в админке сбрасывает кэш.
+
+### Админка каталога (роль ADMIN)
+
+| Маршрут | Назначение |
+|---|---|
+| `GET/POST /admin/categories`, `PATCH/DELETE /admin/categories/:id` | Категории. Удаляется только пустая категория (иначе 409 с количеством подкатегорий и товаров) |
+| `GET/POST /admin/books`, `GET/PATCH/DELETE /admin/books/:id` | Книги. Новая книга — черновик. Книгу с заказами удалить нельзя — только в архив |
+| `PATCH /admin/books/:id/status` | `DRAFT` / `ACTIVE` (опубликована) / `ARCHIVED` (снята с продажи) |
+| `POST /admin/books/:id/images`, `DELETE /admin/books/:id/images/:imageId` | Дополнительные изображения (до 10) |
+| `GET/POST /admin/audiobooks`, `GET/PATCH/DELETE /admin/audiobooks/:id`, `PATCH .../status` | Аудиокниги. Публикация — только с главами |
+| `POST /admin/audiobooks/:id/chapters`, `PATCH/DELETE .../chapters/:chapterId` | Главы. Длительность аудиокниги считается автоматически |
+| `PUT /admin/audiobooks/:id/chapters/order` | Новый порядок глав |
+| `POST /admin/uploads` | Подписанная форма для загрузки файла в хранилище |
+
+Все изменения записываются в журнал действий (`audit_logs`): кто, что, старые и новые значения, IP.
+
+**Загрузка файлов** — напрямую из браузера в хранилище, минуя backend:
+
+1. `POST /admin/uploads` с `{ kind, contentType, size }` → `{ url, fields, key }`. Виды: `book-cover`, `book-image`, `audiobook-cover`, `category-image` (jpeg/png/webp до 5 МБ), `audio-chapter` (mp3/m4a/aac/ogg до 500 МБ).
+2. Браузер отправляет `multipart/form-data` на `url`: все `fields`, затем файл в поле `file`. Хранилище не примет файл больше заявленного размера или другого типа.
+3. `key` передаётся при сохранении товара (`coverKey`, `storageKey`). Backend проверяет, что файл действительно загружен и подходит по виду.
+
+Обложки и изображения — в публичном бакете (за CDN), аудиофайлы — в закрытом; доступ к ним — этап Б5.
+
 ## Статус разработки
 
 | Этап | Статус |
@@ -122,7 +159,8 @@ GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull reque
 | Б1. Подготовка monorepo | ✅ |
 | Б2. База данных и каркас API | ✅ |
 | Б3. Авторизация, роли, пользователи | ✅ |
-| Б4–Б8. Backend-модули | ⏳ |
+| Б4. Каталог, загрузка файлов, кэш | ✅ |
+| Б5–Б8. Backend-модули | ⏳ |
 | Ф1–Ф7. Frontend | ⏳ |
 | Интеграция, тестирование, запуск | ⏳ |
 

@@ -74,6 +74,28 @@ describe('validateEnv', () => {
     ).not.toThrow();
   });
 
+  it('treats empty strings as not set', () => {
+    const env = validateEnv({ ...base, S3_ENDPOINT: '', REDIS_URL: '', SMTP_HOST: '' });
+    expect(env.S3_ENDPOINT).toBeUndefined();
+    expect(env.REDIS_URL).toBeUndefined();
+  });
+
+  it('requires the full storage configuration once any S3 variable is set', () => {
+    expect(() => validateEnv({ ...base, S3_PUBLIC_BUCKET: 'public' })).toThrow(
+      /S3_ACCESS_KEY_ID[\s\S]*S3_SECRET_ACCESS_KEY[\s\S]*S3_PRIVATE_BUCKET[\s\S]*MEDIA_PUBLIC_BASE_URL/,
+    );
+    expect(() =>
+      validateEnv({
+        ...base,
+        S3_ACCESS_KEY_ID: 'key',
+        S3_SECRET_ACCESS_KEY: 'secret',
+        S3_PUBLIC_BUCKET: 'public',
+        S3_PRIVATE_BUCKET: 'private',
+        MEDIA_PUBLIC_BASE_URL: 'https://cdn.oku24.kg',
+      }),
+    ).not.toThrow();
+  });
+
   it('requires an SMTP host for the smtp mail transport', () => {
     expect(() => validateEnv({ ...base, MAIL_TRANSPORT: 'smtp' })).toThrow(/SMTP_HOST/);
     expect(() =>

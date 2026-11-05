@@ -57,10 +57,22 @@ export const envSchema = z
 
     SWAGGER_ENABLED: booleanString.default('true'),
 
-    AWS_ACCESS_KEY_ID: z.string().optional(),
-    AWS_SECRET_ACCESS_KEY: z.string().optional(),
-    AWS_REGION: z.string().optional(),
-    AWS_S3_BUCKET: z.string().optional(),
+    // S3-совместимое хранилище. Два бакета: публичный (обложки, за CDN) и закрытый (аудио).
+    // S3_ENDPOINT пустой — AWS S3; для R2, Yandex, SeaweedFS и т.п. — адрес сервиса.
+    S3_ENDPOINT: z.string().url().optional(),
+    S3_REGION: z.string().min(1).default('us-east-1'),
+    S3_ACCESS_KEY_ID: z.string().optional(),
+    S3_SECRET_ACCESS_KEY: z.string().optional(),
+    S3_PUBLIC_BUCKET: z.string().optional(),
+    S3_PRIVATE_BUCKET: z.string().optional(),
+    S3_FORCE_PATH_STYLE: booleanString.default('false'),
+    // Создавать бакеты при старте, если их нет (только для разработки)
+    S3_CREATE_BUCKETS: booleanString.default('false'),
+    // Адрес, по которому браузер получает файлы публичного бакета (CDN)
+    MEDIA_PUBLIC_BASE_URL: z.string().url().optional(),
+
+    // Redis для кэша каталога. Не задан — кэш отключён
+    REDIS_URL: z.string().url().optional(),
   })
   .superRefine((env, ctx) => {
     const issue = (path: string, message: string) =>
@@ -80,12 +92,31 @@ export const envSchema = z
     if (env.MAIL_TRANSPORT === 'smtp' && !env.SMTP_HOST) {
       issue('SMTP_HOST', 'обязателен при MAIL_TRANSPORT=smtp');
     }
+
+    const storageVars = [
+      'S3_ACCESS_KEY_ID',
+      'S3_SECRET_ACCESS_KEY',
+      'S3_PUBLIC_BUCKET',
+      'S3_PRIVATE_BUCKET',
+      'MEDIA_PUBLIC_BASE_URL',
+    ] as const;
+    if (storageVars.some((name) => env[name])) {
+      for (const name of storageVars) {
+        if (!env[name]) {
+          issue(name, 'обязателен, если настроено файловое хранилище (S3_*)');
+        }
+      }
+    }
   });
 
 export type Env = z.infer<typeof envSchema>;
 
 export function validateEnv(config: Record<string, unknown>): Env {
-  const result = envSchema.safeParse(config);
+  // Пустая строка в .env (например, S3_ENDPOINT=) означает «не задано»
+  const cleaned = Object.fromEntries(
+    Object.entries(config).map(([key, value]) => [key, value === '' ? undefined : value]),
+  );
+  const result = envSchema.safeParse(cleaned);
   if (!result.success) {
     const problems = result.error.issues
       .map((issue) => `  - ${issue.path.join('.') || '(root)'}: ${issue.message}`)

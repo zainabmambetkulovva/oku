@@ -66,6 +66,14 @@ describe('validateEnv', () => {
     ).not.toThrow();
   });
 
+  it('parses role managers as lower-case e-mails', () => {
+    expect(validateEnv(base).ROLE_MANAGER_EMAILS).toEqual([]);
+    expect(
+      validateEnv({ ...base, ROLE_MANAGER_EMAILS: 'Owner@OKU24.kg, second@oku24.kg' })
+        .ROLE_MANAGER_EMAILS,
+    ).toEqual(['owner@oku24.kg', 'second@oku24.kg']);
+  });
+
   it('treats empty strings as not set', () => {
     const env = validateEnv({ ...base, S3_ENDPOINT: '', REDIS_URL: '', SMTP_HOST: '' });
     expect(env.S3_ENDPOINT).toBeUndefined();

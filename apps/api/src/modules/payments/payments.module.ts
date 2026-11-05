@@ -11,5 +11,6 @@ import { TestPaymentProvider } from './providers/test.provider';
   imports: [OrdersModule, ListeningModule],
   controllers: [CheckoutController, PaymentsController],
   providers: [PaymentsService, TestPaymentProvider, FinikPaymentProvider],
+  exports: [PaymentsService],
 })
 export class PaymentsModule {}

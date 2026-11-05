@@ -333,6 +333,7 @@ export class PaymentsService {
     payment: Payment,
     order: Order,
     outbox: DomainEventOutbox,
+    options: { changedById?: string; comment?: string } = {},
   ): Promise<boolean> {
     if (payment.status === 'REFUNDED') {
       return false;
@@ -345,7 +346,8 @@ export class PaymentsService {
 
     const stockStillHere = order.status === 'PAID' || order.status === 'PROCESSING';
     await this.lifecycle.transition(tx, order.id, 'REFUNDED', {
-      comment: 'Payment refunded',
+      changedById: options.changedById,
+      comment: options.comment ?? 'Payment refunded',
       outbox,
     });
 
@@ -380,6 +382,81 @@ export class PaymentsService {
       data: { requiresReview: true, reviewReason: reason },
     });
     this.logger.warn(`Payment ${paymentId} requires review: ${reason}`);
+  }
+
+  // ─── Администрирование ─────────────────────────────────────────────────────
+
+  /**
+   * Возврат, выполненный администратором у провайдера (в кабинете Finik) или наличными.
+   * Заказ → REFUNDED, доступ к аудиокнигам отзывается, непереданные книги — на склад.
+   */
+  async refundByAdmin(orderId: string, actorId: string, comment?: string): Promise<void> {
+    const outbox = new DomainEventOutbox();
+    await this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
+      const payment = await tx.payment.findFirst({
+        where: { orderId, status: 'SUCCEEDED' },
+        orderBy: { paidAt: 'desc' },
+      });
+      if (!payment || !['PAID', 'PROCESSING', 'SHIPPED', 'COMPLETED'].includes(order.status)) {
+        throw new ConflictException('Order has no received payment to refund');
+      }
+      await this.applyRefund(tx, payment, order, outbox, {
+        changedById: actorId,
+        comment: comment ?? 'Refunded by administrator',
+      });
+      await tx.payment.update({ where: { id: payment.id }, data: { requiresReview: false } });
+    });
+    await this.cache.invalidateCatalog();
+    await this.events.publish(outbox);
+  }
+
+  /**
+   * Оплата наличными при получении: записывается, когда администратор завершает заказ.
+   * Учитывается в продажах и популярности. Вызывать внутри транзакции.
+   */
+  async recordCashPayment(tx: Tx, order: Order): Promise<void> {
+    await tx.payment.create({
+      data: {
+        orderId: order.id,
+        provider: 'cash',
+        paymentMethod: 'CASH',
+        status: 'SUCCEEDED',
+        amount: order.total,
+        currency: order.currency,
+        paidAt: new Date(),
+      },
+    });
+    const items = await tx.orderItem.findMany({
+      where: { orderId: order.id, productType: 'BOOK' },
+    });
+    for (const item of items) {
+      if (item.bookId) {
+        await tx.book.update({
+          where: { id: item.bookId },
+          data: { salesCount: { increment: item.quantity } },
+        });
+      }
+    }
+  }
+
+  /** Платёж разобран вручную (например, деньги за отменённый заказ возвращены в кабинете провайдера). */
+  async resolveReview(paymentId: string, refunded: boolean, note: string) {
+    const payment = await this.prisma.payment.findUnique({ where: { id: paymentId } });
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+    if (!payment.requiresReview) {
+      throw new ConflictException('Payment does not require review');
+    }
+    return this.prisma.payment.update({
+      where: { id: paymentId },
+      data: {
+        requiresReview: false,
+        reviewReason: `${payment.reviewReason ?? ''} | Resolved: ${note}`.trim(),
+        ...(refunded && { status: 'REFUNDED' }),
+      },
+    });
   }
 
   // ─── Симуляция оплаты (только тестовый провайдер, не production) ───────────

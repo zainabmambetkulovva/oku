@@ -24,7 +24,8 @@
     "prisma:migrate-dev": "prisma migrate dev",
     "prisma:migrate-deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "admin:create": "ts-node src/cli/create-admin.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

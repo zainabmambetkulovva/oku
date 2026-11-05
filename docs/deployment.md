@@ -45,6 +45,8 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `DELIVERY_PRICE_COURIER`, `DELIVERY_PRICE_POST` | Цена доставки курьером и почтой, тыйын. Самовывоз бесплатный |
 | `ORDER_PAYMENT_TTL_MINUTES` | Минут на оплату онлайн-заказа (по умолчанию 10) |
 | `JOBS_ENABLED` | Фоновые задачи: отмена неоплаченных заказов раз в минуту |
+| `ROLE_MANAGER_EMAILS` | Email через запятую — только эти администраторы назначают и снимают роли |
+| `LOW_STOCK_THRESHOLD` | Порог «заканчивается на складе» на dashboard (по умолчанию 3) |
 | `PAYMENT_PROVIDER` | `finik` в production; `test` — тестовый провайдер для разработки (в production запрещён) |
 | `TEST_PAYMENT_SECRET` | Секрет подписи вебхуков тестового провайдера |
 | `FINIK_ENV`, `FINIK_API_KEY`, `FINIK_ACCOUNT_ID`, `FINIK_PRIVATE_KEY`, `FINIK_PUBLIC_KEY`, `FINIK_WEBHOOK_HOST` | Подключение Finik — см. [payments-finik.md](payments-finik.md) |
@@ -91,6 +93,26 @@ pnpm db:migrate:deploy
 Production-базу нельзя менять вручную — только через Prisma Migrations.
 
 CHECK-ограничения (цены, остатки, рейтинг и т.д.) Prisma не описывает в схеме — они добавлены SQL-кодом в миграцию `prisma/migrations/*_init`. Prisma их не удаляет при следующих миграциях. Проверить, что база совпадает со схемой: `pnpm db:drift`.
+
+## Первые администраторы
+
+Назначить администратора через API нельзя — только командой на сервере:
+
+```bash
+# разработка
+pnpm admin:create --email owner@oku24.kg --password 'StrongPass123'
+# production (после сборки), из apps/api
+node dist/cli/create-admin.js --email owner@oku24.kg --password 'StrongPass123'
+```
+
+Без `--password` команда делает администратором уже зарегистрированного пользователя.
+
+Роли распределены так:
+
+- **главный администратор** — управляет магазином (товары, заказы, пользователи, отзывы);
+- **менеджер ролей** — email из `ROLE_MANAGER_EMAILS`; тоже администратор, и только он может назначать и снимать роль ADMIN (`PATCH /api/v1/admin/users/:id/role`). Свою роль изменить нельзя.
+
+Пример: `admin:create` для `admin@oku24.kg` и `roles@oku24.kg`, в `.env` — `ROLE_MANAGER_EMAILS=roles@oku24.kg`.
 
 ## Seed
 

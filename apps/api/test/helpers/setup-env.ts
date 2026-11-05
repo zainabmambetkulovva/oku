@@ -32,3 +32,5 @@ process.env.PAYMENT_PROVIDER = 'test';
 process.env.TEST_PAYMENT_SECRET = 'test-payment-secret';
 process.env.JOBS_ENABLED = 'false';
 process.env.ORDER_PAYMENT_TTL_MINUTES = '10';
+process.env.ROLE_MANAGER_EMAILS = 'roles@test.local';
+process.env.LOW_STOCK_THRESHOLD = '3';

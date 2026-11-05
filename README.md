@@ -68,6 +68,7 @@ Swagger-документация: http://localhost:3000/api/docs, проверк
 | `pnpm db:drift` | Проверка, что база совпадает со схемой |
 | `pnpm db:seed` | Тестовые данные (только для разработки) |
 | `pnpm db:studio` | Prisma Studio |
+| `pnpm admin:create --email ... [--password ...]` | Назначить или создать администратора |
 
 ## Тесты
 
@@ -212,6 +213,24 @@ GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull reque
 - У отзывов купивших — пометка `isVerifiedPurchase`. Рейтинг (`rating: { average, count }`) есть в карточках и на страницах товаров.
 - Уведомления создаются по событиям заказа (оформлен, оплачен, принят в обработку, отправлен, выполнен, отменён, возвращены деньги) и при выдаче доступа администратором; важные дублируются на e-mail. События публикуются только после успешной транзакции — при откате уведомления не будет.
 
+### Админ-панель (роль ADMIN)
+
+| Маршрут | Назначение |
+|---|---|
+| `GET /admin/dashboard` | Пользователи, книги, аудиокниги, заказы по статусам, выручка, последние заказы, популярные товары, тревоги (платежи на разбор, мало на складе) |
+| `GET /admin/analytics/sales?from&to&groupBy=day\|week\|month` | График выручки и числа заказов (время Бишкека) |
+| `GET /admin/orders`, `GET /admin/orders/:orderNumber` | Заказы: поиск по номеру, e-mail, телефону, имени; фильтры; покупатель, история (кто менял), платежи |
+| `PATCH /admin/orders/:orderNumber/status` | `PROCESSING` → `SHIPPED` → `COMPLETED`, `CANCELLED` — только по разрешённым переходам; покупатель получает уведомление |
+| `POST /admin/orders/:orderNumber/refund` | Отметить возврат денег (выполнен в кабинете Finik или наличными) |
+| `GET /admin/payments`, `POST /admin/payments/:id/resolve` | Платежи; разбор оплат с неверной суммой или по отменённому заказу |
+| `GET /admin/users`, `GET /admin/users/:id`, `GET /admin/users/:id/orders` | Пользователи и статистика покупок |
+| `PATCH /admin/users/:id/status`, `POST /admin/users/:id/unlock` | Блокировка (сразу завершает сессии), снятие блокировки входа |
+| `PATCH /admin/users/:id/role` | Роли — только менеджеры ролей (`ROLE_MANAGER_EMAILS`) |
+| `GET /admin/audit-logs` | Журнал действий администраторов |
+| `GET /admin/newsletter/subscribers`, `GET .../export` | Подписчики и CSV-выгрузка |
+
+Наличные при получении записываются как оплата, когда заказ переводится в `COMPLETED`. Первые администраторы создаются командой `pnpm admin:create` — см. [docs/deployment.md](docs/deployment.md#первые-администраторы).
+
 В разработке работает тестовый провайдер (`PAYMENT_PROVIDER=test`): результат оплаты можно сымитировать запросом `POST /payments/test/:paymentId/simulate`. Подключение Finik — [docs/payments-finik.md](docs/payments-finik.md).
 
 ## Статус разработки
@@ -225,7 +244,7 @@ GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull reque
 | Б5. Доступ к аудиокнигам, прогресс прослушивания | ✅ |
 | Б6. Корзина, заказы, платежи (Finik) | ✅ |
 | Б7. Избранное, отзывы, уведомления, подписка | ✅ |
-| Б8. Админ-панель API, аналитика | ⏳ |
+| Б8. Админ-панель API, аналитика | ✅ |
 | Ф1–Ф7. Frontend | ⏳ |
 | Интеграция, тестирование, запуск | ⏳ |
 

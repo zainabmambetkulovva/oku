@@ -87,6 +87,14 @@ export const envSchema = z
       .min(1)
       .max(24 * 60)
       .default(10),
+    // Email, которым разрешено назначать и снимать роли (через запятую).
+    // Должны быть администраторами; остальные администраторы ролями не управляют
+    ROLE_MANAGER_EMAILS: commaSeparatedList
+      .transform((emails) => emails.map((email) => email.toLowerCase()))
+      .default(''),
+    // Порог «заканчивается на складе» для dashboard
+    LOW_STOCK_THRESHOLD: z.coerce.number().int().min(0).default(3),
+
     // Фоновые задачи (отмена неоплаченных заказов). В тестах выключены
     JOBS_ENABLED: booleanString.default('true'),
 

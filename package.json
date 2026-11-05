@@ -24,6 +24,7 @@
     "db:drift": "pnpm --filter @oku_24/api exec prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code",
     "db:seed": "pnpm --filter @oku_24/api exec prisma db seed",
     "db:studio": "pnpm --filter @oku_24/api exec prisma studio",
+    "admin:create": "pnpm --filter @oku_24/api admin:create",
     "docker:up": "docker compose -f docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f docker/docker-compose.yml down"
   },

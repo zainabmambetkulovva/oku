@@ -24,6 +24,8 @@ import { FavoritesModule } from './modules/favorites/favorites.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { NewsletterModule } from './modules/newsletter/newsletter.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BooksModule } from './modules/books/books.module';
@@ -31,7 +33,6 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
 
-// Модули admin и analytics подключаются на этапе Б8.
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -71,6 +72,8 @@ import { OrdersModule } from './modules/orders/orders.module';
     ReviewsModule,
     NotificationsModule,
     NewsletterModule,
+    AdminModule,
+    AnalyticsModule,
   ],
   providers: [
     // Порядок важен: лимит запросов → проверка токена → проверка роли.

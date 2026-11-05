@@ -41,6 +41,13 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `S3_CREATE_BUCKETS` | `true` — создавать бакеты при старте (только разработка) |
 | `MEDIA_PUBLIC_BASE_URL` | Адрес, по которому браузер получает файлы публичного бакета — адрес CDN |
 | `REDIS_URL` | Redis для кэша каталога. Пустой — кэш отключён |
+| `API_PUBLIC_URL` | Публичный адрес API (`https://api.<домен>`) — из него строится адрес вебхука платёжной системы |
+| `DELIVERY_PRICE_COURIER`, `DELIVERY_PRICE_POST` | Цена доставки курьером и почтой, тыйын. Самовывоз бесплатный |
+| `ORDER_PAYMENT_TTL_MINUTES` | Минут на оплату онлайн-заказа (по умолчанию 10) |
+| `JOBS_ENABLED` | Фоновые задачи: отмена неоплаченных заказов раз в минуту |
+| `PAYMENT_PROVIDER` | `finik` в production; `test` — тестовый провайдер для разработки (в production запрещён) |
+| `TEST_PAYMENT_SECRET` | Секрет подписи вебхуков тестового провайдера |
+| `FINIK_ENV`, `FINIK_API_KEY`, `FINIK_ACCOUNT_ID`, `FINIK_PRIVATE_KEY`, `FINIK_PUBLIC_KEY`, `FINIK_WEBHOOK_HOST` | Подключение Finik — см. [payments-finik.md](payments-finik.md) |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_USER_EMAIL`, `SEED_USER_PASSWORD` | Пользователи для `pnpm db:seed`, только разработка |
 
 Переменные проверяются при старте: если чего-то не хватает или значение некорректно, приложение не запустится и выведет список проблем.

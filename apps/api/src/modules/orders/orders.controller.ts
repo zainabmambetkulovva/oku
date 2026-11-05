@@ -1,45 +1,45 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
-import { OrdersService } from './orders.service';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { AuthUser } from '../../common/decorators/auth-user.decorator';
+import { Public } from '../../common/decorators/public.decorator';
+import { DeliveryService } from './delivery.service';
+import { OrdersQueryDto } from './dto/checkout.dto';
+import { OrdersService } from './orders.service';
 
-export class CreateOrderDto {
-  recipientName: string;
-  recipientPhone: string;
-  deliveryAddress?: string;
-  deliveryMethod?: 'COURIER' | 'PICKUP' | 'POST';
-  paymentMethod?: 'CARD' | 'CASH' | 'TERMINAL' | 'ONLINE' | 'QR';
-  discount?: number;
-  comment?: string;
-}
-
+/** Заказы покупателя. Оформление — POST /orders (модуль payments). */
 @ApiTags('orders')
-@ApiBearerAuth()
 @Controller('orders')
 export class OrdersController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(
+    private readonly orders: OrdersService,
+    private readonly delivery: DeliveryService,
+  ) {}
 
-  @Post()
-  async createOrder(@AuthUser() user: AuthenticatedUser, @Body() dto: CreateOrderDto) {
-    return this.ordersService.createOrder(user.id, dto);
+  /** Способы доставки и цены (тыйын). */
+  @Public()
+  @Get('delivery-options')
+  deliveryOptions() {
+    return this.delivery.options();
   }
 
+  @ApiBearerAuth()
   @Get()
-  async getUserOrders(
-    @AuthUser() user: AuthenticatedUser,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-  ) {
-    return this.ordersService.getUserOrders(user.id, page, limit);
+  list(@AuthUser() user: AuthenticatedUser, @Query() query: OrdersQueryDto) {
+    return this.orders.list(user, query);
   }
 
-  @Get(':orderId')
-  async findOne(@AuthUser() user: AuthenticatedUser, @Param('orderId') orderId: string) {
-    const order = await this.ordersService.findOne(orderId);
-    if (order.userId !== user.id) {
-      throw new Error('Access denied');
-    }
-    return order;
+  @ApiBearerAuth()
+  @Get(':orderNumber')
+  async findOne(@AuthUser() user: AuthenticatedUser, @Param('orderNumber') orderNumber: string) {
+    return this.orders.toResponse(await this.orders.findOwn(user, orderNumber));
+  }
+
+  /** Отмена неоплаченного заказа. Книги возвращаются в продажу. */
+  @ApiBearerAuth()
+  @Post(':orderNumber/cancel')
+  @HttpCode(HttpStatus.OK)
+  async cancel(@AuthUser() user: AuthenticatedUser, @Param('orderNumber') orderNumber: string) {
+    return this.orders.toResponse(await this.orders.cancelByUser(user, orderNumber));
   }
 }

@@ -427,27 +427,30 @@ model CartItem {
 // ─── Заказы ──────────────────────────────────────────────────────────────────
 
 model Order {
-  id              String         @id @default(uuid())
-  userId          String         @map("user_id")
-  orderNumber     String         @unique @map("order_number")
-  status          OrderStatus    @default(PENDING)
+  id              String          @id @default(uuid())
+  userId          String          @map("user_id")
+  orderNumber     String          @unique @map("order_number")
+  status          OrderStatus     @default(PENDING)
   subtotal        Int
-  deliveryPrice   Int            @default(0) @map("delivery_price")
-  discount        Int            @default(0)
+  deliveryPrice   Int             @default(0) @map("delivery_price")
+  discount        Int             @default(0)
   total           Int
-  currency        String         @default("KGS")
+  currency        String          @default("KGS")
   // Снимок данных получателя на момент оформления
-  recipientName   String         @map("recipient_name")
-  recipientPhone  String         @map("recipient_phone")
+  recipientName   String          @map("recipient_name")
+  recipientPhone  String          @map("recipient_phone")
   // null — самовывоз или заказ только из аудиокниг
-  deliveryAddress String?        @map("delivery_address")
-  deliveryMethod  DeliveryMethod @default(COURIER) @map("delivery_method")
-  paymentMethod   PaymentMethod  @default(ONLINE) @map("payment_method")
+  deliveryAddress String?         @map("delivery_address")
+  // null — заказ только из аудиокниг, доставка не нужна
+  deliveryMethod  DeliveryMethod? @map("delivery_method")
+  paymentMethod   PaymentMethod   @default(ONLINE) @map("payment_method")
   comment         String?
-  completedAt     DateTime?      @map("completed_at")
-  cancelledAt     DateTime?      @map("cancelled_at")
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
+  // Срок оплаты онлайн-заказа: после него заказ отменяется, товар возвращается в продажу
+  expiresAt       DateTime?       @map("expires_at")
+  completedAt     DateTime?       @map("completed_at")
+  cancelledAt     DateTime?       @map("cancelled_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
 
   user          User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
   items         OrderItem[]
@@ -456,6 +459,7 @@ model Order {
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([status, expiresAt])
   @@index([createdAt])
   @@map("orders")
 }
@@ -519,7 +523,12 @@ model Payment {
   currency          String        @default("KGS")
   status            PaymentStatus @default(PENDING)
   paymentMethod     PaymentMethod @default(ONLINE) @map("payment_method")
+  // Страница оплаты у провайдера
+  paymentUrl        String?       @map("payment_url")
   paidAt            DateTime?     @map("paid_at")
+  // Требует ручного разбора: оплата пришла по отменённому заказу или с неверной суммой
+  requiresReview    Boolean       @default(false) @map("requires_review")
+  reviewReason      String?       @map("review_reason")
   createdAt         DateTime      @default(now()) @map("created_at")
   updatedAt         DateTime      @updatedAt @map("updated_at")
 
@@ -529,6 +538,7 @@ model Payment {
   @@unique([provider, providerPaymentId])
   @@index([orderId])
   @@index([status])
+  @@index([requiresReview])
   @@index([createdAt])
   @@map("payments")
 }

@@ -48,14 +48,6 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(
       /JWT_SECRET[\s\S]*COOKIE_SECURE/,
     );
-    expect(() =>
-      validateEnv({
-        ...base,
-        NODE_ENV: 'production',
-        JWT_SECRET: 'x'.repeat(32),
-        COOKIE_SECURE: 'true',
-      }),
-    ).not.toThrow();
   });
 
   it('validates the access token lifetime format', () => {
@@ -94,6 +86,30 @@ describe('validateEnv', () => {
         MEDIA_PUBLIC_BASE_URL: 'https://cdn.oku24.kg',
       }),
     ).not.toThrow();
+  });
+
+  it('configures delivery prices and payments with safe defaults', () => {
+    const env = validateEnv(base);
+    expect(env.DELIVERY_PRICE_COURIER).toBe(20_000);
+    expect(env.DELIVERY_PRICE_POST).toBe(30_000);
+    expect(env.ORDER_PAYMENT_TTL_MINUTES).toBe(10);
+    expect(env.PAYMENT_PROVIDER).toBe('test');
+  });
+
+  it('forbids the test payment provider in production', () => {
+    const production = {
+      ...base,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'x'.repeat(32),
+      COOKIE_SECURE: 'true',
+    };
+    expect(() => validateEnv(production)).toThrow(/PAYMENT_PROVIDER/);
+  });
+
+  it('requires Finik credentials for the finik provider', () => {
+    expect(() => validateEnv({ ...base, PAYMENT_PROVIDER: 'finik' })).toThrow(
+      /FINIK_API_KEY[\s\S]*FINIK_ACCOUNT_ID[\s\S]*FINIK_PRIVATE_KEY[\s\S]*FINIK_PUBLIC_KEY/,
+    );
   });
 
   it('requires an SMTP host for the smtp mail transport', () => {

@@ -1,44 +1,63 @@
-import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
-import { CartService } from './cart.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { AuthUser } from '../../common/decorators/auth-user.decorator';
+import { CartService } from './cart.service';
+import { AddCartItemDto, MergeCartDto, UpdateCartItemDto } from './dto/cart.dto';
 
-export class AddToCartDto {
-  bookId?: string;
-  audiobookId?: string;
-  quantity?: number;
-}
-
+/** Корзина текущего пользователя. Все ответы — актуальная корзина целиком. */
 @ApiTags('cart')
 @ApiBearerAuth()
 @Controller('cart')
 export class CartController {
-  constructor(private cartService: CartService) {}
+  constructor(private readonly cart: CartService) {}
 
   @Get()
-  async getCart(@AuthUser() user: AuthenticatedUser) {
-    return this.cartService.getCart(user.id);
+  get(@AuthUser() user: AuthenticatedUser) {
+    return this.cart.getCart(user);
   }
 
+  /** Добавить книгу (с количеством) или аудиокнигу. Повторное добавление книги увеличивает количество. */
   @Post('items')
-  async addItem(@AuthUser() user: AuthenticatedUser, @Body() dto: AddToCartDto) {
-    return this.cartService.addItem(user.id, dto.bookId, dto.audiobookId, dto.quantity);
+  addItem(@AuthUser() user: AuthenticatedUser, @Body() dto: AddCartItemDto) {
+    return this.cart.addItem(user, dto);
+  }
+
+  @Patch('items/:itemId')
+  updateQuantity(
+    @AuthUser() user: AuthenticatedUser,
+    @Param('itemId', ParseUUIDPipe) itemId: string,
+    @Body() dto: UpdateCartItemDto,
+  ) {
+    return this.cart.updateQuantity(user, itemId, dto.quantity);
   }
 
   @Delete('items/:itemId')
-  async removeItem(@AuthUser() user: AuthenticatedUser, @Param('itemId') itemId: string) {
-    const cart = await this.cartService.getCart(user.id);
-    return this.cartService.removeItem(cart.id, itemId);
+  removeItem(@AuthUser() user: AuthenticatedUser, @Param('itemId', ParseUUIDPipe) itemId: string) {
+    return this.cart.removeItem(user, itemId);
   }
 
-  @Post('items/:itemId/quantity')
-  async updateQuantity(
-    @AuthUser() user: AuthenticatedUser,
-    @Param('itemId') itemId: string,
-    @Body('quantity') quantity: number,
-  ) {
-    const cart = await this.cartService.getCart(user.id);
-    return this.cartService.updateQuantity(cart.id, itemId, quantity);
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  clear(@AuthUser() user: AuthenticatedUser) {
+    return this.cart.clear(user);
+  }
+
+  /** Перенос корзины гостя после входа. Неподходящие позиции — в skipped. */
+  @Post('merge')
+  @HttpCode(HttpStatus.OK)
+  merge(@AuthUser() user: AuthenticatedUser, @Body() dto: MergeCartDto) {
+    return this.cart.merge(user, dto);
   }
 }

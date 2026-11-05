@@ -26,3 +26,9 @@ process.env.S3_FORCE_PATH_STYLE = 'true';
 process.env.S3_CREATE_BUCKETS = 'true';
 process.env.MEDIA_PUBLIC_BASE_URL ??= `${process.env.S3_ENDPOINT}/${process.env.S3_PUBLIC_BUCKET}`;
 process.env.REDIS_URL ??= 'redis://localhost:6379';
+
+// Платежи — тестовый провайдер; фоновые задачи выключены (тесты вызывают их явно)
+process.env.PAYMENT_PROVIDER = 'test';
+process.env.TEST_PAYMENT_SECRET = 'test-payment-secret';
+process.env.JOBS_ENABLED = 'false';
+process.env.ORDER_PAYMENT_TTL_MINUTES = '10';

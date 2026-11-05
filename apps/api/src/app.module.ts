@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -16,6 +17,7 @@ import { CacheModule } from './modules/cache/cache.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { AudiobooksModule } from './modules/audiobooks/audiobooks.module';
 import { ListeningModule } from './modules/listening/listening.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BooksModule } from './modules/books/books.module';
@@ -23,8 +25,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
 
-// Модули payments, favorites, reviews, notifications, admin, analytics
-// подключаются по мере реализации (этапы Б6–Б8).
+// Модули favorites, reviews, notifications, admin, analytics
+// подключаются по мере реализации (этапы Б7–Б8).
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -42,6 +44,7 @@ import { OrdersModule } from './modules/orders/orders.module';
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     MailModule,
     CacheModule,
@@ -56,6 +59,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     ListeningModule,
     CartModule,
     OrdersModule,
+    PaymentsModule,
   ],
   providers: [
     // Порядок важен: лимит запросов → проверка токена → проверка роли.

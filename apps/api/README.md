@@ -80,10 +80,12 @@ src/
     ├── books/              # Каталог книг, админка книг
     ├── audiobooks/         # Каталог аудиокниг, админка аудиокниг и глав
     ├── listening/          # Доступ к аудио, ссылки на файлы, прогресс, «мои аудиокниги»
+    ├── cart/               # Корзина
+    ├── orders/             # Заказы: оформление, статусы, доставка, отмена неоплаченных
+    ├── payments/           # Платежи: Finik, тестовый провайдер, вебхуки
     ├── auth/               # Регистрация, вход, токены, сессии, почта, сброс пароля
     ├── users/              # Профиль, смена пароля, адреса
-    ├── cart/
-    └── orders/
+
 prisma/
 ├── schema.prisma           # Схема базы данных
 ├── migrations/             # Миграции (CHECK-ограничения — в *_init/migration.sql)
@@ -94,8 +96,8 @@ test/
 └── helpers/
 ```
 
-Остальные модули из ТЗ (payments, favorites, reviews, notifications,
-admin, analytics) добавляются на этапах Б6–Б8.
+Остальные модули из ТЗ (favorites, reviews, notifications, admin, analytics)
+добавляются на этапах Б7–Б8.
 
 ## API Documentation
 

@@ -73,6 +73,35 @@ export const envSchema = z
 
     // Redis для кэша каталога. Не задан — кэш отключён
     REDIS_URL: z.string().url().optional(),
+
+    // Публичный адрес API — для вебхуков платёжной системы (https://api.oku24.kg)
+    API_PUBLIC_URL: z.string().url().default('http://localhost:3000'),
+
+    // Доставка, тыйын: курьер по Бишкеку и почта по Кыргызстану. Самовывоз бесплатный
+    DELIVERY_PRICE_COURIER: z.coerce.number().int().min(0).default(20_000),
+    DELIVERY_PRICE_POST: z.coerce.number().int().min(0).default(30_000),
+    // Сколько минут ждать оплаты онлайн-заказа; потом заказ отменяется, товар возвращается
+    ORDER_PAYMENT_TTL_MINUTES: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(24 * 60)
+      .default(10),
+    // Фоновые задачи (отмена неоплаченных заказов). В тестах выключены
+    JOBS_ENABLED: booleanString.default('true'),
+
+    // Платёжная система: finik — Finik (кошелёк, QR); test — тестовый провайдер для разработки
+    PAYMENT_PROVIDER: z.enum(['test', 'finik']).default('test'),
+    TEST_PAYMENT_SECRET: z.string().min(1).default('test-payment-secret'),
+    FINIK_ENV: z.enum(['beta', 'prod']).default('beta'),
+    FINIK_API_KEY: z.string().optional(),
+    FINIK_ACCOUNT_ID: z.string().optional(),
+    // Закрытый RSA-ключ магазина (PEM). Публичную часть регистрируют в Finik
+    FINIK_PRIVATE_KEY: z.string().optional(),
+    // Публичный ключ Finik для проверки вебхуков (PEM) — из документации Finik для выбранной среды
+    FINIK_PUBLIC_KEY: z.string().optional(),
+    // Host, с которым Finik подписывает вебхук. По умолчанию — host из API_PUBLIC_URL
+    FINIK_WEBHOOK_HOST: z.string().optional(),
   })
   .superRefine((env, ctx) => {
     const issue = (path: string, message: string) =>
@@ -91,6 +120,22 @@ export const envSchema = z
     }
     if (env.MAIL_TRANSPORT === 'smtp' && !env.SMTP_HOST) {
       issue('SMTP_HOST', 'обязателен при MAIL_TRANSPORT=smtp');
+    }
+
+    if (env.NODE_ENV === 'production' && env.PAYMENT_PROVIDER === 'test') {
+      issue('PAYMENT_PROVIDER', 'тестовый провайдер в production запрещён');
+    }
+    if (env.PAYMENT_PROVIDER === 'finik') {
+      for (const name of [
+        'FINIK_API_KEY',
+        'FINIK_ACCOUNT_ID',
+        'FINIK_PRIVATE_KEY',
+        'FINIK_PUBLIC_KEY',
+      ] as const) {
+        if (!env[name]) {
+          issue(name, 'обязателен при PAYMENT_PROVIDER=finik');
+        }
+      }
     }
 
     const storageVars = [

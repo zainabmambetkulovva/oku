@@ -50,6 +50,7 @@ describe('Public catalog (e2e)', () => {
         inStock: true,
         stockQuantity: 10,
         categories: [{ id: catalog.classics.id, name: 'Классика', slug: 'classics' }],
+        rating: { average: null, count: 0 },
         createdAt: expect.any(String),
       });
     });

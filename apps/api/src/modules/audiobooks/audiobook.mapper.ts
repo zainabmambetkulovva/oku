@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { categorySummarySelect, toCategorySummaries } from '../catalog/catalog.mapper';
+import { Rating } from '../reviews/ratings.service';
 import { StorageService } from '../storage/storage.service';
 
 export const audiobookInclude = {
@@ -13,7 +14,11 @@ export type AudiobookWithRelations = Prisma.AudiobookGetPayload<{
   include: typeof audiobookInclude;
 }>;
 
-export function toAudiobookListItem(audiobook: AudiobookWithRelations, storage: StorageService) {
+export function toAudiobookListItem(
+  audiobook: AudiobookWithRelations,
+  storage: StorageService,
+  rating: Rating,
+) {
   return {
     id: audiobook.id,
     slug: audiobook.slug,
@@ -28,6 +33,7 @@ export function toAudiobookListItem(audiobook: AudiobookWithRelations, storage: 
     price: audiobook.price,
     currency: audiobook.currency,
     categories: toCategorySummaries(audiobook.audiobookCategories),
+    rating,
     createdAt: audiobook.createdAt,
   };
 }
@@ -36,9 +42,13 @@ export function toAudiobookListItem(audiobook: AudiobookWithRelations, storage: 
  * Страница аудиокниги. Ключи файлов глав не отдаются:
  * доступ к аудио выдаётся отдельно, с проверкой покупки (этап Б5).
  */
-export function toAudiobookDetails(audiobook: AudiobookWithRelations, storage: StorageService) {
+export function toAudiobookDetails(
+  audiobook: AudiobookWithRelations,
+  storage: StorageService,
+  rating: Rating,
+) {
   return {
-    ...toAudiobookListItem(audiobook, storage),
+    ...toAudiobookListItem(audiobook, storage, rating),
     description: audiobook.description,
     chapters: audiobook.audioChapters.map((chapter) => ({
       id: chapter.id,

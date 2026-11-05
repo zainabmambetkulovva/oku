@@ -12,6 +12,7 @@ import {
 } from '../catalog/catalog.constants';
 import { priceWhere, searchWhere } from '../catalog/catalog.mapper';
 import { CategoriesService } from '../categories/categories.service';
+import { RatingsService } from '../reviews/ratings.service';
 import { StorageService } from '../storage/storage.service';
 import { audiobookInclude, toAudiobookDetails, toAudiobookListItem } from './audiobook.mapper';
 
@@ -25,6 +26,7 @@ export class AudiobooksService {
     private readonly categories: CategoriesService,
     private readonly cache: CacheService,
     private readonly storage: StorageService,
+    private readonly ratings: RatingsService,
   ) {}
 
   async list(query: CatalogQueryDto) {
@@ -63,8 +65,13 @@ export class AudiobooksService {
           this.prisma.audiobook.count({ where }),
         ]);
 
+        const ratings = await this.ratings.forAudiobooks(
+          audiobooks.map((audiobook) => audiobook.id),
+        );
         return paginated(
-          audiobooks.map((audiobook) => toAudiobookListItem(audiobook, this.storage)),
+          audiobooks.map((audiobook) =>
+            toAudiobookListItem(audiobook, this.storage, RatingsService.of(ratings, audiobook.id)),
+          ),
           total,
           query,
         );
@@ -81,7 +88,8 @@ export class AudiobooksService {
       if (!audiobook) {
         throw new NotFoundException(`Audiobook "${slug}" not found`);
       }
-      return toAudiobookDetails(audiobook, this.storage);
+      const ratings = await this.ratings.forAudiobooks([audiobook.id]);
+      return toAudiobookDetails(audiobook, this.storage, RatingsService.of(ratings, audiobook.id));
     });
   }
 
@@ -111,7 +119,10 @@ export class AudiobooksService {
         orderBy: catalogOrderBy('popular'),
         take: SIMILAR_LIMIT,
       });
-      return similar.map((item) => toAudiobookListItem(item, this.storage));
+      const ratings = await this.ratings.forAudiobooks(similar.map((item) => item.id));
+      return similar.map((item) =>
+        toAudiobookListItem(item, this.storage, RatingsService.of(ratings, item.id)),
+      );
     });
   }
 }

@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { DomainEventsModule } from './common/events/events.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -18,6 +20,10 @@ import { StorageModule } from './modules/storage/storage.module';
 import { AudiobooksModule } from './modules/audiobooks/audiobooks.module';
 import { ListeningModule } from './modules/listening/listening.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { FavoritesModule } from './modules/favorites/favorites.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { NewsletterModule } from './modules/newsletter/newsletter.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BooksModule } from './modules/books/books.module';
@@ -25,8 +31,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
 
-// Модули favorites, reviews, notifications, admin, analytics
-// подключаются по мере реализации (этапы Б7–Б8).
+// Модули admin и analytics подключаются на этапе Б8.
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -45,6 +50,8 @@ import { OrdersModule } from './modules/orders/orders.module';
       ],
     }),
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
+    DomainEventsModule,
     PrismaModule,
     MailModule,
     CacheModule,
@@ -60,6 +67,10 @@ import { OrdersModule } from './modules/orders/orders.module';
     CartModule,
     OrdersModule,
     PaymentsModule,
+    FavoritesModule,
+    ReviewsModule,
+    NotificationsModule,
+    NewsletterModule,
   ],
   providers: [
     // Порядок важен: лимит запросов → проверка токена → проверка роли.

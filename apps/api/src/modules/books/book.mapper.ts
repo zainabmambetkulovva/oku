@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { categorySummarySelect, toCategorySummaries } from '../catalog/catalog.mapper';
+import { Rating } from '../reviews/ratings.service';
 import { StorageService } from '../storage/storage.service';
 
 export const bookInclude = {
@@ -12,7 +13,7 @@ export const bookInclude = {
 export type BookWithRelations = Prisma.BookGetPayload<{ include: typeof bookInclude }>;
 
 /** Карточка книги в списке каталога. */
-export function toBookListItem(book: BookWithRelations, storage: StorageService) {
+export function toBookListItem(book: BookWithRelations, storage: StorageService, rating: Rating) {
   return {
     id: book.id,
     slug: book.slug,
@@ -25,14 +26,15 @@ export function toBookListItem(book: BookWithRelations, storage: StorageService)
     inStock: book.stockQuantity > 0,
     stockQuantity: book.stockQuantity,
     categories: toCategorySummaries(book.bookCategories),
+    rating,
     createdAt: book.createdAt,
   };
 }
 
 /** Страница книги. */
-export function toBookDetails(book: BookWithRelations, storage: StorageService) {
+export function toBookDetails(book: BookWithRelations, storage: StorageService, rating: Rating) {
   return {
-    ...toBookListItem(book, storage),
+    ...toBookListItem(book, storage, rating),
     description: book.description,
     publisher: book.publisher,
     publicationYear: book.publicationYear,

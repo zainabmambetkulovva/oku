@@ -7,6 +7,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { DeliveryMethod, Prisma } from '@prisma/client';
 import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import { DomainEventOutbox, DomainEventPublisher } from '../../common/events/domain-event-outbox';
+import { DomainEvents } from '../../common/events/domain-events';
 import { paginated, skipFor } from '../../common/pagination/pagination';
 import { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -44,6 +46,7 @@ export class OrdersService {
     private readonly access: AudioAccessService,
     private readonly storage: StorageService,
     private readonly cache: CacheService,
+    private readonly events: DomainEventPublisher,
     config: ConfigService<Env, true>,
   ) {
     this.paymentTtlMs = config.get('ORDER_PAYMENT_TTL_MINUTES', { infer: true }) * 60 * 1000;
@@ -154,6 +157,9 @@ export class OrdersService {
       // Остатки книг в каталоге изменились
       await this.cache.invalidateCatalog();
     }
+    await this.events.publish([
+      { name: DomainEvents.OrderCreated, payload: { orderId: order.id } },
+    ]);
     return order;
   }
 
@@ -315,15 +321,17 @@ export class OrdersService {
       throw new ConflictException('Only unpaid orders can be cancelled');
     }
 
+    const outbox = new DomainEventOutbox();
     await this.prisma.$transaction((tx) =>
       this.lifecycle.cancel(
         tx,
         order.id,
-        { changedById: user.id, comment: 'Cancelled by customer' },
+        { changedById: user.id, comment: 'Cancelled by customer', outbox },
         ['PENDING'],
       ),
     );
     await this.cache.invalidateCatalog();
+    await this.events.publish(outbox);
     return this.findOwn(user, orderNumber);
   }
 

@@ -11,6 +11,8 @@ import { Order, Payment, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import type { Request } from 'express';
 import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import { DomainEventOutbox, DomainEventPublisher } from '../../common/events/domain-event-outbox';
+import { DomainEvents } from '../../common/events/domain-events';
 import { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CacheService } from '../cache/cache.service';
@@ -52,6 +54,7 @@ export class PaymentsService {
     private readonly lifecycle: OrderLifecycleService,
     private readonly access: AudioAccessService,
     private readonly cache: CacheService,
+    private readonly events: DomainEventPublisher,
     private readonly testProvider: TestPaymentProvider,
     finikProvider: FinikPaymentProvider,
     config: ConfigService<Env, true>,
@@ -152,6 +155,7 @@ export class PaymentsService {
    */
   async processEvent(provider: string, event: VerifiedPaymentEvent): Promise<WebhookOutcome> {
     let salesChanged = false;
+    const outbox = new DomainEventOutbox();
     try {
       const outcome = await this.prisma.$transaction(async (tx) => {
         const payment = await tx.payment.findFirst({
@@ -177,13 +181,21 @@ export class PaymentsService {
           return 'ignored' as const;
         }
 
-        salesChanged = await this.applyEvent(tx, payment, payment.order, event.status, event);
+        salesChanged = await this.applyEvent(
+          tx,
+          payment,
+          payment.order,
+          event.status,
+          event,
+          outbox,
+        );
         return 'processed' as const;
       });
 
       if (salesChanged) {
         await this.cache.invalidateCatalog();
       }
+      await this.events.publish(outbox);
       return outcome;
     } catch (error) {
       if (
@@ -204,10 +216,11 @@ export class PaymentsService {
     order: Order,
     status: PaymentEventStatus,
     event: VerifiedPaymentEvent,
+    outbox: DomainEventOutbox,
   ): Promise<boolean> {
     switch (status) {
       case 'SUCCEEDED':
-        return this.applySuccess(tx, payment, order, event);
+        return this.applySuccess(tx, payment, order, event, outbox);
 
       case 'FAILED':
       case 'CANCELLED':
@@ -219,7 +232,7 @@ export class PaymentsService {
         return false;
 
       case 'REFUNDED':
-        return this.applyRefund(tx, payment, order);
+        return this.applyRefund(tx, payment, order, outbox);
     }
   }
 
@@ -228,6 +241,7 @@ export class PaymentsService {
     payment: Payment,
     order: Order,
     event: VerifiedPaymentEvent,
+    outbox: DomainEventOutbox,
   ): Promise<boolean> {
     if (payment.status === 'SUCCEEDED') {
       return false;
@@ -259,7 +273,7 @@ export class PaymentsService {
       return false;
     }
 
-    await this.markPaid(tx, order, payment.provider);
+    await this.markPaid(tx, order, payment.provider, outbox);
     return true;
   }
 
@@ -267,15 +281,28 @@ export class PaymentsService {
    * Заказ оплачен: доступ к аудиокнигам, счётчики продаж, история.
    * Заказ только из аудиокниг сразу завершается — отправлять нечего.
    */
-  private async markPaid(tx: Tx, order: Order, provider: string): Promise<void> {
-    await this.lifecycle.transition(tx, order.id, 'PAID', { comment: `Paid via ${provider}` }, [
-      'PENDING',
-    ]);
+  private async markPaid(
+    tx: Tx,
+    order: Order,
+    provider: string,
+    outbox: DomainEventOutbox,
+  ): Promise<void> {
+    await this.lifecycle.transition(
+      tx,
+      order.id,
+      'PAID',
+      { comment: `Paid via ${provider}`, outbox },
+      ['PENDING'],
+    );
 
     const items = await tx.orderItem.findMany({ where: { orderId: order.id } });
     for (const item of items) {
       if (item.productType === 'AUDIOBOOK' && item.audiobookId) {
         await this.access.grantForOrderItem(order.userId, item.audiobookId, item.id, tx);
+        outbox.add({
+          name: DomainEvents.AudioAccessGranted,
+          payload: { userId: order.userId, audiobookId: item.audiobookId, source: 'order' },
+        });
         await tx.audiobook.update({
           where: { id: item.audiobookId },
           data: { salesCount: { increment: 1 } },
@@ -294,14 +321,19 @@ export class PaymentsService {
         tx,
         order.id,
         'COMPLETED',
-        { comment: 'Digital order: access granted' },
+        { comment: 'Digital order: access granted', outbox },
         ['PAID'],
       );
     }
   }
 
   /** Возврат: доступ к аудиокнигам отзывается, непереданные книги возвращаются на склад. */
-  private async applyRefund(tx: Tx, payment: Payment, order: Order): Promise<boolean> {
+  private async applyRefund(
+    tx: Tx,
+    payment: Payment,
+    order: Order,
+    outbox: DomainEventOutbox,
+  ): Promise<boolean> {
     if (payment.status === 'REFUNDED') {
       return false;
     }
@@ -312,7 +344,10 @@ export class PaymentsService {
     }
 
     const stockStillHere = order.status === 'PAID' || order.status === 'PROCESSING';
-    await this.lifecycle.transition(tx, order.id, 'REFUNDED', { comment: 'Payment refunded' });
+    await this.lifecycle.transition(tx, order.id, 'REFUNDED', {
+      comment: 'Payment refunded',
+      outbox,
+    });
 
     const items = await tx.orderItem.findMany({ where: { orderId: order.id } });
     await tx.audioAccess.updateMany({

@@ -12,6 +12,7 @@ import {
 } from '../catalog/catalog.constants';
 import { priceWhere, searchWhere } from '../catalog/catalog.mapper';
 import { CategoriesService } from '../categories/categories.service';
+import { RatingsService } from '../reviews/ratings.service';
 import { StorageService } from '../storage/storage.service';
 import { bookInclude, toBookDetails, toBookListItem } from './book.mapper';
 
@@ -25,6 +26,7 @@ export class BooksService {
     private readonly categories: CategoriesService,
     private readonly cache: CacheService,
     private readonly storage: StorageService,
+    private readonly ratings: RatingsService,
   ) {}
 
   async list(query: BookCatalogQueryDto) {
@@ -65,8 +67,11 @@ export class BooksService {
           this.prisma.book.count({ where }),
         ]);
 
+        const ratings = await this.ratings.forBooks(books.map((book) => book.id));
         return paginated(
-          books.map((book) => toBookListItem(book, this.storage)),
+          books.map((book) =>
+            toBookListItem(book, this.storage, RatingsService.of(ratings, book.id)),
+          ),
           total,
           query,
         );
@@ -83,7 +88,8 @@ export class BooksService {
       if (!book) {
         throw new NotFoundException(`Book "${slug}" not found`);
       }
-      return toBookDetails(book, this.storage);
+      const ratings = await this.ratings.forBooks([book.id]);
+      return toBookDetails(book, this.storage, RatingsService.of(ratings, book.id));
     });
   }
 
@@ -114,7 +120,10 @@ export class BooksService {
         orderBy: catalogOrderBy('popular'),
         take: SIMILAR_LIMIT,
       });
-      return similar.map((item) => toBookListItem(item, this.storage));
+      const ratings = await this.ratings.forBooks(similar.map((item) => item.id));
+      return similar.map((item) =>
+        toBookListItem(item, this.storage, RatingsService.of(ratings, item.id)),
+      );
     });
   }
 }

@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { Audiobook, AudioAccess, AudioChapter, Prisma } from '@prisma/client';
 import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import { DomainEventPublisher } from '../../common/events/domain-event-outbox';
+import { DomainEvents } from '../../common/events/domain-events';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { AdminActor } from '../categories/categories.service';
@@ -41,6 +43,7 @@ export class AudioAccessService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly audit: AuditService,
+    private readonly events: DomainEventPublisher,
   ) {}
 
   /** Аудиокнига по slug. Неопубликованная видна только тем, у кого есть полный доступ. */
@@ -168,6 +171,12 @@ export class AudioAccessService {
       newData: { userId: user.id, email, expiresAt: expires },
       ipAddress: actor.ip,
     });
+    await this.events.publish([
+      {
+        name: DomainEvents.AudioAccessGranted,
+        payload: { userId: user.id, audiobookId, source: 'admin' },
+      },
+    ]);
     return grant;
   }
 

@@ -46,3 +46,33 @@ export function passwordResetMail(to: string, url: string, ttlMinutes: number): 
     html: layout('Восстановление пароля', paragraphs, { url, label: 'Задать новый пароль' }),
   };
 }
+
+/** Письмо о событии заказа: заголовок, абзацы и ссылка на страницу заказа. */
+export function orderMail(
+  to: string,
+  subject: string,
+  title: string,
+  paragraphs: string[],
+  orderUrl: string,
+): MailMessage {
+  return {
+    to,
+    subject: `OKU_24: ${subject}`,
+    text: `${paragraphs.join('\n')}\n\n${orderUrl}`,
+    html: layout(title, paragraphs, { url: orderUrl, label: 'Открыть заказ' }),
+  };
+}
+
+/** Подтверждение подписки на новости со ссылкой для отписки. */
+export function newsletterWelcomeMail(to: string, unsubscribeUrl: string): MailMessage {
+  const paragraphs = [
+    'Вы подписались на новости OKU_24: новинки, подборки и акции.',
+    'Отписаться можно в любой момент по ссылке ниже.',
+  ];
+  return {
+    to,
+    subject: 'OKU_24: подписка на новости',
+    text: `${paragraphs.join('\n')}\n\nОтписаться: ${unsubscribeUrl}`,
+    html: layout('Подписка оформлена', paragraphs, { url: unsubscribeUrl, label: 'Отписаться' }),
+  };
+}

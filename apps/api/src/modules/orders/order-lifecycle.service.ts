@@ -1,5 +1,7 @@
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { Order, OrderStatus, Prisma } from '@prisma/client';
+import { DomainEventOutbox, DomainEventPublisher } from '../../common/events/domain-event-outbox';
+import { DomainEvents } from '../../common/events/domain-events';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CacheService } from '../cache/cache.service';
 import { sourcesFor, STOCK_RESERVED_STATUSES } from './order-status';
@@ -10,6 +12,8 @@ export interface TransitionOptions {
   /** Кто изменил статус; null — система (оплата, истечение срока) */
   changedById?: string | null;
   comment?: string;
+  /** Сюда добавляется событие о смене статуса; публикуется после commit */
+  outbox?: DomainEventOutbox;
 }
 
 /**
@@ -23,6 +27,7 @@ export class OrderLifecycleService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cache: CacheService,
+    private readonly events: DomainEventPublisher,
   ) {}
 
   async transition(
@@ -56,6 +61,10 @@ export class OrderLifecycleService {
         changedById: options.changedById ?? null,
         comment: options.comment,
       },
+    });
+    options.outbox?.add({
+      name: DomainEvents.OrderStatusChanged,
+      payload: { orderId, oldStatus: current.status, newStatus: to, comment: options.comment },
     });
     return tx.order.findUniqueOrThrow({ where: { id: orderId } });
   }
@@ -108,11 +117,13 @@ export class OrderLifecycleService {
 
     let cancelled = 0;
     for (const order of expired) {
+      const outbox = new DomainEventOutbox();
       try {
         await this.prisma.$transaction((tx) =>
-          this.cancel(tx, order.id, { comment: 'Payment time expired' }, ['PENDING']),
+          this.cancel(tx, order.id, { comment: 'Payment time expired', outbox }, ['PENDING']),
         );
         cancelled++;
+        await this.events.publish(outbox);
       } catch (error) {
         // Заказ успели оплатить или отменить — пропускаем
         if (!(error instanceof ConflictException)) {

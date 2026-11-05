@@ -15,6 +15,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { CacheModule } from './modules/cache/cache.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { AudiobooksModule } from './modules/audiobooks/audiobooks.module';
+import { ListeningModule } from './modules/listening/listening.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BooksModule } from './modules/books/books.module';
@@ -22,8 +23,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrdersModule } from './modules/orders/orders.module';
 
-// Модули payments, favorites, reviews, notifications,
-// listening-progress, admin, analytics подключаются по мере реализации (этапы Б3–Б8).
+// Модули payments, favorites, reviews, notifications, admin, analytics
+// подключаются по мере реализации (этапы Б6–Б8).
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -52,6 +53,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     CategoriesModule,
     BooksModule,
     AudiobooksModule,
+    ListeningModule,
     CartModule,
     OrdersModule,
   ],

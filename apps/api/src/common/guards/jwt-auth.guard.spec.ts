@@ -12,9 +12,35 @@ describe('JwtAuthGuard', () => {
 
   afterEach(() => jest.restoreAllMocks());
 
+  const withMetadata = (metadata: Record<string, boolean>) =>
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockImplementation((key: unknown) => metadata[key as string] ?? false);
+
+  const httpContext = (headers: Record<string, string>) =>
+    ({
+      ...context,
+      switchToHttp: () => ({ getRequest: () => ({ headers }) }),
+    }) as unknown as ExecutionContext;
+
   it('lets @Public() routes through without a token', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(true);
+    withMetadata({ isPublic: true });
     expect(guard.canActivate(context)).toBe(true);
+  });
+
+  it('lets guests through @OptionalAuth() routes without a token', () => {
+    withMetadata({ isPublic: true, isOptionalAuth: true });
+    expect(guard.canActivate(httpContext({}))).toBe(true);
+  });
+
+  it('checks the token on @OptionalAuth() routes when it is sent', () => {
+    withMetadata({ isPublic: true, isOptionalAuth: true });
+    const parent = jest
+      .spyOn(Object.getPrototypeOf(JwtAuthGuard.prototype), 'canActivate')
+      .mockReturnValue(true);
+
+    guard.canActivate(httpContext({ authorization: 'Bearer token' }));
+    expect(parent).toHaveBeenCalled();
   });
 
   describe('handleRequest', () => {

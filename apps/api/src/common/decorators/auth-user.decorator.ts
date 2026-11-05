@@ -12,3 +12,11 @@ export const AuthUser = createParamDecorator(
     return request.user;
   },
 );
+
+/** Пользователь на маршрутах с @OptionalAuth(): undefined для гостя. */
+export const OptionalAuthUser = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): AuthenticatedUser | undefined => {
+    const request = ctx.switchToHttp().getRequest<Request & { user?: AuthenticatedUser }>();
+    return request.user;
+  },
+);

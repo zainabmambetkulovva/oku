@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   CreateBucketCommand,
+  GetObjectCommand,
   HeadBucketCommand,
   HeadObjectCommand,
   NotFound,
@@ -15,6 +16,7 @@ import {
   S3ServiceException,
 } from '@aws-sdk/client-s3';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
 import { Env } from '../../config/env';
 import { UploadKind, uploadRules } from './upload-kinds';
@@ -163,6 +165,25 @@ export class StorageService implements OnModuleInit {
       }
       throw error;
     }
+  }
+
+  /**
+   * Временная подписанная ссылка на файл закрытого бакета (аудио).
+   * Ссылка перестаёт работать через expiresInSeconds.
+   */
+  async createDownloadUrl(
+    key: string,
+    kind: UploadKind,
+    expiresInSeconds: number,
+  ): Promise<{ url: string; expiresAt: string }> {
+    const client = this.requireClient();
+    const rules = uploadRules(kind);
+    const url = await getSignedUrl(
+      client,
+      new GetObjectCommand({ Bucket: this.buckets[rules.visibility], Key: key }),
+      { expiresIn: expiresInSeconds },
+    );
+    return { url, expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString() };
   }
 
   private requireClient(): S3Client {

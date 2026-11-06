@@ -6,6 +6,9 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
+    // typeRoots заданы явно: Vercel проверяет типы через временный tsconfig вне проекта,
+    // и без этого не находит @types/node (у fetch Response пропадают headers/status/json)
+    "typeRoots": ["./node_modules/@types"],
     "types": ["node", "jest"]
   },
   "include": ["src/**/*", "prisma/**/*", "test/**/*"]

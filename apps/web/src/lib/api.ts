@@ -1,12 +1,34 @@
 import type { ApiError, Paginated } from './types';
 
-/** Адрес API: на сервере — API_URL, в браузере — NEXT_PUBLIC_API_URL. */
+/** Все маршруты API начинаются с этого префикса (глобальный префикс NestJS). */
+export const API_PREFIX = '/api/v1';
+
+const trimSlashes = (url: string) => url.replace(/\/+$/, '');
+
+/**
+ * Адрес API.
+ *
+ * На сервере (серверные компоненты, route handlers):
+ * 1. API_SERVICE_URL — внутренний адрес сервиса api, который Vercel подставляет
+ *    через binding в vercel.json (только во время выполнения функций);
+ * 2. API_URL — явный адрес для локальной разработки и CI;
+ * 3. NEXT_PUBLIC_API_URL, иначе http://localhost:3000/api/v1.
+ *
+ * В браузере: NEXT_PUBLIC_API_URL, если задан, иначе относительный /api/v1 —
+ * на Vercel сайт и API работают на одном домене (rewrite /api/* → api).
+ */
 export function apiBaseUrl(): string {
-  const url =
-    typeof window === 'undefined'
-      ? (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL)
-      : process.env.NEXT_PUBLIC_API_URL;
-  return (url ?? 'http://localhost:3000/api/v1').replace(/\/+$/, '');
+  if (typeof window === 'undefined') {
+    if (process.env.API_SERVICE_URL) {
+      return `${trimSlashes(process.env.API_SERVICE_URL)}${API_PREFIX}`;
+    }
+    return trimSlashes(
+      process.env.API_URL ??
+        process.env.NEXT_PUBLIC_API_URL ??
+        `http://localhost:3000${API_PREFIX}`,
+    );
+  }
+  return trimSlashes(process.env.NEXT_PUBLIC_API_URL ?? API_PREFIX);
 }
 
 export class ApiRequestError extends Error {

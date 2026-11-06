@@ -58,12 +58,28 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 
 | Переменная | Назначение |
 |---|---|
-| `API_URL` | Адрес API для запросов с сервера Next.js, например `http://api:3000/api/v1` |
-| `NEXT_PUBLIC_API_URL` | Адрес API для браузера, например `https://api.oku24.kg/api/v1`. Встраивается при сборке — задать до `pnpm build` |
+| `API_URL` | Адрес API для запросов с сервера Next.js, например `http://api:3000/api/v1`. На Vercel не задаётся (см. ниже) |
+| `NEXT_PUBLIC_API_URL` | Адрес API для браузера, например `https://api.oku24.kg/api/v1`. Встраивается при сборке — задать до `pnpm build`. На Vercel не задаётся: без него браузер ходит на `/api/v1` своего домена |
 | `NEXT_PUBLIC_CONTACT_PHONE`, `NEXT_PUBLIC_CONTACT_EMAIL` | Контакты в подвале; пустые не показываются |
 | `NEXT_PUBLIC_INSTAGRAM_URL` | Instagram (по умолчанию @oku_24) |
 
 Адрес сайта нужно добавить в `CORS_ORIGINS` и `FRONTEND_URL` API.
+
+## Vercel (один проект, два сервиса)
+
+`vercel.json` в корне описывает проект Vercel с сервисами:
+
+| Сервис | Папка | Фреймворк | Публичный путь |
+| --- | --- | --- | --- |
+| `api` | `apps/api` | NestJS | `/api/*` (все маршруты API — `/api/v1/...`, Swagger — `/api/docs`) |
+| `web` | `apps/web` | Next.js | всё остальное (`/(.*)`) |
+
+- Сайт и API работают на одном домене, поэтому браузер обращается к `/api/v1` без CORS, а refresh-cookie остаётся first-party.
+- Сервис `web` вызывает `api` с сервера через binding: Vercel подставляет внутренний адрес сервиса в `API_SERVICE_URL` во время выполнения функций (не при сборке и не в middleware). Сам эту переменную не задавать.
+- Переменные backend из таблицы выше задаются в настройках проекта Vercel. Для production: `FRONTEND_URL` и `CORS_ORIGINS` — адрес сайта, `COOKIE_SECURE=true`, `JOBS_ENABLED=false` (см. ниже), внешние PostgreSQL (Neon), S3 и Redis.
+- Фоновая задача отмены неоплаченных заказов (`@nestjs/schedule`) в serverless-функциях не выполняется по расписанию; для Vercel её нужно перевести на Vercel Cron.
+- Миграции не запускаются при деплое: `pnpm db:migrate:deploy` выполняется отдельно перед выкладкой.
+- Локальная проверка всех сервисов вместе: `vercel dev` из корня репозитория.
 
 ## Локальная разработка
 

@@ -34,6 +34,23 @@ describe('validateEnv', () => {
     expect(env.CORS_ORIGINS).toEqual(['https://oku24.kg', 'https://admin.oku24.kg']);
   });
 
+  it('disables Swagger in production unless it is enabled explicitly', () => {
+    const production = {
+      ...base,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'x'.repeat(32),
+      COOKIE_SECURE: 'true',
+      PAYMENT_PROVIDER: 'finik',
+      FINIK_API_KEY: 'key',
+      FINIK_ACCOUNT_ID: 'account',
+      FINIK_PRIVATE_KEY: 'private',
+      FINIK_PUBLIC_KEY: 'public',
+    };
+
+    expect(validateEnv(production).SWAGGER_ENABLED).toBe(false);
+    expect(validateEnv({ ...production, SWAGGER_ENABLED: 'true' }).SWAGGER_ENABLED).toBe(true);
+  });
+
   it('fails when required variables are missing', () => {
     expect(() => validateEnv({})).toThrow(/DATABASE_URL[\s\S]*DIRECT_URL[\s\S]*JWT_SECRET/);
   });

@@ -31,7 +31,7 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `MAIL_TRANSPORT` | `log` — письма в лог (разработка), `smtp` — отправка через SMTP |
 | `MAIL_FROM` | Отправитель писем, например `OKU_24 <no-reply@oku24.kg>` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` | Параметры SMTP-сервера. `SMTP_HOST` обязателен при `MAIL_TRANSPORT=smtp` |
-| `SWAGGER_ENABLED` | `true` / `false` — публиковать ли документацию на `/api/docs` |
+| `SWAGGER_ENABLED` | `true` / `false` — публиковать ли документацию на `/api/docs`. Не задано — включена везде, кроме `NODE_ENV=production` |
 | `S3_ENDPOINT` | Адрес S3-совместимого сервиса. Пустой — AWS S3. Для Cloudflare R2, Yandex Object Storage и т.п. — их адрес |
 | `S3_REGION` | Регион (`us-east-1`, `auto` для R2, `ru-central1` для Yandex) |
 | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Ключи доступа к хранилищу |
@@ -80,6 +80,97 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 - Фоновая задача отмены неоплаченных заказов (`@nestjs/schedule`) в serverless-функциях не выполняется по расписанию; для Vercel её нужно перевести на Vercel Cron.
 - Миграции не запускаются при деплое: `pnpm db:migrate:deploy` выполняется отдельно перед выкладкой.
 - Локальная проверка всех сервисов вместе: `vercel dev` из корня репозитория.
+
+### Первый деплой: пошагово (Vercel + Neon + AWS S3 + Finik)
+
+Ключи и пароли вводятся только в панели Vercel (Project → Settings → Environment Variables), не в коде и не в чатах. Ниже `SITE` — адрес сайта на Vercel, например `https://oku24.vercel.app` (позже — свой домен).
+
+**1. AWS S3 (регион, например, `eu-central-1` — Франкфурт)**
+
+1. Создать публичный бакет для обложек (например, `oku24-media`): снять «Block all public access» и добавить bucket policy на чтение:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": "*",
+         "Action": "s3:GetObject",
+         "Resource": "arn:aws:s3:::oku24-media/*"
+       }
+     ]
+   }
+   ```
+2. Создать закрытый бакет для аудио (например, `oku24-audio`) — «Block all public access» оставить включённым.
+3. На обоих бакетах (Permissions → CORS) разрешить загрузку из браузера и воспроизведение:
+   ```json
+   [
+     {
+       "AllowedOrigins": ["SITE"],
+       "AllowedMethods": ["GET", "HEAD", "POST"],
+       "AllowedHeaders": ["*"],
+       "ExposeHeaders": ["ETag", "Content-Length", "Content-Range"],
+       "MaxAgeSeconds": 3600
+     }
+   ]
+   ```
+4. IAM → создать пользователя `oku24-api` без доступа к консоли, с политикой только на эти бакеты, и выпустить для него Access key:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": ["s3:PutObject", "s3:GetObject"],
+         "Resource": ["arn:aws:s3:::oku24-media/*", "arn:aws:s3:::oku24-audio/*"]
+       },
+       {
+         "Effect": "Allow",
+         "Action": "s3:ListBucket",
+         "Resource": ["arn:aws:s3:::oku24-media", "arn:aws:s3:::oku24-audio"]
+       }
+     ]
+   }
+   ```
+5. Переменные: `S3_REGION=eu-central-1`, `S3_PUBLIC_BUCKET=oku24-media`, `S3_PRIVATE_BUCKET=oku24-audio`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `MEDIA_PUBLIC_BASE_URL=https://oku24-media.s3.eu-central-1.amazonaws.com`. `S3_ENDPOINT` не задавать, `S3_FORCE_PATH_STYLE=false` (значение по умолчанию). Позже перед публичным бакетом можно поставить CloudFront и указать его адрес в `MEDIA_PUBLIC_BASE_URL`.
+
+**2. Neon**
+
+Проект в том же регионе (AWS Frankfurt). Строка с pooler → `DATABASE_URL`, прямая строка → `DIRECT_URL`.
+
+**3. Миграции**
+
+Перед первой выкладкой (и после каждого изменения схемы) применить миграции к базе Neon: `DATABASE_URL=... DIRECT_URL=... pnpm db:migrate:deploy`. Seed в production не запускается.
+
+**4. Vercel**
+
+1. Add New → Project → импортировать репозиторий `oku`. Root Directory — корень репозитория (там `vercel.json`).
+2. Settings → Functions → Region: тот же регион, что у Neon и S3 (Frankfurt, `fra1`).
+3. Environment Variables (Production):
+
+   | Группа | Переменные |
+   | --- | --- |
+   | База | `DATABASE_URL`, `DIRECT_URL` |
+   | Вход | `JWT_SECRET` (случайная строка от 32 символов), `COOKIE_SECURE=true` |
+   | Адреса | `FRONTEND_URL=SITE`, `CORS_ORIGINS=SITE`, `API_PUBLIC_URL=SITE` |
+   | Хранилище | переменные из шага 1 |
+   | Оплата | `PAYMENT_PROVIDER=finik`, `FINIK_ENV` (`beta` для проверки, затем `prod`), `FINIK_API_KEY`, `FINIK_ACCOUNT_ID`, `FINIK_PRIVATE_KEY`, `FINIK_PUBLIC_KEY` |
+   | Роли | `ROLE_MANAGER_EMAILS` |
+   | Прочее | `JOBS_ENABLED=false` |
+   | Почта (по желанию) | `MAIL_TRANSPORT=smtp`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` |
+
+   `API_SERVICE_URL`, `API_URL` и `NEXT_PUBLIC_API_URL` не задавать. Swagger в production выключен по умолчанию.
+4. Deploy.
+
+**5. Finik**
+
+В кабинете Finik указать адрес вебхука `SITE/api/v1/payments/webhooks/finik`.
+
+**6. Проверка**
+
+- `SITE` открывает главную, переключение языков работает.
+- `SITE/api/v1/health` отвечает `"database":"up"`.
+- `SITE/api/docs` — 404 (Swagger выключен).
 
 ## Локальная разработка
 

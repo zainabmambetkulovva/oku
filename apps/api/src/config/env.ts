@@ -55,7 +55,8 @@ export const envSchema = z
     SMTP_USER: z.string().optional(),
     SMTP_PASSWORD: z.string().optional(),
 
-    SWAGGER_ENABLED: booleanString.default('true'),
+    // Документация API на /api/docs. По умолчанию включена везде, кроме production
+    SWAGGER_ENABLED: booleanString.optional(),
 
     // S3-совместимое хранилище. Два бакета: публичный (обложки, за CDN) и закрытый (аудио).
     // S3_ENDPOINT пустой — AWS S3; для R2, Yandex, SeaweedFS и т.п. — адрес сервиса.
@@ -160,7 +161,11 @@ export const envSchema = z
         }
       }
     }
-  });
+  })
+  .transform((env) => ({
+    ...env,
+    SWAGGER_ENABLED: env.SWAGGER_ENABLED ?? env.NODE_ENV !== 'production',
+  }));
 
 export type Env = z.infer<typeof envSchema>;
 

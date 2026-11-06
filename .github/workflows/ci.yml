@@ -51,6 +51,7 @@ jobs:
       S3_SECRET_ACCESS_KEY: oku-s3-secret
       S3_PUBLIC_BUCKET: oku-24-public
       S3_PRIVATE_BUCKET: oku-24-private
+      S3_FORCE_PATH_STYLE: 'true'
       MEDIA_PUBLIC_BASE_URL: http://localhost:8333/oku-24-public
       # Frontend: адрес API встраивается в клиентский код при сборке
       NEXT_PUBLIC_API_URL: http://localhost:3000/api/v1

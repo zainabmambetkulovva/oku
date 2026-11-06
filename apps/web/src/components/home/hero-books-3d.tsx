@@ -162,7 +162,14 @@ export default function HeroBooks3D({ books, label }: { books: SceneBook[]; labe
   useEffect(() => {
     setStill(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     setCompact(window.matchMedia('(max-width: 640px)').matches);
-    void document.fonts?.ready.then(() => setFontsReady(true));
+    // Холст рисует текст сам: шрифты с кыргызскими буквами нужно загрузить явно
+    const sample = 'АаБбҮүӨөҢң';
+    void Promise.all([
+      document.fonts?.load(`700 50px "Noto Serif Display"`, sample),
+      document.fonts?.load(`600 22px "Manrope Variable"`, sample),
+    ])
+      .catch(() => undefined)
+      .then(() => setFontsReady(true));
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
       threshold: 0.05,
     });

@@ -54,6 +54,17 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 
 Переменные проверяются при старте: если чего-то не хватает или значение некорректно, приложение не запустится и выведет список проблем.
 
+### Frontend (`apps/web`)
+
+| Переменная | Назначение |
+|---|---|
+| `API_URL` | Адрес API для запросов с сервера Next.js, например `http://api:3000/api/v1` |
+| `NEXT_PUBLIC_API_URL` | Адрес API для браузера, например `https://api.oku24.kg/api/v1`. Встраивается при сборке — задать до `pnpm build` |
+| `NEXT_PUBLIC_CONTACT_PHONE`, `NEXT_PUBLIC_CONTACT_EMAIL` | Контакты в подвале; пустые не показываются |
+| `NEXT_PUBLIC_INSTAGRAM_URL` | Instagram (по умолчанию @oku_24) |
+
+Адрес сайта нужно добавить в `CORS_ORIGINS` и `FRONTEND_URL` API.
+
 ## Локальная разработка
 
 ```bash

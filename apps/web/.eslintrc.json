@@ -1,0 +1,6 @@
+{
+  "extends": ["../../.eslintrc.json", "plugin:react-hooks/recommended"],
+  "parserOptions": { "ecmaFeatures": { "jsx": true } },
+  "env": { "browser": true, "node": true },
+  "ignorePatterns": [".next", "next-env.d.ts", "playwright-report", "test-results"]
+}

@@ -1,0 +1,106 @@
+@import 'tailwindcss';
+
+/*
+ * Дизайн-система OKU24: Premium Editorial + Modern 3D.
+ * Основа — молочный фон и бежевые карточки (ТЗ 2.2), акценты — тёмно-зелёный и золото (макет).
+ */
+@theme {
+  --color-milk: #fbf6ec;
+  --color-cream: #f6eedd;
+  --color-beige: #efe3cc;
+  --color-sand: #e2d1b0;
+  --color-forest: #1f3d2b;
+  --color-forest-700: #2a5139;
+  --color-forest-500: #3e6b4a;
+  --color-forest-100: #e3ebdf;
+  --color-gold: #c9a45c;
+  --color-gold-light: #e3c98e;
+  --color-gold-dark: #8c6b2f;
+  --color-ink: #1e1b16;
+  --color-muted: #6b6355;
+  --color-brand-purple: #2d0a4b;
+
+  --font-display: 'Noto Serif Display', 'Georgia', serif;
+  --font-sans: 'Manrope Variable', 'Segoe UI', system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(31 61 43 / 0.06), 0 8px 24px -12px rgb(31 61 43 / 0.25);
+  --shadow-card-hover: 0 2px 4px rgb(31 61 43 / 0.08), 0 18px 40px -16px rgb(31 61 43 / 0.35);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-bump: bump 0.4s ease-out;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes bump {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.25);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-milk text-ink font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display text-forest;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-gold-light);
+    color: var(--color-ink);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .card {
+    @apply rounded-2xl border border-sand/60 bg-beige/70;
+    box-shadow: var(--shadow-card);
+  }
+  /* Горизонтальная лента без видимой полосы прокрутки */
+  .scroll-row {
+    @apply flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2;
+    scrollbar-width: none;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+}

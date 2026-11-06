@@ -4,3 +4,6 @@ coverage
 pnpm-lock.yaml
 docs
 *.md
+.next
+playwright-report
+test-results

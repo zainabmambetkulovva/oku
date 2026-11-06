@@ -15,7 +15,7 @@
 oku_24/
 ├── apps/
 │   ├── api/              # NestJS Backend
-│   └── web/              # Next.js Frontend (этап Ф1)
+│   └── web/              # Next.js Frontend
 ├── packages/
 │   ├── types/            # Общие TypeScript-типы
 │   ├── validators/       # Общие схемы валидации (Zod)
@@ -43,7 +43,11 @@ pnpm docker:up                                 # PostgreSQL :5432, Redis :6379, 
 pnpm db:migrate:deploy                         # применить миграции
 pnpm db:seed                                   # тестовые данные (необязательно)
 pnpm dev:api                                   # http://localhost:3000/api/v1
+cp apps/web/.env.example apps/web/.env.local
+pnpm dev:web                                   # http://localhost:3001 (сайт: /ky, /ru, /en)
 ```
+
+Seed создаёт демо-каталог (книги на кыргызском, русском и английском) и две аудиокниги с короткими демо-аудиофайлами (нужен `ffmpeg`), чтобы плеер на главной работал.
 
 Swagger-документация: http://localhost:3000/api/docs, проверка работоспособности: `GET /api/v1/health`.
 
@@ -54,6 +58,8 @@ Swagger-документация: http://localhost:3000/api/docs, проверк
 | Команда | Что делает |
 |---|---|
 | `pnpm dev:api` | Backend в режиме разработки |
+| `pnpm dev:web` | Frontend в режиме разработки ([apps/web/README.md](apps/web/README.md)) |
+| `pnpm test:e2e` | Сквозные проверки сайта в браузере (Playwright) |
 | `pnpm build` | Сборка всех пакетов и приложений |
 | `pnpm lint` | ESLint + Prettier |
 | `pnpm typecheck` | Проверка типов TypeScript |
@@ -85,7 +91,7 @@ pnpm test:integration
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull request в `main` выполняет: установку зависимостей, проверку Prisma-схемы, lint, typecheck, unit-тесты, применение миграций к чистой базе, проверку соответствия миграций схеме, интеграционные и e2e-тесты, сборку.
+GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull request в `main` выполняет: установку зависимостей, проверку Prisma-схемы, lint, typecheck, unit-тесты (API и web), применение миграций к чистой базе, проверку соответствия миграций схеме, интеграционные и e2e-тесты API, сборку, затем запускает API с демо-каталогом и собранный сайт и проверяет главную в браузере (Playwright).
 
 ## API
 
@@ -245,7 +251,8 @@ GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull reque
 | Б6. Корзина, заказы, платежи (Finik) | ✅ |
 | Б7. Избранное, отзывы, уведомления, подписка | ✅ |
 | Б8. Админ-панель API, аналитика | ✅ |
-| Ф1–Ф7. Frontend | ⏳ |
+| Ф1. Каркас Next.js, дизайн-система, главная (3 языка, 3D, плеер) | ✅ на согласовании |
+| Ф2–Ф7. Frontend | ⏳ |
 | Интеграция, тестирование, запуск | ⏳ |
 
 ## Лицензия

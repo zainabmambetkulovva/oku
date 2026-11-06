@@ -177,6 +177,9 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
+      undici-types:
+        specifier: ~6.21.0
+        version: 6.21.0
 
   apps/web:
     dependencies:

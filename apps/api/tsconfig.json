@@ -6,8 +6,9 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    // typeRoots заданы явно: Vercel проверяет типы через временный tsconfig вне проекта,
-    // и без этого не находит @types/node (у fetch Response пропадают headers/status/json)
+    // Vercel проверяет типы своим способом: через временный tsconfig вне проекта
+    // и без раскрытия симлинков pnpm. typeRoots и прямая devDependency undici-types
+    // нужны, чтобы там находились @types/node и тип Response у fetch
     "typeRoots": ["./node_modules/@types"],
     "types": ["node", "jest"]
   },

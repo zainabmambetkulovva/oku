@@ -1,0 +1,83 @@
+# Ручные операции с production-базой (Neon). Запуск: Actions → Production database → Run workflow.
+#
+# Секреты репозитория (Settings → Secrets and variables → Actions):
+#   PROD_DATABASE_URL       — строка подключения Neon с pooler
+#   PROD_DIRECT_URL         — прямая строка подключения Neon (для миграций)
+#   ADMIN_INITIAL_PASSWORD  — пароль для нового администратора (нужен, только если
+#                             пользователь с этим email ещё не зарегистрирован)
+name: Production database
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Что сделать: status — показать состояние миграций, migrate — применить миграции, create-admin — назначить администратора'
+        type: choice
+        options:
+          - status
+          - migrate
+          - create-admin
+        default: status
+      admin_email:
+        description: 'Email администратора (только для create-admin)'
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+# Не запускать две операции с базой одновременно
+concurrency:
+  group: production-db
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: ${{ inputs.task }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.PROD_DIRECT_URL }}
+
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$DIRECT_URL" ]; then
+            echo "::error::Добавьте секреты PROD_DATABASE_URL и PROD_DIRECT_URL (Settings → Secrets and variables → Actions)"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Migration status
+        if: inputs.task == 'status'
+        run: pnpm --filter @oku_24/api exec prisma migrate status
+
+      - name: Apply migrations
+        if: inputs.task == 'migrate'
+        run: |
+          pnpm db:migrate:deploy
+          pnpm --filter @oku_24/api exec prisma migrate status
+
+      - name: Create administrator
+        if: inputs.task == 'create-admin'
+        env:
+          ADMIN_EMAIL: ${{ inputs.admin_email }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_INITIAL_PASSWORD }}
+        run: |
+          if [ -z "$ADMIN_EMAIL" ]; then
+            echo "::error::Укажите email администратора в поле admin_email"
+            exit 1
+          fi
+          pnpm --filter @oku_24/api admin:create --email "$ADMIN_EMAIL"

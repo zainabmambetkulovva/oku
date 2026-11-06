@@ -138,9 +138,16 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 
 Проект в том же регионе (AWS Frankfurt). Строка с pooler → `DATABASE_URL`, прямая строка → `DIRECT_URL`.
 
-**3. Миграции**
+**3. Миграции — кнопкой в GitHub**
 
-Перед первой выкладкой (и после каждого изменения схемы) применить миграции к базе Neon: `DATABASE_URL=... DIRECT_URL=... pnpm db:migrate:deploy`. Seed в production не запускается.
+1. GitHub → репозиторий → Settings → Secrets and variables → Actions → New repository secret:
+   - `PROD_DATABASE_URL` — строка Neon с pooler;
+   - `PROD_DIRECT_URL` — прямая строка Neon;
+   - `ADMIN_INITIAL_PASSWORD` — пароль первого администратора (не короче 8 символов, буквы и цифры).
+2. Actions → **Production database** → Run workflow → `task: migrate` → Run. В конце лога: `Database schema is up to date!`.
+3. `task: status` только показывает состояние миграций, ничего не меняя.
+
+Миграции запускаются вручную перед выкладкой и после каждого изменения схемы. Seed в production не запускается.
 
 **4. Vercel**
 
@@ -166,7 +173,11 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 
 В кабинете Finik указать адрес вебхука `SITE/api/v1/payments/webhooks/finik`.
 
-**6. Проверка**
+**6. Первый администратор**
+
+Actions → **Production database** → Run workflow → `task: create-admin`, `admin_email` — email администратора. Если пользователь с этим email ещё не зарегистрирован, он создаётся с паролем из секрета `ADMIN_INITIAL_PASSWORD`; если зарегистрирован — получает роль ADMIN, пароль не меняется. Так же назначить email менеджера ролей (`ROLE_MANAGER_EMAILS`). После первого входа пароль лучше сменить.
+
+**7. Проверка**
 
 - `SITE` открывает главную, переключение языков работает.
 - `SITE/api/v1/health` отвечает `"database":"up"`.
@@ -208,7 +219,7 @@ pnpm dev:api
 pnpm db:migrate:deploy
 ```
 
-Production-базу нельзя менять вручную — только через Prisma Migrations.
+Production-базу нельзя менять вручную — только через Prisma Migrations. Для Neon миграции запускаются кнопкой: Actions → **Production database** → `migrate`.
 
 CHECK-ограничения (цены, остатки, рейтинг и т.д.) Prisma не описывает в схеме — они добавлены SQL-кодом в миграцию `prisma/migrations/*_init`. Prisma их не удаляет при следующих миграциях. Проверить, что база совпадает со схемой: `pnpm db:drift`.
 
@@ -223,7 +234,9 @@ pnpm admin:create --email owner@oku24.kg --password 'StrongPass123'
 node dist/cli/create-admin.js --email owner@oku24.kg --password 'StrongPass123'
 ```
 
-Без `--password` команда делает администратором уже зарегистрированного пользователя.
+Без `--password` команда делает администратором уже зарегистрированного пользователя. Пароль можно передать через переменную `ADMIN_PASSWORD` вместо аргумента.
+
+Для production-базы на Neon то же самое делает кнопка в GitHub: Actions → **Production database** → `create-admin` (см. «Первый деплой: пошагово»).
 
 Роли распределены так:
 

@@ -5,6 +5,9 @@
  *   pnpm admin:create --email owner@oku24.kg                      # существующий пользователь
  *   pnpm admin:create --email owner@oku24.kg --password 'Secret123' # создать нового
  *
+ * Пароль можно передать и через переменную ADMIN_PASSWORD — так он не попадает
+ * в строку команды (её печатают pnpm и логи CI).
+ *
  * В production (после сборки): node dist/cli/create-admin.js --email ...
  */
 import { PrismaClient } from '@prisma/client';
@@ -63,11 +66,14 @@ function argument(name: string): string | undefined {
 async function main(): Promise<void> {
   const email = argument('email');
   if (!email) {
-    throw new Error('Usage: admin:create --email <email> [--password <password>]');
+    throw new Error(
+      'Usage: admin:create --email <email> [--password <password>] (or ADMIN_PASSWORD env)',
+    );
   }
   const prisma = new PrismaClient();
   try {
-    const result = await createAdmin(prisma, { email, password: argument('password') });
+    const password = argument('password') ?? (process.env.ADMIN_PASSWORD || undefined);
+    const result = await createAdmin(prisma, { email, password });
     console.log(
       result.created
         ? `Administrator ${result.email} created`

@@ -1,8 +1,7 @@
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import { Butterfly, LeafBranch, Sparkle } from '../ornaments/decor';
-import { MountainLandscape } from '../ornaments/landscape';
+import { Butterfly, Sparkle } from '../ornaments/decor';
 import { ArrowRight, buttonClasses } from '../ui/button';
 import { BookOpenIcon, HeartIcon, LeafIcon, QuoteIcon, SupportIcon, TruckIcon } from '../ui/icons';
 
@@ -19,24 +18,17 @@ export async function AboutSection() {
     <section id="about" className="relative mt-24 scroll-mt-24" aria-labelledby="about-title">
       <div className="container-page grid items-center gap-8 lg:grid-cols-[1.25fr_1fr_0.8fr]">
         {/* Уголок для чтения у окна с видом на горы */}
-        <div
-          className="relative h-72 overflow-hidden rounded-[2.2rem] bg-gradient-to-b from-[#f6ead9] to-[#e8d5bb] shadow-[var(--shadow-card)] sm:h-80"
-          aria-hidden="true"
-        >
-          <div className="arch absolute top-6 left-1/2 h-[82%] w-[46%] -translate-x-1/2 overflow-hidden border-[8px] border-white/80 shadow-inner">
-            <MountainLandscape className="absolute inset-0 size-full" soft />
-          </div>
-          <div className="absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-b from-[#e3cfb2] to-[#d5bd9b]" />
+        <div className="relative" aria-hidden="true">
+          <div className="absolute inset-x-[4%] top-[12%] bottom-[2%] -z-10 rounded-[2.5rem] bg-gradient-to-b from-white/50 to-beige/70" />
           <Image
-            src="/illustrations/self-development.webp"
+            src="/illustrations/reading-room.webp"
             alt=""
-            width={720}
-            height={512}
-            sizes="(min-width: 1024px) 18vw, 40vw"
-            className="absolute bottom-3 left-2 h-auto w-[40%]"
+            width={1100}
+            height={519}
+            sizes="(min-width: 1024px) 42vw, 92vw"
+            className="h-auto w-full drop-shadow-[0_24px_30px_rgb(91_56_30/0.25)]"
           />
-          <LeafBranch className="absolute -top-2 -right-4 h-36 w-28" flip />
-          <Butterfly className="top-10 left-10 size-8" delay={1.5} />
+          <Butterfly className="top-2 left-[18%] size-9" delay={1.5} />
         </div>
 
         <div className="relative">
@@ -80,7 +72,7 @@ export async function StripSection() {
 
   return (
     <section className="container-page mt-14" aria-label={t('label')}>
-      <div className="card relative grid items-center gap-6 overflow-hidden px-6 py-6 sm:px-8 lg:grid-cols-[2fr_1fr]">
+      <div className="card relative grid items-center gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,1.6fr)_auto_minmax(0,0.9fr)] lg:py-4">
         <ul className="grid gap-5 sm:grid-cols-3">
           {items.map(({ key, Icon }) => (
             <li key={key} className="flex items-center gap-3">
@@ -91,6 +83,14 @@ export async function StripSection() {
             </li>
           ))}
         </ul>
+        <Image
+          src="/illustrations/books-flowers.webp"
+          alt=""
+          width={800}
+          height={306}
+          sizes="(min-width: 1024px) 18vw, 60vw"
+          className="mx-auto hidden h-auto w-56 drop-shadow-md sm:block lg:-my-8 lg:w-40 xl:w-56"
+        />
         <blockquote className="flex items-start gap-3 border-t border-sand/60 pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
           <QuoteIcon className="size-6 shrink-0 text-gold" />
           <p className="font-display text-lg leading-snug text-cocoa-700 italic">{t('quote')}</p>

@@ -3,7 +3,7 @@ import { Link } from '@/i18n/navigation';
 import type { BookListItem, LatestReview } from '@/lib/types';
 import { BookCover } from '../catalog/book-cover';
 import { LeafBranch, Sparkle } from '../ornaments/decor';
-import { MountainLandscape } from '../ornaments/landscape';
+import Image from 'next/image';
 import { ArrowRight, buttonClasses } from '../ui/button';
 import { Carousel } from '../ui/carousel';
 import { HeartIcon, InstagramIcon } from '../ui/icons';
@@ -98,7 +98,7 @@ export async function CommunitySection({ books }: { books: BookListItem[] }) {
   return (
     <section className="relative mt-24 overflow-hidden" aria-labelledby="community-title">
       <LeafBranch className="pointer-events-none absolute top-0 -left-6 hidden h-40 w-28 lg:block" />
-      <div className="container-page grid items-center gap-10 lg:grid-cols-[0.85fr_1.7fr_0.75fr]">
+      <div className="container-page grid items-center gap-10 lg:grid-cols-[0.8fr_1.5fr_1fr]">
         <div>
           <h2
             id="community-title"
@@ -138,18 +138,20 @@ export async function CommunitySection({ books }: { books: BookListItem[] }) {
           </ul>
         )}
 
-        <div className="relative mx-auto flex w-full max-w-60 flex-col items-center">
+        <div className="relative mx-auto flex w-full max-w-80 flex-col items-center">
           <p className="mb-4 flex items-center gap-2 font-display text-2xl text-cocoa">
             {t('caption')}
             <Sparkle className="size-4 text-gold" />
             <HeartIcon className="size-5" />
           </p>
-          <div
-            className="arch relative h-56 w-full overflow-hidden border-[8px] border-white/80 shadow-[var(--shadow-card)]"
-            aria-hidden="true"
-          >
-            <MountainLandscape className="absolute inset-0 size-full" soft />
-          </div>
+          <Image
+            src="/illustrations/community-arch.webp"
+            alt=""
+            width={900}
+            height={474}
+            sizes="(min-width: 1024px) 22vw, 80vw"
+            className="h-auto w-full drop-shadow-[0_20px_24px_rgb(91_56_30/0.25)]"
+          />
         </div>
       </div>
     </section>

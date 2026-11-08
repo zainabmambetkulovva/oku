@@ -31,83 +31,6 @@ function flatten(nodes: CategoryNode[]): CategoryNode[] {
   return nodes.flatMap((node) => [node, ...flatten(node.children)]);
 }
 
-/** Наушники на стопке книг — для карточки «Аудиокниги». */
-function HeadphonesArt() {
-  return (
-    <svg viewBox="0 0 240 190" className="h-[82%] w-auto" aria-hidden="true">
-      <defs>
-        <linearGradient id="hp-band" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fffaf1" />
-          <stop offset="1" stopColor="#e3cdb0" />
-        </linearGradient>
-        <linearGradient id="hp-cup" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#fbf3e6" />
-          <stop offset="0.6" stopColor="#ead7bb" />
-          <stop offset="1" stopColor="#c9a776" />
-        </linearGradient>
-        <linearGradient id="hp-book" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#7c5638" />
-          <stop offset="1" stopColor="#56351f" />
-        </linearGradient>
-        <radialGradient id="hp-shadow">
-          <stop offset="0" stopColor="#5b381e" stopOpacity="0.35" />
-          <stop offset="1" stopColor="#5b381e" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="120" cy="176" rx="96" ry="10" fill="url(#hp-shadow)" />
-      {/* стопка книг */}
-      <rect x="34" y="150" width="172" height="22" rx="4" fill="url(#hp-book)" />
-      <rect x="34" y="150" width="172" height="5" rx="2" fill="#8d6733" />
-      <rect x="44" y="130" width="154" height="20" rx="4" fill="#f1e4cf" />
-      <path d="M50 140h140" stroke="#c49a5e" strokeWidth="1.2" />
-      <rect x="40" y="112" width="160" height="18" rx="4" fill="#c49a5e" />
-      <path d="M48 121h144" stroke="#f7e6c4" strokeWidth="1.2" strokeDasharray="4 3" />
-      {/* оголовье */}
-      <path
-        d="M58 108V84a62 62 0 0 1 124 0v24"
-        fill="none"
-        stroke="#b88e57"
-        strokeWidth="16"
-        strokeLinecap="round"
-      />
-      <path
-        d="M58 108V84a62 62 0 0 1 124 0v24"
-        fill="none"
-        stroke="url(#hp-band)"
-        strokeWidth="11"
-        strokeLinecap="round"
-      />
-      {/* амбушюры */}
-      <g>
-        <rect
-          x="38"
-          y="74"
-          width="40"
-          height="52"
-          rx="18"
-          fill="url(#hp-cup)"
-          stroke="#a77a3c"
-          strokeWidth="1.5"
-        />
-        <rect x="70" y="80" width="12" height="40" rx="6" fill="#8d6733" />
-        <rect
-          x="162"
-          y="74"
-          width="40"
-          height="52"
-          rx="18"
-          fill="url(#hp-cup)"
-          stroke="#a77a3c"
-          strokeWidth="1.5"
-        />
-        <rect x="158" y="80" width="12" height="40" rx="6" fill="#8d6733" />
-        <circle cx="58" cy="100" r="7" fill="none" stroke="#c49a5e" strokeWidth="1.5" />
-        <circle cx="182" cy="100" r="7" fill="none" stroke="#c49a5e" strokeWidth="1.5" />
-      </g>
-    </svg>
-  );
-}
-
 function CategoryCard({
   href,
   label,
@@ -201,7 +124,14 @@ export async function CategoriesSection({ categories }: { categories: CategoryNo
             label={t('audiobooks')}
             ariaLabel={`${t('open')}: ${t('audiobooks')}`}
           >
-            <HeadphonesArt />
+            <Image
+              src="/illustrations/audiobooks.webp"
+              alt=""
+              width={720}
+              height={607}
+              sizes="(min-width: 1024px) 16vw, 45vw"
+              className={imageClass}
+            />
           </CategoryCard>
         </li>
       </ul>

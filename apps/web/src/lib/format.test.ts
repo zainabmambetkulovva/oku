@@ -4,15 +4,13 @@ const nbsp = ' ';
 
 describe('formatPrice', () => {
   it('shows tyiyn as som like on the landing page', () => {
-    expect(formatPrice(65_000, 'ru')).toBe(`650${nbsp}сом`);
-    expect(formatPrice(65_000, 'ky')).toBe(`650${nbsp}сом`);
-    expect(formatPrice(65_000, 'en')).toBe(`650${nbsp}som`);
+    expect(formatPrice(65_000)).toBe(`650${nbsp}сом`);
   });
 
   it('separates thousands and keeps tyiyn when present', () => {
-    expect(formatPrice(150_000, 'ru')).toBe(`1${nbsp}500${nbsp}сом`);
-    expect(formatPrice(65_050, 'ru')).toBe(`650,50${nbsp}сом`);
-    expect(formatPrice(150_050, 'en')).toBe(`1,500.50${nbsp}som`);
+    expect(formatPrice(150_000)).toBe(`1${nbsp}500${nbsp}сом`);
+    expect(formatPrice(65_050)).toBe(`650,50${nbsp}сом`);
+    expect(formatPrice(150_050)).toBe(`1${nbsp}500,50${nbsp}сом`);
   });
 });
 

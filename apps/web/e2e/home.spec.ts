@@ -8,29 +8,51 @@ import { expect, test } from '@playwright/test';
 test.describe('home page', () => {
   test('redirects to a language and renders sections with catalog data', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveURL(/\/(ky|ru|en)$/);
+    await expect(page).toHaveURL(/\/(ky|ru)$/);
 
     await page.goto('/ru');
     await expect(page).toHaveTitle(/OKU24/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Книги, которые остаются с вами',
+      'Открой мир, который скрывается между страницами',
     );
-    await expect(page.getByRole('heading', { name: 'Популярные книги' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Книги, которые выбирают читатели' }),
+    ).toBeVisible();
+    // Категории из базы с иллюстрациями и отдельная карточка аудиокниг
+    await expect(page.getByRole('link', { name: 'Открыть категорию: Психология' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Открыть категорию: Аудиокниги' })).toBeVisible();
     // Цена из тыйынов показана в сомах
-    await expect(page.getByText('750 сом').first()).toBeVisible();
+    await expect(page.getByText('750 сом').first()).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
   });
 
-  test('switches between Kyrgyz, Russian and English', async ({ page }) => {
+  test('switches between Kyrgyz and Russian only', async ({ page }) => {
     await page.goto('/ru');
+    await expect(page.getByRole('link', { name: 'EN' })).toHaveCount(0);
     await page.getByRole('link', { name: 'KG' }).first().click();
     await expect(page).toHaveURL(/\/ky$/);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Сиз менен калчу китептер');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Барактардын арасында жашырынган дүйнөнү ач',
+    );
+    await expect(page.getByText('750 сом').first()).toBeVisible();
 
-    await page.getByRole('link', { name: 'EN' }).first().click();
-    await expect(page).toHaveURL(/\/en$/);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Books that stay with you');
-    await expect(page.getByText('750 som').first()).toBeVisible();
+    await page.getByRole('link', { name: 'RU' }).first().click();
+    await expect(page).toHaveURL(/\/ru$/);
+
+    // Английской версии больше нет
+    const response = await page.goto('/en');
+    expect(response?.status()).toBe(404);
+  });
+
+  test('shows the latest reviews or an invitation to leave one', async ({ page }) => {
+    await page.goto('/ru');
+    const section = page.locator('section', {
+      has: page.getByRole('heading', { name: 'Отзывы наших читателей' }),
+    });
+    await expect(section.getByRole('link', { name: 'Оставить отзыв' })).toBeVisible();
+    await expect(
+      section.getByRole('figure').or(section.getByText('Отзывов пока нет')).first(),
+    ).toBeVisible();
   });
 
   test('adds books to the guest cart and keeps it after reload', async ({ page }) => {

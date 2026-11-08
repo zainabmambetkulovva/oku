@@ -1,7 +1,7 @@
 'use client';
 
-import { ContactShadows, Float } from '@react-three/drei';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Float } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { coverColors } from '@/lib/cover-palette';
@@ -80,88 +80,109 @@ function useCoverTexture(book: SceneBook, ready: boolean) {
   }, [book.slug, book.title, book.author, ready]);
 }
 
-function Book({
+/** Закрытая книга с обложкой из каталога. */
+function ClosedBook({
   book,
-  position,
-  rotation,
   fontsReady,
-  still,
+  ...transform
 }: {
   book: SceneBook;
+  fontsReady: boolean;
   position: [number, number, number];
   rotation: [number, number, number];
-  fontsReady: boolean;
-  still: boolean;
+  scale: number;
 }) {
   const cover = useCoverTexture(book, fontsReady);
   const colors = coverColors(book.slug);
   const materials = useMemo(() => {
-    const pages = new THREE.MeshStandardMaterial({ color: '#f5ecda', roughness: 0.9 });
+    const pages = new THREE.MeshStandardMaterial({ color: '#f7eedf', roughness: 0.9 });
     const spine = new THREE.MeshStandardMaterial({ color: colors.background, roughness: 0.6 });
     const front = new THREE.MeshStandardMaterial({ map: cover, roughness: 0.55 });
-    const back = new THREE.MeshStandardMaterial({ color: colors.background, roughness: 0.6 });
     // порядок граней BoxGeometry: +x, -x, +y, -y, +z (лицо), -z
-    return [pages, spine, pages, pages, front, back];
+    return [pages, spine, pages, pages, front, spine];
   }, [cover, colors.background]);
 
-  const mesh = (
-    <mesh position={position} rotation={rotation} material={materials} castShadow>
+  return (
+    <mesh {...transform} material={materials}>
       <boxGeometry args={BOOK_SIZE} />
     </mesh>
   );
+}
+
+/** Раскрытая книга: две стопки страниц под углом и обложка снизу. */
+function OpenBook({
+  color,
+  ...transform
+}: {
+  color: string;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: number;
+}) {
+  const pages = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: '#fff7e8',
+        emissive: '#f3dfbf',
+        emissiveIntensity: 0.35,
+        roughness: 0.85,
+      }),
+    [],
+  );
+  const cover = useMemo(
+    () => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.05 }),
+    [color],
+  );
+  const half = (side: 1 | -1) => (
+    <group rotation={[0, 0, side * -0.32]}>
+      <mesh position={[side * 0.68, 0.06, 0]} material={pages}>
+        <boxGeometry args={[1.3, 0.12, 1.9]} />
+      </mesh>
+      <mesh position={[side * 0.7, -0.02, 0]} material={cover}>
+        <boxGeometry args={[1.42, 0.04, 2]} />
+      </mesh>
+    </group>
+  );
+  return (
+    <group {...transform}>
+      {half(-1)}
+      {half(1)}
+    </group>
+  );
+}
+
+function Floating({ children, still }: { children: React.ReactNode; still: boolean }) {
   return still ? (
-    mesh
+    <>{children}</>
   ) : (
-    <Float speed={1.4} rotationIntensity={0.35} floatIntensity={0.6}>
-      {mesh}
+    <Float speed={1.3} rotationIntensity={0.45} floatIntensity={0.8}>
+      {children}
     </Float>
   );
 }
 
-/** Плавный поворот всей сцены за курсором. */
-function Parallax({ children, still }: { children: React.ReactNode; still: boolean }) {
+/** Медленный общий наклон, чтобы книги «дышали» даже без движения мыши. */
+function Drift({ children, still }: { children: React.ReactNode; still: boolean }) {
   const group = useRef<THREE.Group>(null);
-  const { pointer } = useThree();
-  useFrame((_, delta) => {
+  useFrame(({ clock }) => {
     if (!group.current || still) return;
-    group.current.rotation.y = THREE.MathUtils.damp(
-      group.current.rotation.y,
-      pointer.x * 0.35,
-      3,
-      delta,
-    );
-    group.current.rotation.x = THREE.MathUtils.damp(
-      group.current.rotation.x,
-      -pointer.y * 0.12,
-      3,
-      delta,
-    );
+    group.current.rotation.y = Math.sin(clock.elapsedTime * 0.25) * 0.12;
   });
   return <group ref={group}>{children}</group>;
 }
 
-const LAYOUT: { position: [number, number, number]; rotation: [number, number, number] }[] = [
-  { position: [0, 0.15, 0.6], rotation: [0.05, -0.25, 0.02] },
-  { position: [-1.75, -0.2, -0.2], rotation: [0.02, 0.45, -0.08] },
-  { position: [1.75, -0.1, -0.3], rotation: [0.04, -0.55, 0.07] },
-  { position: [-0.95, 1.05, -1.3], rotation: [0.2, 0.3, 0.16] },
-  { position: [1.05, 1.1, -1.5], rotation: [0.16, -0.35, -0.14] },
-];
-
 /**
- * 3D-сцена главной: объёмные книги парят и поворачиваются за курсором.
+ * 3D-книги вокруг главной иллюстрации: закрытая книга из каталога и раскрытые книги.
  * Рендер останавливается, когда сцену не видно; при «уменьшить движение» — статика.
  */
-export default function HeroBooks3D({ books, label }: { books: SceneBook[]; label: string }) {
+export default function HeroBooks3D({ books }: { books: SceneBook[] }) {
   const container = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   const [fontsReady, setFontsReady] = useState(false);
   const [still, setStill] = useState(false);
-  const [compact, setCompact] = useState(false);
 
   useEffect(() => {
     setStill(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    setCompact(window.matchMedia('(max-width: 640px)').matches);
     // Холст рисует текст сам: шрифты с кыргызскими буквами нужно загрузить явно
     const sample = 'АаБбҮүӨөҢң';
     void Promise.all([
@@ -177,45 +198,59 @@ export default function HeroBooks3D({ books, label }: { books: SceneBook[]; labe
     return () => observer.disconnect();
   }, []);
 
-  const items = books.slice(0, compact ? 3 : 5);
+  const [first, second] = books;
 
   return (
-    <div ref={container} className="size-full" role="img" aria-label={label}>
+    <div ref={container} className="size-full" aria-hidden="true">
       <Canvas
-        shadows
-        dpr={[1, compact ? 1.5 : 1.75]}
+        dpr={[1, 1.75]}
         frameloop={visible && !still ? 'always' : 'demand'}
-        camera={{ position: [0, 0.3, 6.8], fov: compact ? 40 : 38 }}
+        camera={{ position: [0, 0, 7], fov: 38 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
       >
-        <ambientLight intensity={0.75} />
-        <directionalLight
-          position={[3, 5, 4]}
-          intensity={1.6}
-          color="#fff4dc"
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-        />
-        <directionalLight position={[-4, 2, -2]} intensity={0.45} color="#c9d8c6" />
-        <Parallax still={still}>
-          {items.map((book, index) => (
-            <Book
-              key={book.slug}
-              book={book}
-              fontsReady={fontsReady}
-              still={still}
-              {...LAYOUT[index]}
+        <ambientLight intensity={1.15} />
+        <directionalLight position={[3, 5, 4]} intensity={1.5} color="#fff1d6" />
+        <directionalLight position={[-4, 2, -2]} intensity={0.4} color="#f2d9b5" />
+        <Drift still={still}>
+          {first && (
+            <Floating still={still}>
+              <ClosedBook
+                book={first}
+                fontsReady={fontsReady}
+                position={[-2.05, 1.55, 0]}
+                rotation={[0.15, 0.55, 0.2]}
+                scale={0.42}
+              />
+            </Floating>
+          )}
+          {second && (
+            <Floating still={still}>
+              <ClosedBook
+                book={second}
+                fontsReady={fontsReady}
+                position={[2.0, 0.35, 0.4]}
+                rotation={[-0.1, -0.6, -0.18]}
+                scale={0.34}
+              />
+            </Floating>
+          )}
+          <Floating still={still}>
+            <OpenBook
+              color="#8d6733"
+              position={[1.95, 1.75, -0.3]}
+              rotation={[0.9, -0.3, -0.25]}
+              scale={0.36}
             />
-          ))}
-        </Parallax>
-        <ContactShadows
-          position={[0, -1.45, 0]}
-          opacity={0.35}
-          scale={9}
-          blur={2.6}
-          far={3}
-          color="#1f3d2b"
-        />
+          </Floating>
+          <Floating still={still}>
+            <OpenBook
+              color="#56351f"
+              position={[-2.05, 0.35, -0.4]}
+              rotation={[1.05, 0.35, 0.3]}
+              scale={0.26}
+            />
+          </Floating>
+        </Drift>
       </Canvas>
     </div>
   );

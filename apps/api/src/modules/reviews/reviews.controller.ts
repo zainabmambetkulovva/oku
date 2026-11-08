@@ -15,13 +15,25 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { AuthUser } from '../../common/decorators/auth-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
-import { CreateReviewDto, ReviewsQueryDto, UpdateReviewDto } from './dto/reviews.dto';
+import {
+  CreateReviewDto,
+  LatestReviewsQueryDto,
+  ReviewsQueryDto,
+  UpdateReviewDto,
+} from './dto/reviews.dto';
 import { ReviewsService } from './reviews.service';
 
 @ApiTags('reviews')
 @Controller()
 export class ReviewsController {
   constructor(private readonly reviews: ReviewsService) {}
+
+  /** Последние отзывы читателей — для главной страницы. */
+  @Public()
+  @Get('reviews/latest')
+  latest(@Query() query: LatestReviewsQueryDto) {
+    return this.reviews.latest(query);
+  }
 
   // ─── Книги ─────────────────────────────────────────────────────────────────
 

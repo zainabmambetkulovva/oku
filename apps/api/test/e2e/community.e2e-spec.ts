@@ -280,6 +280,36 @@ describe('Favorites, reviews, notifications, newsletter (e2e)', () => {
       expect(actions).toEqual(['review.reject', 'review.approve', 'review.delete']);
     });
 
+    it('lists the latest reviews with text for the home page', async () => {
+      await review(user, { rating: 5, text: 'Отличная книга' }).expect(201);
+      await review(await registerUser(t), { rating: 4 }).expect(201); // без текста — не показываем
+      await as(user)
+        .post(`/audiobooks/${audiobook.slug}/reviews`, { rating: 4, text: 'Приятный голос' })
+        .expect(201);
+
+      const latest = await t.http().get(api('/reviews/latest?limit=5')).expect(200);
+      expect(latest.body.data).toHaveLength(2);
+      expect(latest.body.data[0]).toMatchObject({
+        text: 'Приятный голос',
+        author: { name: 'Айгерим Т.' },
+        product: { type: 'AUDIOBOOK', slug: audiobook.slug },
+      });
+      expect(latest.body.data[1].product).toMatchObject({ type: 'BOOK', title: 'Джамиля' });
+
+      // Снятые с продажи товары и скрытые отзывы не показываются
+      await t.prisma.audiobook.update({
+        where: { id: audiobook.id },
+        data: { status: 'ARCHIVED' },
+      });
+      await t.prisma.review.updateMany({
+        where: { bookId: book.id },
+        data: { status: 'REJECTED' },
+      });
+      expect((await t.http().get(api('/reviews/latest')).expect(200)).body.data).toEqual([]);
+
+      await t.http().get(api('/reviews/latest?limit=50')).expect(400);
+    });
+
     it('sorts reviews by rating', async () => {
       await review(user, { rating: 2 }).expect(201);
       await review(await registerUser(t), { rating: 5 }).expect(201);

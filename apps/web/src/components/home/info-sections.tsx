@@ -1,115 +1,100 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import type { Locale } from '@/i18n/routing';
-import { formatPrice } from '@/lib/format';
-import type { DeliveryOption } from '@/lib/types';
-import { CornerOrnament } from '../ornaments/ornaments';
+import { Butterfly, LeafBranch, Sparkle } from '../ornaments/decor';
 import { MountainLandscape } from '../ornaments/landscape';
 import { ArrowRight, buttonClasses } from '../ui/button';
-import { GlobeBookIcon, HeadphonesIcon, ShieldIcon, TruckIcon } from '../ui/icons';
-import { SectionTitle } from '../ui/section-title';
+import { BookOpenIcon, HeartIcon, LeafIcon, QuoteIcon, SupportIcon, TruckIcon } from '../ui/icons';
 
-/** «Окуу маданиятын сактайбыз» — баннер с пейзажем, как блок «Традиции» в макете. */
+/** «Больше, чем просто книги»: окно-арка с горами, текст о магазине и три преимущества. */
 export async function AboutSection() {
   const t = await getTranslations('about');
+  const features = [
+    { key: 'quality', Icon: BookOpenIcon },
+    { key: 'delivery', Icon: TruckIcon },
+    { key: 'support', Icon: SupportIcon },
+  ] as const;
+
   return (
-    <section id="about" className="container-page mt-20 scroll-mt-24" aria-labelledby="about-title">
-      <div className="card relative grid overflow-hidden md:grid-cols-2">
-        <div className="relative h-56 md:h-auto md:min-h-80">
-          <MountainLandscape className="absolute inset-0 size-full" />
+    <section id="about" className="relative mt-24 scroll-mt-24" aria-labelledby="about-title">
+      <div className="container-page grid items-center gap-8 lg:grid-cols-[1.25fr_1fr_0.8fr]">
+        {/* Уголок для чтения у окна с видом на горы */}
+        <div
+          className="relative h-72 overflow-hidden rounded-[2.2rem] bg-gradient-to-b from-[#f6ead9] to-[#e8d5bb] shadow-[var(--shadow-card)] sm:h-80"
+          aria-hidden="true"
+        >
+          <div className="arch absolute top-6 left-1/2 h-[82%] w-[46%] -translate-x-1/2 overflow-hidden border-[8px] border-white/80 shadow-inner">
+            <MountainLandscape className="absolute inset-0 size-full" soft />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-b from-[#e3cfb2] to-[#d5bd9b]" />
+          <Image
+            src="/illustrations/self-development.webp"
+            alt=""
+            width={720}
+            height={512}
+            sizes="(min-width: 1024px) 18vw, 40vw"
+            className="absolute bottom-3 left-2 h-auto w-[40%]"
+          />
+          <LeafBranch className="absolute -top-2 -right-4 h-36 w-28" flip />
+          <Butterfly className="top-10 left-10 size-8" delay={1.5} />
         </div>
-        <div className="relative p-8 sm:p-10">
-          <CornerOrnament className="pointer-events-none absolute -top-8 -right-8 size-36 text-gold/40" />
-          <h2 id="about-title" className="text-3xl leading-tight font-semibold sm:text-4xl">
+
+        <div className="relative">
+          <p className="eyebrow">{t('eyebrow')}</p>
+          <h2
+            id="about-title"
+            className="mt-3 text-[1.85rem] leading-tight font-medium text-cocoa sm:text-[2.2rem]"
+          >
             {t('title')}
+            <Sparkle className="ml-3 inline size-5 align-middle text-gold" />
           </h2>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-ink/80 sm:text-base">
-            {t('text')}
-          </p>
-          <Link href="/books" className={`${buttonClasses('primary')} mt-6`}>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink/75">{t('text')}</p>
+          <Link href="/books" className={buttonClasses('outline', 'mt-6')}>
             {t('more')} <ArrowRight />
           </Link>
         </div>
+
+        <ul className="card space-y-1 p-4">
+          {features.map(({ key, Icon }) => (
+            <li key={key} className="flex items-center gap-4 rounded-2xl p-2">
+              <span className="grid size-12 shrink-0 place-items-center rounded-full bg-cocoa-100 text-cocoa">
+                <Icon className="size-5" />
+              </span>
+              <span className="text-sm font-medium text-ink/85">{t(`features.${key}`)}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
 }
 
-export async function AdvantagesSection() {
-  const t = await getTranslations('advantages');
-  const ts = await getTranslations('sections');
+/** Полоса преимуществ с цитатой о книгах. */
+export async function StripSection() {
+  const t = await getTranslations('strip');
   const items = [
-    { key: 'languages', Icon: GlobeBookIcon },
-    { key: 'audio', Icon: HeadphonesIcon },
+    { key: 'selected', Icon: LeafIcon },
     { key: 'delivery', Icon: TruckIcon },
-    { key: 'payment', Icon: ShieldIcon },
+    { key: 'love', Icon: HeartIcon },
   ] as const;
 
   return (
-    <section className="container-page mt-10" aria-label={ts('advantages')}>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {items.map(({ key, Icon }) => (
-          <li key={key} className="card flex items-center gap-4 p-5">
-            <span className="grid size-12 shrink-0 place-items-center rounded-full border border-gold/60 text-forest">
-              <Icon />
-            </span>
-            <div>
-              <h3 className="font-sans text-sm font-bold text-ink">{t(`${key}.title`)}</h3>
-              <p className="text-xs text-muted">{t(`${key}.text`)}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-/** «Как получить заказ»: шаги и стоимость доставки из API. */
-export async function DeliverySection({ options }: { options: DeliveryOption[] }) {
-  const t = await getTranslations('delivery');
-  const ts = await getTranslations('sections');
-  const locale = (await getLocale()) as Locale;
-  const steps = ['order', 'pay', 'notify', 'receive'] as const;
-
-  return (
-    <section
-      id="delivery"
-      className="container-page mt-20 scroll-mt-24"
-      aria-labelledby="delivery-title"
-    >
-      <SectionTitle id="delivery-title">{ts('delivery')}</SectionTitle>
-      <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-        <ol className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-          {steps.map((step, index) => (
-            <li key={step} className="relative flex flex-col items-center text-center">
-              {index > 0 && (
-                <span
-                  className="absolute top-5 right-1/2 hidden h-px w-full border-t border-dashed border-gold sm:block"
-                  aria-hidden="true"
-                />
-              )}
-              <span className="relative z-10 grid size-10 place-items-center rounded-full bg-forest text-sm font-bold text-milk ring-4 ring-milk">
-                {index + 1}
+    <section className="container-page mt-14" aria-label={t('label')}>
+      <div className="card relative grid items-center gap-6 overflow-hidden px-6 py-6 sm:px-8 lg:grid-cols-[2fr_1fr]">
+        <ul className="grid gap-5 sm:grid-cols-3">
+          {items.map(({ key, Icon }) => (
+            <li key={key} className="flex items-center gap-3">
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-cocoa-100 text-[#6f7d42]">
+                <Icon className="size-5" />
               </span>
-              <p className="mt-3 text-sm leading-snug text-ink/85">{t(`steps.${step}`)}</p>
+              <span className="text-[0.82rem] leading-snug text-ink/85">{t(key)}</span>
             </li>
           ))}
-        </ol>
-        {options.length > 0 && (
-          <div className="card p-6">
-            <h3 className="font-sans text-sm font-bold text-ink">{t('options')}</h3>
-            <ul className="mt-3 divide-y divide-sand/70">
-              {options.map((option) => (
-                <li key={option.method} className="flex items-center justify-between py-3 text-sm">
-                  <span>{t(`method.${option.method}`)}</span>
-                  <span className="font-semibold text-forest">
-                    {option.price === 0 ? t('free') : formatPrice(option.price, locale)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        </ul>
+        <blockquote className="flex items-start gap-3 border-t border-sand/60 pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+          <QuoteIcon className="size-6 shrink-0 text-gold" />
+          <p className="font-display text-lg leading-snug text-cocoa-700 italic">{t('quote')}</p>
+        </blockquote>
       </div>
     </section>
   );

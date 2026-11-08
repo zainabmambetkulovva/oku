@@ -1,20 +1,18 @@
-import type { Locale } from '@/i18n/routing';
-
-const NUMBER_LOCALE: Record<Locale, string> = { ky: 'ru-RU', ru: 'ru-RU', en: 'en-US' };
-const CURRENCY_UNIT: Record<Locale, string> = { ky: 'сом', ru: 'сом', en: 'som' };
+// Кыргызский и русский: «1 500,50 сом» (пробел между тысячами, запятая в дробной части)
+const NUMBER_LOCALE = 'ru-RU';
 
 /**
  * Цена из тыйынов (так её хранит и отдаёт API) в строку для показа:
  * 65000 → «650 сом», 65050 → «650,50 сом», 150000 → «1 500 сом».
  */
-export function formatPrice(tyiyn: number, locale: Locale): string {
+export function formatPrice(tyiyn: number): string {
   const som = tyiyn / 100;
   const hasFraction = !Number.isInteger(som);
-  const number = new Intl.NumberFormat(NUMBER_LOCALE[locale], {
+  const number = new Intl.NumberFormat(NUMBER_LOCALE, {
     minimumFractionDigits: hasFraction ? 2 : 0,
     maximumFractionDigits: 2,
   }).format(som);
-  return `${number.replace(/\u202f/g, '\u00a0')}\u00a0${CURRENCY_UNIT[locale]}`;
+  return `${number.replace(/\u202f/g, '\u00a0')}\u00a0сом`;
 }
 
 /** Длительность аудио: 4500 → { hours: 1, minutes: 15 }. */

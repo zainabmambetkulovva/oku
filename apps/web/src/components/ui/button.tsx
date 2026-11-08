@@ -3,9 +3,9 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react';
 type Variant = 'primary' | 'outline' | 'ghost';
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-forest text-milk hover:bg-forest-700 shadow-[0_6px_16px_-8px_rgb(31_61_43/0.8)]',
-  outline: 'border border-forest/70 text-forest bg-milk/70 hover:bg-forest hover:text-milk',
-  ghost: 'text-forest hover:bg-forest-100',
+  primary: 'bg-cocoa text-milk hover:bg-cocoa-700 shadow-[0_10px_20px_-10px_rgb(59_36_25/0.8)]',
+  outline: 'border border-cocoa/40 text-cocoa bg-white/60 hover:bg-cocoa hover:text-milk',
+  ghost: 'text-cocoa hover:bg-cocoa-100',
 };
 
 /** Классы кнопки — общие для <button> и ссылок. */

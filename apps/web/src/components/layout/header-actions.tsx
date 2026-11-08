@@ -24,7 +24,7 @@ function CountBadge({ value }: { value: number }) {
   if (value === 0) return null;
   return (
     <span
-      className={`absolute -top-1 -right-1 grid min-w-[1.1rem] place-items-center rounded-full bg-forest px-1 text-[0.6rem] leading-[1.1rem] font-bold text-milk ${bump ? 'animate-bump' : ''}`}
+      className={`absolute -top-1 -right-1 grid min-w-[1.1rem] place-items-center rounded-full bg-cocoa px-1 text-[0.6rem] leading-[1.1rem] font-bold text-milk ${bump ? 'animate-bump' : ''}`}
       data-testid="count-badge"
     >
       {value > 99 ? '99+' : value}
@@ -48,7 +48,7 @@ export function HeaderActions() {
   }, [searchOpen]);
 
   const iconButton =
-    'relative grid size-10 place-items-center rounded-full text-forest transition hover:bg-forest-100';
+    'relative grid size-10 place-items-center rounded-full text-cocoa transition hover:bg-cocoa-100';
 
   return (
     <div className="flex items-center gap-0.5 sm:gap-1">
@@ -77,7 +77,7 @@ export function HeaderActions() {
             type="button"
             onClick={() => setSearchOpen(false)}
             aria-label={t('close')}
-            className="text-muted hover:text-forest"
+            className="text-muted hover:text-cocoa"
           >
             <CloseIcon className="size-4" />
           </button>

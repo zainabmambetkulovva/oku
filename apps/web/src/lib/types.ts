@@ -95,3 +95,14 @@ export interface ApiError {
   message: string;
   details?: unknown;
 }
+
+/** Отзыв для главной: GET /reviews/latest */
+export interface LatestReview {
+  id: string;
+  rating: number;
+  text: string | null;
+  author: { name: string };
+  isVerifiedPurchase: boolean;
+  createdAt: string;
+  product: { type: 'BOOK' | 'AUDIOBOOK'; slug: string; title: string } | null;
+}

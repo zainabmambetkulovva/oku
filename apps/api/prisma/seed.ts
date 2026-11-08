@@ -33,12 +33,12 @@ const BCRYPT_ROUNDS = 12;
 const som = (amount: number) => amount * 100;
 
 const CATEGORIES = [
-  { slug: 'fiction', name: 'Художественная литература', sortOrder: 1 },
+  { slug: 'psychology', name: 'Психология', sortOrder: 1 },
+  { slug: 'self-development', name: 'Саморазвитие', sortOrder: 2 },
+  { slug: 'islamic-literature', name: 'Исламская литература', sortOrder: 3 },
+  { slug: 'kids', name: 'Детские книги', sortOrder: 4 },
+  { slug: 'fiction', name: 'Художественная литература', sortOrder: 5 },
   { slug: 'classics', name: 'Классика', parentSlug: 'fiction', sortOrder: 1 },
-  { slug: 'modern-prose', name: 'Современная проза', parentSlug: 'fiction', sortOrder: 2 },
-  { slug: 'non-fiction', name: 'Нон-фикшн', sortOrder: 2 },
-  { slug: 'memoirs', name: 'Биографии и мемуары', parentSlug: 'non-fiction', sortOrder: 1 },
-  { slug: 'kids-teens', name: 'Подросткам и школьникам', sortOrder: 3 },
 ] as const;
 
 type CategorySlug = (typeof CATEGORIES)[number]['slug'];
@@ -65,7 +65,7 @@ const BOOKS: {
     salesCount: 42,
     pages: 312,
     publicationYear: 2024,
-    categories: ['fiction', 'modern-prose'],
+    categories: ['islamic-literature', 'fiction'],
   },
   {
     slug: 'duinodogu-en-maaniluu-okuuchu',
@@ -77,7 +77,7 @@ const BOOKS: {
     salesCount: 37,
     pages: 224,
     publicationYear: 2023,
-    categories: ['kids-teens', 'modern-prose'],
+    categories: ['kids', 'self-development'],
   },
   {
     slug: 'shakhmat-novellasy',
@@ -101,7 +101,7 @@ const BOOKS: {
     salesCount: 18,
     pages: 286,
     publicationYear: 2023,
-    categories: ['non-fiction', 'memoirs'],
+    categories: ['fiction', 'psychology'],
   },
   {
     slug: 'kun-batkanga-cheiin',
@@ -113,7 +113,7 @@ const BOOKS: {
     salesCount: 30,
     pages: 256,
     publicationYear: 2024,
-    categories: ['fiction', 'modern-prose'],
+    categories: ['islamic-literature'],
   },
   {
     slug: 'aitpagyn-bilishsin',
@@ -125,7 +125,7 @@ const BOOKS: {
     salesCount: 22,
     pages: 240,
     publicationYear: 2023,
-    categories: ['fiction', 'modern-prose'],
+    categories: ['psychology', 'self-development'],
   },
   {
     slug: 'alty-tamgaluu-tatuu',
@@ -137,7 +137,7 @@ const BOOKS: {
     salesCount: 15,
     pages: 232,
     publicationYear: 2023,
-    categories: ['fiction', 'modern-prose'],
+    categories: ['kids'],
   },
   {
     slug: 'jamila',

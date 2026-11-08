@@ -1,5 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { ReviewStatus } from '@prisma/client';
+import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/pagination/pagination';
 import { Trim } from '../../../common/validation/decorators';
@@ -42,4 +43,14 @@ export class ModerateReviewDto {
   /** REJECTED — скрыть отзыв, APPROVED — снова показать */
   @IsIn(['APPROVED', 'REJECTED'])
   status: 'APPROVED' | 'REJECTED';
+}
+
+export class LatestReviewsQueryDto {
+  /** Сколько последних отзывов вернуть (1–12) */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  limit: number = 6;
 }

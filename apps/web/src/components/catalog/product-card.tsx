@@ -1,6 +1,5 @@
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import type { Locale } from '@/i18n/routing';
 import { formatPrice, splitDuration } from '@/lib/format';
 import type { AudiobookListItem, BookListItem } from '@/lib/types';
 import { HeadphonesIcon } from '../ui/icons';
@@ -19,7 +18,7 @@ function RatingStars({
 }) {
   if (!average) return null;
   return (
-    <span className="flex items-center gap-1 text-[0.7rem] text-muted" title={label}>
+    <span className="mt-1 flex items-center gap-1 text-[0.7rem] text-muted" title={label}>
       <span className="text-gold" aria-hidden="true">
         ★
       </span>
@@ -30,41 +29,39 @@ function RatingStars({
   );
 }
 
-/** Карточка печатной книги: обложка, избранное, название, автор, цена, «В корзину». */
+/** Карточка книги из макета: обложка с тенью, ♡, название, автор, цена и круглая корзина. */
 export async function BookCard({ book }: { book: BookListItem }) {
-  const locale = (await getLocale()) as Locale;
   const t = await getTranslations('product');
 
   return (
-    <article className="card group relative flex h-full flex-col p-3 transition-shadow duration-300 hover:shadow-[var(--shadow-card-hover)]">
-      <FavoriteButton type="BOOK" id={book.id} className="absolute top-2 right-2 z-10" />
-      <Link href={`/books/${book.slug}`} className="block rounded-xl bg-cream/80 px-6 pt-4 pb-3">
+    <article className="card group relative flex h-full flex-col p-3.5 transition-shadow duration-300 hover:shadow-[var(--shadow-card-hover)]">
+      <FavoriteButton type="BOOK" id={book.id} className="absolute top-2.5 right-2.5 z-10" />
+      <Link href={`/books/${book.slug}`} className="block px-[16%] pt-3 pb-2">
         <BookCover
           slug={book.slug}
           title={book.title}
           author={book.author}
           coverUrl={book.coverUrl}
-          className="transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-1.5deg]"
+          className="shadow-[6px_10px_18px_-8px_rgb(43_29_21/0.55)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-1.5deg]"
         />
       </Link>
-      <div className="mt-3 flex flex-1 flex-col gap-1 px-1">
+      <div className="mt-2 flex flex-1 flex-col px-0.5">
         <Link
           href={`/books/${book.slug}`}
-          className="line-clamp-2 text-sm leading-snug font-semibold text-ink hover:text-forest"
+          className="line-clamp-2 text-[0.82rem] leading-snug font-semibold text-ink hover:text-cocoa-500"
         >
           {book.title}
         </Link>
-        <span className="line-clamp-1 text-xs text-muted">{book.author}</span>
-        <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="text-sm font-bold text-forest">{formatPrice(book.price, locale)}</span>
-          <RatingStars
-            average={book.rating.average}
-            count={book.rating.count}
-            label={t('reviews', { count: book.rating.count })}
-          />
-        </div>
-        <div className="pt-2">
+        <span className="mt-0.5 line-clamp-1 text-[0.7rem] text-muted">{book.author}</span>
+        <RatingStars
+          average={book.rating.average}
+          count={book.rating.count}
+          label={t('reviews', { count: book.rating.count })}
+        />
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+          <span className="text-sm font-bold text-cocoa">{formatPrice(book.price)}</span>
           <AddToCartButton
+            variant="icon"
             disabled={!book.inStock}
             item={{
               type: 'BOOK',
@@ -82,9 +79,8 @@ export async function BookCard({ book }: { book: BookListItem }) {
   );
 }
 
-/** Карточка аудиокниги: квадратная обложка, длительность, диктор. */
+/** Карточка аудиокниги: квадратная обложка, длительность, отметка о бесплатном фрагменте. */
 export async function AudiobookCard({ audiobook }: { audiobook: AudiobookListItem }) {
-  const locale = (await getLocale()) as Locale;
   const t = await getTranslations('product');
   const tu = await getTranslations('units');
   const { hours, minutes } = splitDuration(audiobook.durationSeconds);
@@ -96,47 +92,41 @@ export async function AudiobookCard({ audiobook }: { audiobook: AudiobookListIte
     .join(' ');
 
   return (
-    <article className="card group relative flex h-full flex-col p-3 transition-shadow duration-300 hover:shadow-[var(--shadow-card-hover)]">
-      <FavoriteButton type="AUDIOBOOK" id={audiobook.id} className="absolute top-2 right-2 z-10" />
-      <Link
-        href={`/audiobooks/${audiobook.slug}`}
-        className="relative block rounded-xl bg-cream/80 p-4"
-      >
+    <article className="card group relative flex h-full flex-col p-3.5 transition-shadow duration-300 hover:shadow-[var(--shadow-card-hover)]">
+      <FavoriteButton
+        type="AUDIOBOOK"
+        id={audiobook.id}
+        className="absolute top-2.5 right-2.5 z-10"
+      />
+      <Link href={`/audiobooks/${audiobook.slug}`} className="relative block px-[10%] pt-3 pb-2">
         <BookCover
           slug={audiobook.slug}
           title={audiobook.title}
           author={audiobook.author}
           coverUrl={audiobook.coverUrl}
           square
+          className="shadow-[6px_10px_18px_-8px_rgb(43_29_21/0.55)]"
         />
-        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-forest/90 px-2 py-1 text-[0.65rem] font-semibold text-milk">
-          <HeadphonesIcon className="size-3.5" />
-          {duration}
-        </span>
       </Link>
-      <div className="mt-3 flex flex-1 flex-col gap-1 px-1">
+      <div className="mt-2 flex flex-1 flex-col px-0.5">
         <Link
           href={`/audiobooks/${audiobook.slug}`}
-          className="line-clamp-2 text-sm leading-snug font-semibold text-ink hover:text-forest"
+          className="line-clamp-2 text-[0.82rem] leading-snug font-semibold text-ink hover:text-cocoa-500"
         >
           {audiobook.title}
         </Link>
-        <span className="line-clamp-1 text-xs text-muted">{audiobook.author}</span>
+        <span className="mt-0.5 line-clamp-1 text-[0.7rem] text-muted">{audiobook.author}</span>
+        <span className="mt-1 inline-flex items-center gap-1 text-[0.7rem] text-cocoa-500">
+          <HeadphonesIcon className="size-3.5" />
+          {duration}
+        </span>
         {audiobook.hasFreePreview && (
-          <span className="text-[0.7rem] text-forest-500">{t('freePreview')}</span>
+          <span className="mt-1 text-[0.7rem] text-gold-dark">{t('freePreview')}</span>
         )}
-        <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="text-sm font-bold text-forest">
-            {formatPrice(audiobook.price, locale)}
-          </span>
-          <RatingStars
-            average={audiobook.rating.average}
-            count={audiobook.rating.count}
-            label={t('reviews', { count: audiobook.rating.count })}
-          />
-        </div>
-        <div className="pt-2">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+          <span className="text-sm font-bold text-cocoa">{formatPrice(audiobook.price)}</span>
           <AddToCartButton
+            variant="icon"
             item={{
               type: 'AUDIOBOOK',
               id: audiobook.id,

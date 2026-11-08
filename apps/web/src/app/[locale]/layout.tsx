@@ -1,3 +1,4 @@
+import '@fontsource/noto-serif-display/500.css';
 import '@fontsource/noto-serif-display/600.css';
 import '@fontsource/noto-serif-display/700.css';
 import '@fontsource-variable/manrope';
@@ -37,7 +38,7 @@ export async function generateMetadata({
   };
 }
 
-export const viewport: Viewport = { themeColor: '#1f3d2b' };
+export const viewport: Viewport = { themeColor: '#3a2318' };
 
 export default async function LocaleLayout({
   children,

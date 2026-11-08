@@ -26,7 +26,7 @@ export function FavoriteButton({
       onClick={() => toggle(type, id)}
       aria-pressed={active}
       aria-label={active ? t('removeFromFavorites') : t('addToFavorites')}
-      className={`grid size-9 place-items-center rounded-full bg-milk/90 text-forest shadow-sm transition hover:scale-105 hover:text-[#b4442e] ${active ? 'text-[#b4442e]' : ''} ${className}`}
+      className={`grid size-8 place-items-center rounded-full text-cocoa-500 transition hover:scale-110 hover:text-[#b4442e] ${active ? 'text-[#b4442e]' : ''} ${className}`}
     >
       <HeartIcon filled={active} className="size-[1.15rem]" />
     </button>

@@ -5,14 +5,18 @@
 export function MountainLandscape({
   className,
   withYurt = true,
+  soft = false,
 }: {
   className?: string;
   withYurt?: boolean;
+  /** Приглушённые тёплые тона — для окон-арок рядом с иллюстрациями */
+  soft?: boolean;
 }) {
   return (
     <svg
       viewBox="0 0 1200 520"
       className={className}
+      style={soft ? { filter: 'saturate(0.55) sepia(0.18) brightness(1.06)' } : undefined}
       preserveAspectRatio="xMidYMax slice"
       aria-hidden="true"
     >

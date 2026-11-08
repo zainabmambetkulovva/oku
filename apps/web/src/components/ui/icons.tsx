@@ -157,3 +157,28 @@ export const CheckIcon = ({ className = 'size-4' }: IconProps) => (
     <path d="m5 12.5 4.5 4.5L19 7.5" />
   </svg>
 );
+export const LeafIcon = ({ className = 'size-5' }: IconProps) => (
+  <svg {...base} className={className}>
+    <path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14" />
+    <path d="M5 19c3-4 6-7 10-9" />
+  </svg>
+);
+export const BookOpenIcon = ({ className = 'size-5' }: IconProps) => (
+  <svg {...base} className={className}>
+    <path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z" />
+    <path d="M12 6.5v13" />
+  </svg>
+);
+export const SupportIcon = ({ className = 'size-5' }: IconProps) => (
+  <svg {...base} className={className}>
+    <path d="M5 13v-1a7 7 0 0 1 14 0v1" />
+    <rect x="3.5" y="12.5" width="4" height="6" rx="1.6" />
+    <rect x="16.5" y="12.5" width="4" height="6" rx="1.6" />
+    <path d="M18.5 18.5c0 1.5-2 2.5-5 2.5" />
+  </svg>
+);
+export const QuoteIcon = ({ className = 'size-5' }: IconProps) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden="true" fill="currentColor">
+    <path d="M10 6C6 7 4 10 4 14v4h6v-6H7c0-2.4 1.3-4 3.4-4.6L10 6zm10 0c-4 1-6 4-6 8v4h6v-6h-3c0-2.4 1.3-4 3.4-4.6L20 6z" />
+  </svg>
+);

@@ -10,6 +10,7 @@ import { AdminActor } from '../categories/categories.service';
 import {
   AdminReviewsQueryDto,
   CreateReviewDto,
+  LatestReviewsQueryDto,
   ReviewsQueryDto,
   UpdateReviewDto,
 } from './dto/reviews.dto';
@@ -71,6 +72,40 @@ export class ReviewsService {
       total,
       query,
     );
+  }
+
+  /**
+   * Последние опубликованные отзывы с текстом — для главной страницы.
+   * Только по товарам, которые сейчас продаются.
+   */
+  async latest(query: LatestReviewsQueryDto) {
+    const reviews = await this.prisma.review.findMany({
+      where: {
+        status: 'APPROVED',
+        text: { not: null },
+        NOT: { text: '' },
+        user: { status: 'ACTIVE', deletedAt: null },
+        OR: [
+          { book: { status: 'ACTIVE', deletedAt: null } },
+          { audiobook: { status: 'ACTIVE', deletedAt: null } },
+        ],
+      },
+      include: reviewInclude,
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+      take: query.limit,
+    });
+    const verified = await this.verifiedPurchases(reviews);
+    return reviews.map((review) => {
+      const product = review.book ?? review.audiobook;
+      return {
+        ...this.toPublic(review, verified),
+        product: product && {
+          type: review.book ? ('BOOK' as const) : ('AUDIOBOOK' as const),
+          slug: product.slug,
+          title: product.title,
+        },
+      };
+    });
   }
 
   /** Средняя оценка, количество и распределение по звёздам. */

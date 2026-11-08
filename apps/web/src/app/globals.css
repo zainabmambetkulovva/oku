@@ -1,33 +1,37 @@
 @import 'tailwindcss';
 
 /*
- * Дизайн-система OKU24: Premium Editorial + Modern 3D.
- * Основа — молочный фон и бежевые карточки (ТЗ 2.2), акценты — тёмно-зелёный и золото (макет).
+ * Дизайн-система OKU24 по утверждённому макету: тёплый молочно-бежевый фон,
+ * полупрозрачные карточки, арки, тёмно-коричневые кнопки и подвал, золотистые орнаменты.
  */
 @theme {
-  --color-milk: #fbf6ec;
-  --color-cream: #f6eedd;
-  --color-beige: #efe3cc;
-  --color-sand: #e2d1b0;
-  --color-forest: #1f3d2b;
-  --color-forest-700: #2a5139;
-  --color-forest-500: #3e6b4a;
-  --color-forest-100: #e3ebdf;
-  --color-gold: #c9a45c;
-  --color-gold-light: #e3c98e;
-  --color-gold-dark: #8c6b2f;
-  --color-ink: #1e1b16;
-  --color-muted: #6b6355;
+  --color-milk: #f9f2e8;
+  --color-cream: #f3e8d8;
+  --color-beige: #ecdcc6;
+  --color-sand: #dcc3a2;
+  --color-cocoa: #3b2419;
+  --color-cocoa-900: #2c1a11;
+  --color-cocoa-700: #56351f;
+  --color-cocoa-500: #7c5638;
+  --color-cocoa-100: #f0e2d1;
+  --color-gold: #c49a5e;
+  --color-gold-light: #e7cfa3;
+  --color-gold-dark: #8d6733;
+  --color-ink: #2b1d15;
+  --color-muted: #7c695a;
   --color-brand-purple: #2d0a4b;
 
   --font-display: 'Noto Serif Display', 'Georgia', serif;
   --font-sans: 'Manrope Variable', 'Segoe UI', system-ui, sans-serif;
 
-  --shadow-card: 0 1px 2px rgb(31 61 43 / 0.06), 0 8px 24px -12px rgb(31 61 43 / 0.25);
-  --shadow-card-hover: 0 2px 4px rgb(31 61 43 / 0.08), 0 18px 40px -16px rgb(31 61 43 / 0.35);
+  --shadow-card: 0 1px 2px rgb(91 56 30 / 0.06), 0 14px 34px -18px rgb(91 56 30 / 0.35);
+  --shadow-card-hover: 0 2px 4px rgb(91 56 30 / 0.08), 0 24px 48px -20px rgb(91 56 30 / 0.45);
 
   --animate-float: float 6s ease-in-out infinite;
   --animate-bump: bump 0.4s ease-out;
+  --animate-flutter: flutter 0.9s ease-in-out infinite;
+  --animate-drift: drift 14s ease-in-out infinite;
+  --animate-orbit: orbit 18s linear infinite;
 
   @keyframes float {
     0%,
@@ -36,6 +40,32 @@
     }
     50% {
       transform: translateY(-8px);
+    }
+  }
+  @keyframes flutter {
+    0%,
+    100% {
+      transform: scaleX(1);
+    }
+    50% {
+      transform: scaleX(0.35);
+    }
+  }
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    33% {
+      transform: translate(14px, -12px) rotate(6deg);
+    }
+    66% {
+      transform: translate(-10px, -4px) rotate(-4deg);
+    }
+  }
+  @keyframes orbit {
+    to {
+      stroke-dashoffset: -400;
     }
   }
   @keyframes bump {
@@ -58,11 +88,14 @@
   }
   body {
     @apply bg-milk text-ink font-sans antialiased;
+    background-image:
+      radial-gradient(60rem 40rem at 85% -10%, rgb(255 255 255 / 0.7), transparent 60%),
+      radial-gradient(50rem 30rem at -10% 30%, rgb(236 220 198 / 0.55), transparent 60%);
   }
   h1,
   h2,
   h3 {
-    @apply font-display text-forest;
+    @apply font-display text-cocoa;
     text-wrap: balance;
   }
   :focus-visible {
@@ -92,8 +125,17 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
   .card {
-    @apply rounded-2xl border border-sand/60 bg-beige/70;
+    @apply rounded-[1.6rem] border border-white/70 bg-white/45 backdrop-blur-sm;
     box-shadow: var(--shadow-card);
+  }
+  /* Верх в форме арки, как окна и карточки в макете */
+  .arch {
+    border-top-left-radius: 999px;
+    border-top-right-radius: 999px;
+  }
+  /* Мелкий надзаголовок над заголовком секции */
+  .eyebrow {
+    @apply text-xs font-semibold tracking-wide text-cocoa-500;
   }
   /* Горизонтальная лента без видимой полосы прокрутки */
   .scroll-row {

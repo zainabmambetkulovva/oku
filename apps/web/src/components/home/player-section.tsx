@@ -1,8 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import type { AudiobookDetails } from '@/lib/types';
-import { SectionTitle } from '../ui/section-title';
+import { SectionHeading } from '../ui/section-heading';
 import { AudioPlayer } from './audio-player';
 
+/** Интерактивный аудиоплеер (ТЗ 2.4, п. 7): бесплатные главы — всем. */
 export async function PlayerSection({ audiobook }: { audiobook: AudiobookDetails | null }) {
   const t = await getTranslations('player');
   const ts = await getTranslations('sections');
@@ -12,8 +13,7 @@ export async function PlayerSection({ audiobook }: { audiobook: AudiobookDetails
       className="container-page mt-16 scroll-mt-24"
       aria-labelledby="player-title"
     >
-      <SectionTitle id="player-title">{ts('player')}</SectionTitle>
-      <p className="-mt-3 mb-6 text-center text-sm text-muted">{t('subtitle')}</p>
+      <SectionHeading id="player-title" title={ts('player')} subtitle={t('subtitle')} sparkle />
       {audiobook ? (
         <AudioPlayer audiobook={audiobook} />
       ) : (

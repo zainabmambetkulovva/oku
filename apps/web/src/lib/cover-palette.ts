@@ -3,13 +3,13 @@
  * по slug, поэтому у одной книги он одинаковый везде (карточка, 3D-сцена).
  */
 export const COVER_PALETTE = [
-  { background: '#1F3D2B', text: '#F3E7CF', accent: '#C9A45C' },
-  { background: '#6E2C2C', text: '#F6E9D8', accent: '#D9B26F' },
-  { background: '#22324A', text: '#EFE6D6', accent: '#C9A45C' },
-  { background: '#EFE3CC', text: '#2A2418', accent: '#8C6B2F' },
-  { background: '#2F5D5A', text: '#F1E8D6', accent: '#E3C98E' },
-  { background: '#B7832F', text: '#FFF8EA', accent: '#3B2A12' },
-  { background: '#4A2C45', text: '#F3E6EC', accent: '#D8B46A' },
+  { background: '#3B2419', text: '#F3E3C8', accent: '#C49A5E' },
+  { background: '#F1E4CF', text: '#3B2419', accent: '#A87C3E' },
+  { background: '#1F3550', text: '#F1E6D2', accent: '#D7B06C' },
+  { background: '#6B2E2A', text: '#F6E8D6', accent: '#D9B26F' },
+  { background: '#1E1A17', text: '#EED9AE', accent: '#C9A45C' },
+  { background: '#8D6733', text: '#FFF6E6', accent: '#3B2419' },
+  { background: '#4D5A3A', text: '#F1EAD8', accent: '#E3C98E' },
 ] as const;
 
 export type CoverColors = (typeof COVER_PALETTE)[number];

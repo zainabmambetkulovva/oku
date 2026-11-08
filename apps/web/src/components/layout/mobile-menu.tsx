@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { CloseIcon, MenuIcon } from '../ui/icons';
 import { LanguageSwitcher } from './language-switcher';
-import { Logo } from './logo';
+import { LogoBadge } from './logo';
 
 /** Меню для телефонов: выезжает слева, закрывается по Esc и при переходе. */
 export function MobileMenu() {
@@ -30,7 +30,6 @@ export function MobileMenu() {
     { href: '/books', label: t('books') },
     { href: '/audiobooks', label: t('audiobooks') },
     { href: '/#about', label: t('about') },
-    { href: '/#delivery', label: t('delivery') },
     { href: '/#contacts', label: t('contacts') },
     { href: '/favorites', label: t('favorites') },
     { href: '/account', label: t('account') },
@@ -43,7 +42,7 @@ export function MobileMenu() {
         onClick={() => setOpen(true)}
         aria-label={t('menu')}
         aria-expanded={open}
-        className="grid size-10 place-items-center rounded-full text-forest hover:bg-forest-100"
+        className="grid size-10 place-items-center rounded-full text-cocoa hover:bg-cocoa-100"
       >
         <MenuIcon />
       </button>
@@ -57,12 +56,12 @@ export function MobileMenu() {
           />
           <div className="absolute inset-y-0 left-0 flex w-[82%] max-w-sm flex-col bg-milk p-6 shadow-2xl">
             <div className="mb-8 flex items-center justify-between">
-              <Logo className="h-6 text-forest" />
+              <LogoBadge className="size-10" />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t('close')}
-                className="text-forest"
+                className="text-cocoa"
               >
                 <CloseIcon />
               </button>
@@ -78,7 +77,7 @@ export function MobileMenu() {
                 </Link>
               ))}
             </nav>
-            <LanguageSwitcher className="mt-auto text-forest" />
+            <LanguageSwitcher className="mt-auto text-cocoa" />
           </div>
         </div>
       )}

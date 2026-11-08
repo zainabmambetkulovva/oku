@@ -107,7 +107,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
             onClick={() => seek(time - 15)}
             disabled={!current}
             aria-label={t('back')}
-            className="grid size-10 place-items-center rounded-full text-forest hover:bg-forest-100 disabled:opacity-40"
+            className="grid size-10 place-items-center rounded-full text-cocoa hover:bg-cocoa-100 disabled:opacity-40"
           >
             <BackIcon />
           </button>
@@ -116,7 +116,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
             onClick={() => playChapter(chapterId ?? firstFree?.id ?? audiobook.chapters[0]?.id)}
             disabled={stream.isPending || audiobook.chapters.length === 0}
             aria-label={playing ? t('pause') : t('play')}
-            className="grid size-14 place-items-center rounded-full bg-forest text-milk shadow-lg transition hover:bg-forest-700 disabled:opacity-60"
+            className="grid size-14 place-items-center rounded-full bg-cocoa text-milk shadow-lg transition hover:bg-cocoa-700 disabled:opacity-60"
             data-testid="player-toggle"
           >
             {playing ? (
@@ -130,7 +130,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
             onClick={() => seek(time + 15)}
             disabled={!current}
             aria-label={t('forward')}
-            className="grid size-10 place-items-center rounded-full text-forest hover:bg-forest-100 disabled:opacity-40"
+            className="grid size-10 place-items-center rounded-full text-cocoa hover:bg-cocoa-100 disabled:opacity-40"
           >
             <ForwardIcon />
           </button>
@@ -142,7 +142,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
               id="player-speed"
               value={speed}
               onChange={(event) => setSpeed(Number(event.target.value))}
-              className="rounded-full border border-sand bg-milk px-3 py-1.5 text-xs font-semibold text-forest"
+              className="rounded-full border border-sand bg-milk px-3 py-1.5 text-xs font-semibold text-cocoa"
             >
               {SPEEDS.map((value) => (
                 <option key={value} value={value}>
@@ -150,7 +150,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
                 </option>
               ))}
             </select>
-            <VolumeIcon className="hidden size-5 text-forest sm:block" />
+            <VolumeIcon className="hidden size-5 text-cocoa sm:block" />
             <input
               type="range"
               min={0}
@@ -159,7 +159,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
               value={volume}
               onChange={(event) => setVolume(Number(event.target.value))}
               aria-label={t('volume')}
-              className="hidden w-20 accent-forest sm:block"
+              className="hidden w-20 accent-cocoa sm:block"
             />
           </div>
         </div>
@@ -175,7 +175,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
             onChange={(event) => seek(Number(event.target.value))}
             disabled={!current}
             aria-label={t('seek')}
-            className="flex-1 accent-forest"
+            className="flex-1 accent-cocoa"
           />
           <span>{formatClock(duration || current?.durationSeconds || 0)}</span>
         </div>
@@ -195,7 +195,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
                 <button
                   type="button"
                   onClick={() => playChapter(chapter.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition ${active ? 'bg-forest text-milk' : 'hover:bg-cream'}`}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition ${active ? 'bg-cocoa text-milk' : 'hover:bg-cream'}`}
                   aria-current={active ? 'true' : undefined}
                 >
                   <span className="w-6 text-xs opacity-70 tabular-nums">
@@ -207,7 +207,7 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
                   </span>
                   {chapter.isFreePreview ? (
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold ${active ? 'bg-milk/20' : 'bg-forest-100 text-forest'}`}
+                      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold ${active ? 'bg-milk/20' : 'bg-cocoa-100 text-cocoa'}`}
                     >
                       {t('free')}
                     </span>

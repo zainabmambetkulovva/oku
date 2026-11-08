@@ -3,8 +3,6 @@
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { Butterfly, Sparkle } from '../ornaments/decor';
-import { MountainLandscape } from '../ornaments/landscape';
-import type { SceneBook } from './hero-books-3d';
 import { HeroScene } from './hero-scene';
 import { heroBook } from '@/assets/illustrations';
 
@@ -13,7 +11,7 @@ import { heroBook } from '@/assets/illustrations';
  * бабочки и объёмные 3D-книги вокруг. Слои слегка смещаются за курсором (параллакс);
  * при «уменьшить движение» всё стоит на месте.
  */
-export function HeroStage({ books, label }: { books: SceneBook[]; label: string }) {
+export function HeroStage({ label }: { label: string }) {
   const stage = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,30 +44,32 @@ export function HeroStage({ books, label }: { books: SceneBook[]; label: string 
       ref={stage}
       role="img"
       aria-label={label}
-      className="relative mx-auto aspect-[1.08/1] w-full max-w-[40rem] select-none lg:max-w-none"
+      className="relative mx-auto aspect-[1.3/1] w-full max-w-[44rem] select-none lg:-mr-10 lg:max-w-none xl:-mr-20"
     >
-      {/* Арка-окно с горами */}
+      {/* Каменные арки за сценой, внутри — светлое небо */}
       <div
-        className="arch absolute top-[2%] left-1/2 h-[78%] w-[60%] -translate-x-1/2 overflow-hidden border-[10px] border-white/75 bg-cream shadow-[0_30px_60px_-30px_rgb(91_56_30/0.45)] transition-transform duration-300 ease-out"
+        className="arch absolute -top-[6%] left-1/2 h-[96%] w-[86%] -translate-x-1/2 border-[18px] border-[#f6e2cf]/70 bg-gradient-to-b from-[#f3dcc7]/60 to-transparent shadow-[inset_0_0_40px_rgb(160_110_70/0.12)]"
+        style={layer(-6)}
+        aria-hidden="true"
+      />
+      <div
+        className="arch absolute top-[2%] left-1/2 h-[80%] w-[58%] -translate-x-1/2 border-[14px] border-[#f8e8d8] bg-[radial-gradient(ellipse_at_50%_35%,#fffaf2_0%,#fbe7d3_45%,#f1d3b8_100%)] shadow-[0_30px_60px_-30px_rgb(91_56_30/0.45),inset_0_0_30px_rgb(160_110_70/0.15)] transition-transform duration-300 ease-out"
         style={layer(-10)}
         aria-hidden="true"
-      >
-        <MountainLandscape className="absolute inset-0 size-full" withYurt={false} soft />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-milk/70" />
-      </div>
+      />
       {/* Солнце за аркой */}
       <div
-        className="absolute top-[4%] right-[16%] size-[22%] rounded-full bg-[radial-gradient(circle,rgb(250_226_170/0.85),transparent_70%)] blur-sm"
+        className="absolute top-[6%] left-1/2 size-[34%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgb(255_236_200/0.9),transparent_70%)] blur-md"
         aria-hidden="true"
       />
 
       {/* Подиум */}
       <div
-        className="absolute bottom-[4%] left-1/2 h-[16%] w-[78%] -translate-x-1/2"
+        className="absolute bottom-[3%] left-1/2 h-[17%] w-[66%] -translate-x-1/2"
         aria-hidden="true"
       >
-        <div className="absolute inset-x-0 bottom-0 h-[70%] rounded-[50%] bg-gradient-to-b from-[#f4e9da] to-[#dcc6a8] shadow-[0_24px_40px_-18px_rgb(91_56_30/0.55)]" />
-        <div className="absolute inset-x-[7%] top-0 h-[62%] rounded-[50%] bg-gradient-to-b from-white to-[#efe1cd] ring-2 ring-gold/50" />
+        <div className="absolute inset-x-0 bottom-0 h-[70%] rounded-[50%] bg-gradient-to-b from-[#f6e4d2] to-[#d9b796] shadow-[0_28px_44px_-18px_rgb(91_56_30/0.6)]" />
+        <div className="absolute inset-x-[7%] top-0 h-[62%] rounded-[50%] bg-gradient-to-b from-[#fff6ec] to-[#efd6bd] shadow-[0_0_24px_rgb(242_190_110/0.55)] ring-2 ring-[#e9b86a]/70" />
       </div>
 
       {/* Золотые светящиеся кольца */}
@@ -120,7 +120,7 @@ export function HeroStage({ books, label }: { books: SceneBook[]; label: string 
 
       {/* Раскрытая книга-мир */}
       <div
-        className="absolute bottom-[11%] left-1/2 w-[94%] -translate-x-1/2 transition-transform duration-300 ease-out"
+        className="absolute bottom-[12%] left-1/2 w-[84%] -translate-x-1/2 transition-transform duration-300 ease-out"
         style={layer(8)}
       >
         <div className="animate-float [animation-duration:7s]">
@@ -136,9 +136,9 @@ export function HeroStage({ books, label }: { books: SceneBook[]; label: string 
         </div>
       </div>
 
-      {/* Объёмные книги из каталога парят вокруг */}
+      {/* Раскрытые 3D-книги парят вокруг */}
       <div className="pointer-events-none absolute inset-0" style={layer(16)}>
-        <HeroScene books={books} />
+        <HeroScene />
       </div>
 
       <Butterfly className="top-[12%] left-[8%] size-12" />

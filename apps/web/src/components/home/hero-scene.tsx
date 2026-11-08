@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import type { SceneBook } from './hero-books-3d';
 
 const HeroBooks3D = dynamic(() => import('./hero-books-3d'), { ssr: false, loading: () => null });
 
@@ -19,8 +18,8 @@ function supportsWebGL(): boolean {
  * 3D-книги поверх иллюстрации. Без WebGL сцена просто не показывается —
  * главная иллюстрация и анимации остаются.
  */
-export function HeroScene({ books }: { books: SceneBook[] }) {
+export function HeroScene() {
   const [webgl, setWebgl] = useState(false);
   useEffect(() => setWebgl(supportsWebGL()), []);
-  return webgl ? <HeroBooks3D books={books} /> : null;
+  return webgl ? <HeroBooks3D /> : null;
 }

@@ -2,6 +2,7 @@ import Image, { type StaticImageData } from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import type { CategoryNode } from '@/lib/types';
+import { Butterfly, LeafBranch } from '../ornaments/decor';
 import { HornMotif } from '../ornaments/ornaments';
 import { ArrowRight } from '../ui/button';
 import { SectionHeading } from '../ui/section-heading';
@@ -55,9 +56,9 @@ function CategoryCard({
     <Link
       href={href}
       aria-label={ariaLabel}
-      className="group arch relative flex h-full flex-col overflow-hidden rounded-b-[1.6rem] border border-white/80 bg-gradient-to-b from-white/70 to-beige/80 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
+      className="group relative flex h-full flex-col overflow-hidden rounded-[1.6rem] rounded-t-[3.5rem] border border-white/50 bg-gradient-to-b from-[#fcefe2] to-[#ebcfb4] shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
     >
-      <div className="relative grid aspect-[1/0.9] place-items-center overflow-hidden px-3 pt-6">
+      <div className="relative grid aspect-[1/0.72] place-items-center overflow-hidden px-3 pt-4">
         {children}
       </div>
       <div className="flex items-center justify-between gap-2 px-4 pt-1 pb-4">
@@ -94,66 +95,77 @@ export async function CategoriesSection({ categories }: { categories: CategoryNo
     'h-full w-full object-contain object-bottom transition-transform duration-500 group-hover:scale-105';
 
   return (
-    <section className="container-page mt-6 lg:mt-2" aria-labelledby="categories-title">
-      <SectionHeading
-        id="categories-title"
-        title={ts('categories')}
-        subtitle={ts('categoriesSubtitle')}
-        action={
-          <Link
-            href="/books"
-            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-cocoa hover:text-gold-dark"
-          >
-            {ts('allCategories')} <ArrowRight />
-          </Link>
-        }
+    <section className="relative mt-6 overflow-x-clip lg:mt-2" aria-labelledby="categories-title">
+      <LeafBranch className="pointer-events-none absolute top-24 -left-4 hidden h-44 w-32 lg:block" />
+      <LeafBranch
+        className="pointer-events-none absolute top-6 -right-4 hidden h-40 w-28 lg:block"
+        flip
       />
-      <ul className="scroll-row sm:grid sm:grid-cols-3 sm:overflow-visible lg:grid-cols-5">
-        {items.map((category) => {
-          const art = illustrationFor(category.slug);
-          return (
-            <li key={category.id} className="w-[46%] shrink-0 snap-start sm:w-auto">
-              <CategoryCard
-                href={`/books?category=${category.slug}`}
-                label={category.name}
-                ariaLabel={`${t('open')}: ${category.name}`}
-              >
-                {category.imageUrl ? (
-                  // Картинка категории, загруженная в админке
-                  <img src={category.imageUrl} alt="" loading="lazy" className={imageClass} />
-                ) : art ? (
-                  <Image
-                    src={art.src}
-                    alt=""
-                    width={art.width}
-                    height={art.height}
-                    sizes="(min-width: 1024px) 16vw, 45vw"
-                    className={imageClass}
-                  />
-                ) : (
-                  <HornMotif className="w-1/3 text-gold transition-transform duration-500 group-hover:scale-110" />
-                )}
-              </CategoryCard>
-            </li>
-          );
-        })}
-        <li className="w-[46%] shrink-0 snap-start sm:w-auto">
-          <CategoryCard
-            href="/audiobooks"
-            label={t('audiobooks')}
-            ariaLabel={`${t('open')}: ${t('audiobooks')}`}
-          >
-            <Image
-              src={audiobooks}
-              alt=""
-              width={720}
-              height={607}
-              sizes="(min-width: 1024px) 16vw, 45vw"
-              className={imageClass}
-            />
-          </CategoryCard>
-        </li>
-      </ul>
+      <Butterfly className="top-10 left-[38%] size-8" delay={1} />
+      <Butterfly className="top-0 right-[22%] size-7" delay={3} />
+      <div className="container-page">
+        <SectionHeading
+          id="categories-title"
+          title={ts('categories')}
+          subtitle={ts('categoriesSubtitle')}
+          action={
+            <Link
+              href="/books"
+              className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-cocoa hover:text-gold-dark"
+            >
+              {ts('allCategories')} <ArrowRight />
+            </Link>
+          }
+        />
+        <ul className="scroll-row sm:grid sm:grid-cols-3 sm:overflow-visible lg:grid-cols-5">
+          {items.map((category) => {
+            const art = illustrationFor(category.slug);
+            return (
+              <li key={category.id} className="w-[46%] shrink-0 snap-start sm:w-auto">
+                <CategoryCard
+                  href={`/books?category=${category.slug}`}
+                  label={category.name}
+                  ariaLabel={`${t('open')}: ${category.name}`}
+                >
+                  {category.imageUrl ? (
+                    // Картинка категории, загруженная в админке
+                    <img src={category.imageUrl} alt="" loading="lazy" className={imageClass} />
+                  ) : art ? (
+                    <Image
+                      src={art.src}
+                      alt=""
+                      width={art.width}
+                      height={art.height}
+                      sizes="(min-width: 1024px) 16vw, 45vw"
+                      loading="eager"
+                      className={imageClass}
+                    />
+                  ) : (
+                    <HornMotif className="w-1/3 text-gold transition-transform duration-500 group-hover:scale-110" />
+                  )}
+                </CategoryCard>
+              </li>
+            );
+          })}
+          <li className="w-[46%] shrink-0 snap-start sm:w-auto">
+            <CategoryCard
+              href="/audiobooks"
+              label={t('audiobooks')}
+              ariaLabel={`${t('open')}: ${t('audiobooks')}`}
+            >
+              <Image
+                src={audiobooks}
+                alt=""
+                width={720}
+                height={607}
+                sizes="(min-width: 1024px) 16vw, 45vw"
+                loading="eager"
+                className={imageClass}
+              />
+            </CategoryCard>
+          </li>
+        </ul>
+      </div>
     </section>
   );
 }

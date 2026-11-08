@@ -33,7 +33,7 @@ export async function BestsellersSection({ books }: { books: BookListItem[] }) {
   const th = await getTranslations('hero');
 
   return (
-    <section className="relative mt-20" aria-labelledby="popular-title">
+    <section className="relative mt-12" aria-labelledby="popular-title">
       <CornerOrnament className="pointer-events-none absolute top-0 -left-16 hidden size-40 text-gold/30 lg:block" />
       <div className="container-page grid items-center gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,2.15fr)]">
         <div>

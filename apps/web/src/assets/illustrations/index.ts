@@ -12,3 +12,8 @@ export { default as kids } from './kids.webp';
 export { default as psychology } from './psychology.webp';
 export { default as readingRoom } from './reading-room.webp';
 export { default as selfDevelopment } from './self-development.webp';
+// Снимки для «полароидов» блока сообщества — фрагменты иллюстраций из макета
+export { default as photoBooks } from './photo-books.webp';
+export { default as photoChair } from './photo-chair.webp';
+export { default as photoMountains } from './photo-mountains.webp';
+export { default as photoShelf } from './photo-shelf.webp';

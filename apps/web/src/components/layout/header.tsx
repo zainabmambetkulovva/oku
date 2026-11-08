@@ -20,7 +20,7 @@ export async function Header() {
     'relative py-2 text-[0.82rem] font-medium text-ink/85 transition-colors hover:text-cocoa-500';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/50 bg-milk/80 backdrop-blur-md supports-[backdrop-filter]:bg-milk/65">
+    <header className="sticky top-0 z-40 bg-[#fbe8d8]/75 backdrop-blur-md supports-[backdrop-filter]:bg-[#fbe8d8]/55">
       <div className="container-page relative flex h-16 items-center gap-3 lg:h-[4.75rem]">
         <MobileMenu />
         <Link href="/" className="flex items-center gap-2.5" aria-label="OKU24">

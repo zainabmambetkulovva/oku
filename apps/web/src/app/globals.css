@@ -5,20 +5,20 @@
  * полупрозрачные карточки, арки, тёмно-коричневые кнопки и подвал, золотистые орнаменты.
  */
 @theme {
-  --color-milk: #f9f2e8;
-  --color-cream: #f3e8d8;
-  --color-beige: #ecdcc6;
-  --color-sand: #dcc3a2;
-  --color-cocoa: #3b2419;
-  --color-cocoa-900: #2c1a11;
-  --color-cocoa-700: #56351f;
-  --color-cocoa-500: #7c5638;
-  --color-cocoa-100: #f0e2d1;
+  --color-milk: #f6e3d1;
+  --color-cream: #f2dcc7;
+  --color-beige: #ead0b7;
+  --color-sand: #d8b898;
+  --color-cocoa: #3a2416;
+  --color-cocoa-900: #3f281b;
+  --color-cocoa-700: #5a3b26;
+  --color-cocoa-500: #7f5f47;
+  --color-cocoa-100: #f3e1cf;
   --color-gold: #c49a5e;
   --color-gold-light: #e7cfa3;
   --color-gold-dark: #8d6733;
-  --color-ink: #2b1d15;
-  --color-muted: #7c695a;
+  --color-ink: #2f1d12;
+  --color-muted: #8a7262;
   --color-brand-purple: #2d0a4b;
 
   --font-display: 'Noto Serif Display', 'Georgia', serif;
@@ -88,9 +88,12 @@
   }
   body {
     @apply bg-milk text-ink font-sans antialiased;
+    /* Тёплый персиково-бежевый фон с мягкими бликами, как в макете */
     background-image:
-      radial-gradient(60rem 40rem at 85% -10%, rgb(255 255 255 / 0.7), transparent 60%),
-      radial-gradient(50rem 30rem at -10% 30%, rgb(236 220 198 / 0.55), transparent 60%);
+      radial-gradient(70rem 40rem at 78% 4%, rgb(255 244 232 / 0.85), transparent 62%),
+      radial-gradient(40rem 30rem at 8% 18%, rgb(255 238 222 / 0.7), transparent 60%),
+      radial-gradient(50rem 36rem at 92% 55%, rgb(255 240 226 / 0.55), transparent 62%),
+      linear-gradient(180deg, #fbe8d8 0%, #f3dac5 22%, #edd1b9 48%, #f1d8c3 72%, #ead0b8 100%);
   }
   h1,
   h2,
@@ -125,7 +128,7 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
   .card {
-    @apply rounded-[1.6rem] border border-white/70 bg-white/45 backdrop-blur-sm;
+    @apply rounded-[1.6rem] border border-white/45 bg-[#fbebdd]/60 backdrop-blur-sm;
     box-shadow: var(--shadow-card);
   }
   /* Верх в форме арки, как окна и карточки в макете */

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 /**
  * Сквозные проверки главной: нужны API с seed-данными и запущенный web.
- * Проверяют реальные данные, языки, корзину, подписку и плеер.
+ * Проверяют реальные данные, языки, картинки, корзину, избранное и отзывы.
  */
 
 test.describe('home page', () => {
@@ -99,39 +99,6 @@ test.describe('home page', () => {
     const heart = page.getByRole('button', { name: 'В избранное' }).first();
     await heart.click();
     await expect(page.getByRole('button', { name: 'Убрать из избранного' }).first()).toBeVisible();
-  });
-
-  test('subscribes to the newsletter', async ({ page }) => {
-    await page.goto('/ru');
-    await page.getByLabel('Ваш e-mail').fill('not-an-email');
-    await page.getByRole('button', { name: 'Подписаться' }).click();
-    await expect(page.getByText('Введите корректный e-mail')).toBeVisible();
-
-    await page.getByLabel('Ваш e-mail').fill(`e2e-${Date.now()}@example.kg`);
-    await page.getByRole('button', { name: 'Подписаться' }).click();
-    await expect(page.getByTestId('newsletter-success')).toBeVisible();
-  });
-
-  test('plays the free chapter and asks guests to sign in for paid ones', async ({ page }) => {
-    await page.goto('/ru');
-    const player = page.getByTestId('audio-player');
-    await player.scrollIntoViewIfNeeded();
-
-    await player.getByTestId('player-toggle').click();
-    await expect(player.getByTestId('player-toggle')).toHaveAttribute('aria-label', 'Пауза', {
-      timeout: 15_000,
-    });
-    const src = await player.locator('audio').getAttribute('src');
-    expect(src).toContain('X-Amz-Signature=');
-
-    // Первая платная глава (без отметки «Бесплатно»)
-    await player
-      .getByRole('listitem')
-      .filter({ hasNotText: 'Бесплатно' })
-      .first()
-      .getByRole('button')
-      .click();
-    await expect(player.getByRole('status')).toHaveText('Войдите, чтобы слушать эту главу');
   });
 
   test('shows a localized 404 page', async ({ page }) => {

@@ -1,13 +1,19 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import type { BookListItem, LatestReview } from '@/lib/types';
-import { BookCover } from '../catalog/book-cover';
+import type { LatestReview } from '@/lib/types';
 import { LeafBranch, Sparkle } from '../ornaments/decor';
+import { CornerOrnament } from '../ornaments/ornaments';
 import Image from 'next/image';
 import { ArrowRight, buttonClasses } from '../ui/button';
 import { Carousel } from '../ui/carousel';
 import { HeartIcon, InstagramIcon } from '../ui/icons';
-import { booksFlowers, communityArch, readingRoom, selfDevelopment } from '@/assets/illustrations';
+import {
+  communityArch,
+  photoBooks,
+  photoChair,
+  photoMountains,
+  photoShelf,
+} from '@/assets/illustrations';
 
 const AVATAR_TONES = [
   'from-[#e7cfa3] to-[#c49a5e]',
@@ -21,7 +27,12 @@ export async function ReviewsSection({ reviews }: { reviews: LatestReview[] }) {
   const ts = await getTranslations('sections');
 
   return (
-    <section className="relative mt-24" aria-labelledby="reviews-title">
+    <section className="relative mt-12 overflow-x-clip" aria-labelledby="reviews-title">
+      <CornerOrnament className="pointer-events-none absolute -top-6 -left-16 hidden size-40 text-gold/35 lg:block" />
+      <LeafBranch
+        className="pointer-events-none absolute -right-4 bottom-0 hidden h-40 w-28 lg:block"
+        flip
+      />
       <div className="container-page grid items-center gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,2.15fr)]">
         <div>
           <h2
@@ -91,19 +102,19 @@ export async function ReviewsSection({ reviews }: { reviews: LatestReview[] }) {
 }
 
 const POLAROID =
-  'w-1/4 max-w-40 rounded-md bg-white p-2 pb-6 shadow-[0_16px_30px_-16px_rgb(43_29_21/0.6)] transition-transform hover:rotate-0';
+  '-mx-1 w-[27%] max-w-52 rounded-sm bg-white p-2 pb-8 shadow-[0_16px_30px_-16px_rgb(43_29_21/0.6)] transition-transform hover:rotate-0';
 
-/** Снимки для «полароидов», пока в каталоге мало книг (позже — фото из Instagram). */
-const PHOTOS = [readingRoom, booksFlowers, communityArch, selfDevelopment];
+/** Снимки для «полароидов», как в макете (фрагменты иллюстраций; позже — фото из Instagram). */
+const PHOTOS = [photoShelf, photoBooks, photoMountains, photoChair];
 
 /** «Будь частью читательского сообщества»: снимки-полароиды и ссылка на Instagram. */
-export async function CommunitySection({ books }: { books: BookListItem[] }) {
+export async function CommunitySection() {
   const t = await getTranslations('community');
   const instagram = process.env.NEXT_PUBLIC_INSTAGRAM_URL || 'https://www.instagram.com/oku_24/';
   const tilts = ['-rotate-6', 'rotate-3', '-rotate-2', 'rotate-6'];
 
   return (
-    <section className="relative mt-24 overflow-hidden" aria-labelledby="community-title">
+    <section className="relative mt-12 overflow-hidden" aria-labelledby="community-title">
       <LeafBranch className="pointer-events-none absolute top-0 -left-6 hidden h-40 w-28 lg:block" />
       <div className="container-page grid items-center gap-10 lg:grid-cols-[0.8fr_1.5fr_1fr]">
         <div>
@@ -125,36 +136,23 @@ export async function CommunitySection({ books }: { books: BookListItem[] }) {
           </a>
         </div>
 
-        <ul className="flex items-center justify-center gap-3 py-4 sm:gap-5" aria-hidden="true">
-          {books.length >= 4
-            ? books.slice(0, 4).map((book, index) => (
-                <li key={book.id} className={`${POLAROID} ${tilts[index]}`}>
-                  <div className="bg-cream px-[14%] py-[12%]">
-                    <BookCover
-                      slug={book.slug}
-                      title={book.title}
-                      author={book.author}
-                      coverUrl={book.coverUrl}
-                    />
-                  </div>
-                </li>
-              ))
-            : PHOTOS.map((photo, index) => (
-                <li key={photo.src} className={`${POLAROID} ${tilts[index]}`}>
-                  <div className="relative aspect-square overflow-hidden bg-cream">
-                    <Image
-                      src={photo}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1024px) 10vw, 22vw"
-                      className="object-cover"
-                    />
-                  </div>
-                </li>
-              ))}
+        <ul className="flex items-center justify-center py-4" aria-hidden="true">
+          {PHOTOS.map((photo, index) => (
+            <li key={photo.src} className={`${POLAROID} ${tilts[index]}`}>
+              <div className="relative aspect-square overflow-hidden bg-cream">
+                <Image
+                  src={photo}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 10vw, 22vw"
+                  className="object-cover"
+                />
+              </div>
+            </li>
+          ))}
         </ul>
 
-        <div className="relative mx-auto flex w-full max-w-80 flex-col items-center">
+        <div className="relative mx-auto flex w-full max-w-96 flex-col items-center lg:-mr-12">
           <p className="mb-4 flex items-center gap-2 font-display text-2xl text-cocoa">
             {t('caption')}
             <Sparkle className="size-4 text-gold" />

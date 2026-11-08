@@ -23,7 +23,7 @@ export async function Footer() {
   return (
     <footer
       id="contacts"
-      className="relative mt-28 scroll-mt-24 overflow-hidden rounded-t-[2.5rem] bg-cocoa-900 text-milk/85"
+      className="relative mt-14 scroll-mt-24 overflow-hidden bg-cocoa-900 text-milk/85"
     >
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <CornerOrnament className="absolute -top-12 -left-12 size-48 text-gold/25" />
@@ -32,6 +32,7 @@ export async function Footer() {
       <div className="container-page relative flex flex-col gap-8 pt-12 pb-8 lg:flex-row lg:items-center lg:justify-between">
         <Link href="/" className="flex items-center gap-3" aria-label="OKU24">
           <LogoBadge className="size-14 rounded-full ring-2 ring-gold/40" />
+          <span className="font-display text-2xl text-gold-light">OKU24</span>
         </Link>
         <nav aria-label={t('navigation')}>
           <ul className="flex flex-wrap gap-x-8 gap-y-3 text-sm">

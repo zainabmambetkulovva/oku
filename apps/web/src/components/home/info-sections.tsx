@@ -16,11 +16,11 @@ export async function AboutSection() {
   ] as const;
 
   return (
-    <section id="about" className="relative mt-24 scroll-mt-24" aria-labelledby="about-title">
-      <div className="container-page grid items-center gap-8 lg:grid-cols-[1.25fr_1fr_0.8fr]">
+    <section id="about" className="relative mt-10 scroll-mt-24" aria-labelledby="about-title">
+      <div className="container-page grid items-center gap-8 lg:grid-cols-[1.45fr_1fr_0.75fr]">
         {/* Уголок для чтения у окна с видом на горы */}
-        <div className="relative" aria-hidden="true">
-          <div className="absolute inset-x-[4%] top-[12%] bottom-[2%] -z-10 rounded-[2.5rem] bg-gradient-to-b from-white/50 to-beige/70" />
+        <div className="relative lg:-ml-24 xl:-ml-32" aria-hidden="true">
+          <div className="absolute inset-x-0 top-[8%] bottom-0 -z-10 rounded-r-[3rem] bg-gradient-to-b from-[#fbe9d9]/80 to-[#ecd0b6]/80" />
           <Image
             src={readingRoom}
             alt=""
@@ -72,7 +72,7 @@ export async function StripSection() {
   ] as const;
 
   return (
-    <section className="container-page mt-14" aria-label={t('label')}>
+    <section className="container-page mt-6" aria-label={t('label')}>
       <div className="card relative grid items-center gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,1.6fr)_auto_minmax(0,0.9fr)] lg:py-4">
         <ul className="grid gap-5 sm:grid-cols-3">
           {items.map(({ key, Icon }) => (

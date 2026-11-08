@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '@prisma/client';
-import { AuthenticatedUser } from '../auth/authenticated-user';
+import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
 /** Проверка роли для маршрутов с @Roles(...). Роль берётся из БД при каждом запросе. */

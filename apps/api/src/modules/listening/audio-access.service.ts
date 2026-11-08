@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Audiobook, AudioAccess, AudioChapter, Prisma } from '@prisma/client';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { DomainEventPublisher } from '../../common/events/domain-event-outbox';
 import { DomainEvents } from '../../common/events/domain-events';
 import { PrismaService } from '../../prisma/prisma.service';

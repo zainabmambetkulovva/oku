@@ -11,7 +11,7 @@ import {
 import { ApiBearerAuth, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import type { Request } from 'express';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { AuthUser } from '../../common/decorators/auth-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { SimulatePaymentDto } from './dto/payment.dto';

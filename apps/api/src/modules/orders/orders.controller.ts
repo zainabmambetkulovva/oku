@@ -1,6 +1,6 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { AuthUser } from '../../common/decorators/auth-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { DeliveryService } from './delivery.service';

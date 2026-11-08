@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DeliveryMethod, Prisma } from '@prisma/client';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { DomainEventOutbox, DomainEventPublisher } from '../../common/events/domain-event-outbox';
 import { DomainEvents } from '../../common/events/domain-events';
 import { paginated, skipFor } from '../../common/pagination/pagination';

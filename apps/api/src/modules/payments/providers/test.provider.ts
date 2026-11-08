@@ -6,7 +6,7 @@ import { Env } from '../../../config/env';
 import {
   CreatePaymentInput,
   CreatedPayment,
-  PaymentEventStatus,
+  type PaymentEventStatus,
   PaymentProvider,
   VerifiedPaymentEvent,
 } from './payment-provider';

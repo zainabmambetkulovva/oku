@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { AuthUser } from '../../common/decorators/auth-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { AuthThrottle } from '../../common/throttle/auth-throttle.decorator';

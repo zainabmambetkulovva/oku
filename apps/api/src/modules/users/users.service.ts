@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PasswordService } from '../auth/password.service';
 import { SessionsService } from '../auth/sessions.service';

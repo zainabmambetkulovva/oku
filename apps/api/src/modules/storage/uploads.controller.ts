@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsIn, IsInt, IsString, Max, Min } from 'class-validator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { StorageService } from './storage.service';
-import { UPLOAD_KIND_VALUES, UploadKind } from './upload-kinds';
+import { UPLOAD_KIND_VALUES, type UploadKind } from './upload-kinds';
 
 export class CreateUploadDto {
   /** Вид файла: определяет папку, допустимые типы и размер */

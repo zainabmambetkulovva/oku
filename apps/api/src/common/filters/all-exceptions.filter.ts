@@ -21,9 +21,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    const http = host.switchToHttp();
-    const request = http.getRequest<Request>();
-    const response = http.getResponse<Response>();
+    // Не называть переменную http: сборщик Vercel (rolldown) путает её с модулем http,
+    // из которого импортирован STATUS_CODES
+    const httpContext = host.switchToHttp();
+    const request = httpContext.getRequest<Request>();
+    const response = httpContext.getResponse<Response>();
 
     const { statusCode, message, details } = resolveException(exception);
 

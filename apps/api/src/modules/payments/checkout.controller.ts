@@ -1,6 +1,6 @@
 import { Body, Controller, HttpException, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { AuthUser } from '../../common/decorators/auth-user.decorator';
 import { CheckoutDto } from '../orders/dto/checkout.dto';
 import { OrdersService } from '../orders/orders.service';

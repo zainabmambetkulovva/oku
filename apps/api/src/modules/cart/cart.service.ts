@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AudioAccessService } from '../listening/audio-access.service';
 import { StorageService } from '../storage/storage.service';

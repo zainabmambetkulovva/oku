@@ -12,7 +12,13 @@ import {
 import { PaginationQueryDto } from '../../common/pagination/pagination';
 import { SLUG_PATTERN } from '../../common/utils/slug';
 import { Trim } from '../../common/validation/decorators';
-import { CATALOG_SORTS, CatalogSort, LANGUAGES, Language, MAX_PRICE } from './catalog.constants';
+import {
+  CATALOG_SORTS,
+  type CatalogSort,
+  LANGUAGES,
+  type Language,
+  MAX_PRICE,
+} from './catalog.constants';
 import { ProductStatus } from '@prisma/client';
 
 const toBoolean = ({ value }: { value: unknown }) =>

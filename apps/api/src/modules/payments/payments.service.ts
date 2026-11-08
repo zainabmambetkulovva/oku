@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { Order, Payment, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import type { Request } from 'express';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { DomainEventOutbox, DomainEventPublisher } from '../../common/events/domain-event-outbox';
 import { DomainEvents } from '../../common/events/domain-events';
 import { Env } from '../../config/env';
@@ -22,7 +22,7 @@ import { OrderWithRelations } from '../orders/order.mapper';
 import { OrdersService } from '../orders/orders.service';
 import { FinikPaymentProvider } from './providers/finik.provider';
 import {
-  PaymentEventStatus,
+  type PaymentEventStatus,
   PaymentProvider,
   VerifiedPaymentEvent,
 } from './providers/payment-provider';

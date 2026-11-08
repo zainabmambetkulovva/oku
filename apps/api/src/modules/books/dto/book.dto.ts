@@ -18,7 +18,7 @@ import {
 } from 'class-validator';
 import { SLUG_MAX_LENGTH, SLUG_PATTERN } from '../../../common/utils/slug';
 import { Trim } from '../../../common/validation/decorators';
-import { LANGUAGES, Language, MAX_PRICE } from '../../catalog/catalog.constants';
+import { LANGUAGES, type Language, MAX_PRICE } from '../../catalog/catalog.constants';
 
 export class CreateBookDto {
   @Trim()

@@ -19,7 +19,7 @@ import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
 import { Env } from '../../config/env';
-import { UploadKind, uploadRules } from './upload-kinds';
+import { type UploadKind, uploadRules } from './upload-kinds';
 
 export interface PresignedUpload {
   /** Адрес, на который браузер отправляет форму (multipart/form-data, POST) */

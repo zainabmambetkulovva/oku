@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsIn, IsISO8601, IsOptional } from 'class-validator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AnalyticsService } from './analytics.service';
-import { SalesGroupBy } from './sales-series';
+import type { SalesGroupBy } from './sales-series';
 
 export class SalesQueryDto {
   /** По умолчанию — 30 дней до to */

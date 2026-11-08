@@ -11,7 +11,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
-import { AccessTokenPayload } from '../../common/auth/authenticated-user';
+import type { AccessTokenPayload } from '../../common/auth/authenticated-user';
 import { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';

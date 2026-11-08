@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Review } from '@prisma/client';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { paginated, skipFor } from '../../common/pagination/pagination';
 import { rejectNulls } from '../../common/utils/reject-nulls';
 import { PrismaService } from '../../prisma/prisma.service';

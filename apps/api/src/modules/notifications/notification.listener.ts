@@ -3,10 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NotificationType, OrderStatus } from '@prisma/client';
 import {
-  AudioAccessGrantedEvent,
+  type AudioAccessGrantedEvent,
   DomainEvents,
-  OrderCreatedEvent,
-  OrderStatusChangedEvent,
+  type OrderCreatedEvent,
+  type OrderStatusChangedEvent,
 } from '../../common/events/domain-events';
 import { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthenticatedUser } from '../../common/auth/authenticated-user';
+import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { AuthUser, OptionalAuthUser } from '../../common/decorators/auth-user.decorator';
 import { OptionalAuth } from '../../common/decorators/optional-auth.decorator';
 import { AudioAccessService } from './audio-access.service';

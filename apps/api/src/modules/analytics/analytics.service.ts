@@ -4,7 +4,7 @@ import { OrderStatus, Prisma } from '@prisma/client';
 import { Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { buildSeries, SalesGroupBy } from './sales-series';
+import { buildSeries, type SalesGroupBy } from './sales-series';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

@@ -6,6 +6,7 @@ import { Butterfly, Sparkle } from '../ornaments/decor';
 import { MountainLandscape } from '../ornaments/landscape';
 import type { SceneBook } from './hero-books-3d';
 import { HeroScene } from './hero-scene';
+import { heroBook } from '@/assets/illustrations';
 
 /**
  * Сцена первого экрана: арка с горами, подиум, раскрытая книга-мир, золотые кольца,
@@ -124,7 +125,7 @@ export function HeroStage({ books, label }: { books: SceneBook[]; label: string 
       >
         <div className="animate-float [animation-duration:7s]">
           <Image
-            src="/illustrations/hero-book.webp"
+            src={heroBook}
             alt=""
             width={1400}
             height={942}

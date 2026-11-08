@@ -1,25 +1,26 @@
-import Image from 'next/image';
+import Image, { type StaticImageData } from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import type { CategoryNode } from '@/lib/types';
 import { HornMotif } from '../ornaments/ornaments';
 import { ArrowRight } from '../ui/button';
 import { SectionHeading } from '../ui/section-heading';
+import { audiobooks, islamic, kids, psychology, selfDevelopment } from '@/assets/illustrations';
 
 /**
  * Иллюстрации для категорий, у которых в админке ещё нет своей картинки.
  * Ключ — slug категории (или его начало).
  */
-const ILLUSTRATIONS: { match: RegExp; src: string; width: number; height: number }[] = [
-  { match: /^psycholog/, src: '/illustrations/psychology.webp', width: 720, height: 468 },
+const ILLUSTRATIONS: { match: RegExp; src: StaticImageData; width: number; height: number }[] = [
+  { match: /^psycholog/, src: psychology, width: 720, height: 468 },
   {
     match: /^self-dev|^samorazv/,
-    src: '/illustrations/self-development.webp',
+    src: selfDevelopment,
     width: 720,
     height: 512,
   },
-  { match: /islam/, src: '/illustrations/islamic.webp', width: 720, height: 486 },
-  { match: /^kids|^child|^detsk|^balda/, src: '/illustrations/kids.webp', width: 720, height: 485 },
+  { match: /islam/, src: islamic, width: 720, height: 486 },
+  { match: /^kids|^child|^detsk|^balda/, src: kids, width: 720, height: 485 },
 ];
 
 /** Категории из утверждённого макета. */
@@ -143,7 +144,7 @@ export async function CategoriesSection({ categories }: { categories: CategoryNo
             ariaLabel={`${t('open')}: ${t('audiobooks')}`}
           >
             <Image
-              src="/illustrations/audiobooks.webp"
+              src={audiobooks}
               alt=""
               width={720}
               height={607}

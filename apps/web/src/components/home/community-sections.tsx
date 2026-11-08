@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { ArrowRight, buttonClasses } from '../ui/button';
 import { Carousel } from '../ui/carousel';
 import { HeartIcon, InstagramIcon } from '../ui/icons';
+import { booksFlowers, communityArch, readingRoom, selfDevelopment } from '@/assets/illustrations';
 
 const AVATAR_TONES = [
   'from-[#e7cfa3] to-[#c49a5e]',
@@ -93,12 +94,7 @@ const POLAROID =
   'w-1/4 max-w-40 rounded-md bg-white p-2 pb-6 shadow-[0_16px_30px_-16px_rgb(43_29_21/0.6)] transition-transform hover:rotate-0';
 
 /** Снимки для «полароидов», пока в каталоге мало книг (позже — фото из Instagram). */
-const PHOTOS = [
-  '/illustrations/reading-room.webp',
-  '/illustrations/books-flowers.webp',
-  '/illustrations/community-arch.webp',
-  '/illustrations/self-development.webp',
-];
+const PHOTOS = [readingRoom, booksFlowers, communityArch, selfDevelopment];
 
 /** «Будь частью читательского сообщества»: снимки-полароиды и ссылка на Instagram. */
 export async function CommunitySection({ books }: { books: BookListItem[] }) {
@@ -144,7 +140,7 @@ export async function CommunitySection({ books }: { books: BookListItem[] }) {
                 </li>
               ))
             : PHOTOS.map((photo, index) => (
-                <li key={photo} className={`${POLAROID} ${tilts[index]}`}>
+                <li key={photo.src} className={`${POLAROID} ${tilts[index]}`}>
                   <div className="relative aspect-square overflow-hidden bg-cream">
                     <Image
                       src={photo}
@@ -165,7 +161,7 @@ export async function CommunitySection({ books }: { books: BookListItem[] }) {
             <HeartIcon className="size-5" />
           </p>
           <Image
-            src="/illustrations/community-arch.webp"
+            src={communityArch}
             alt=""
             width={900}
             height={474}

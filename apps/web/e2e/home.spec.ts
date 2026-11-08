@@ -26,6 +26,27 @@ test.describe('home page', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
   });
 
+  test('loads every illustration from the mockup', async ({ page }) => {
+    await page.goto('/ru');
+    // Прокрутить до конца, чтобы загрузились отложенные картинки
+    for (let y = 0; y < 8000; y += 600) {
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(80);
+    }
+    await page.waitForLoadState('networkidle');
+    const images = await page.evaluate(() =>
+      [...document.images]
+        // Скрытые на этом экране картинки браузер не загружает
+        .filter((image) => image.getClientRects().length > 0)
+        .map((image) => ({
+          src: image.getAttribute('src'),
+          loaded: image.complete && image.naturalWidth > 0,
+        })),
+    );
+    expect(images.length).toBeGreaterThanOrEqual(7);
+    expect(images.filter((image) => !image.loaded)).toEqual([]);
+  });
+
   test('switches between Kyrgyz and Russian only', async ({ page }) => {
     await page.goto('/ru');
     await expect(page.getByRole('link', { name: 'EN' })).toHaveCount(0);

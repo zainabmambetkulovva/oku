@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation';
 import { Butterfly, Sparkle } from '../ornaments/decor';
 import { ArrowRight, buttonClasses } from '../ui/button';
 import { BookOpenIcon, HeartIcon, LeafIcon, QuoteIcon, SupportIcon, TruckIcon } from '../ui/icons';
+import { booksFlowers, readingRoom } from '@/assets/illustrations';
 
 /** «Больше, чем просто книги»: окно-арка с горами, текст о магазине и три преимущества. */
 export async function AboutSection() {
@@ -21,7 +22,7 @@ export async function AboutSection() {
         <div className="relative" aria-hidden="true">
           <div className="absolute inset-x-[4%] top-[12%] bottom-[2%] -z-10 rounded-[2.5rem] bg-gradient-to-b from-white/50 to-beige/70" />
           <Image
-            src="/illustrations/reading-room.webp"
+            src={readingRoom}
             alt=""
             width={1100}
             height={519}
@@ -84,7 +85,7 @@ export async function StripSection() {
           ))}
         </ul>
         <Image
-          src="/illustrations/books-flowers.webp"
+          src={booksFlowers}
           alt=""
           width={800}
           height={306}

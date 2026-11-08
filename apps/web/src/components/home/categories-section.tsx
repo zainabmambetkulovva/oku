@@ -22,6 +22,14 @@ const ILLUSTRATIONS: { match: RegExp; src: string; width: number; height: number
   { match: /^kids|^child|^detsk|^balda/, src: '/illustrations/kids.webp', width: 720, height: 485 },
 ];
 
+/** Категории из утверждённого макета. */
+const DEFAULT_CATEGORIES = [
+  'psychology',
+  'self-development',
+  'islamic-literature',
+  'kids',
+] as const;
+
 function illustrationFor(slug: string) {
   return ILLUSTRATIONS.find(({ match }) => match.test(slug));
 }
@@ -64,12 +72,22 @@ function CategoryCard({
 export async function CategoriesSection({ categories }: { categories: CategoryNode[] }) {
   const t = await getTranslations('categories');
   const ts = await getTranslations('sections');
-  const items = flatten(categories)
+  const fromCatalog = flatten(categories)
     .filter(
       (category) =>
         category.booksCount + category.audiobooksCount > 0 || category.children.length > 0,
     )
     .slice(0, 4);
+  // Пока в каталоге нет категорий с книгами — категории из макета (их создают в админке с теми же slug)
+  const items: { id: string; slug: string; name: string; imageUrl: string | null }[] =
+    fromCatalog.length > 0
+      ? fromCatalog
+      : DEFAULT_CATEGORIES.map((slug) => ({
+          id: slug,
+          slug,
+          name: t(`defaults.${slug}`),
+          imageUrl: null,
+        }));
 
   const imageClass =
     'h-full w-full object-contain object-bottom transition-transform duration-500 group-hover:scale-105';

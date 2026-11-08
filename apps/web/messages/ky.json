@@ -56,7 +56,13 @@
   "categories": {
     "books": "{count, plural, =0 {китеп жок} other {# китеп}}",
     "open": "Категорияны ачуу",
-    "audiobooks": "Аудиокитептер"
+    "audiobooks": "Аудиокитептер",
+    "defaults": {
+      "psychology": "Психология",
+      "self-development": "Өзүн-өзү өнүктүрүү",
+      "islamic-literature": "Ислам адабияты",
+      "kids": "Балдар китептери"
+    }
   },
   "player": {
     "subtitle": "Акысыз бөлүмдөрдү бардыгы уга алат. Толук версиясы сатып алгандан кийин ачылат.",

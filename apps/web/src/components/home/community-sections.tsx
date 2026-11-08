@@ -89,6 +89,17 @@ export async function ReviewsSection({ reviews }: { reviews: LatestReview[] }) {
   );
 }
 
+const POLAROID =
+  'w-1/4 max-w-40 rounded-md bg-white p-2 pb-6 shadow-[0_16px_30px_-16px_rgb(43_29_21/0.6)] transition-transform hover:rotate-0';
+
+/** Снимки для «полароидов», пока в каталоге мало книг (позже — фото из Instagram). */
+const PHOTOS = [
+  '/illustrations/reading-room.webp',
+  '/illustrations/books-flowers.webp',
+  '/illustrations/community-arch.webp',
+  '/illustrations/self-development.webp',
+];
+
 /** «Будь частью читательского сообщества»: снимки-полароиды и ссылка на Instagram. */
 export async function CommunitySection({ books }: { books: BookListItem[] }) {
   const t = await getTranslations('community');
@@ -118,25 +129,34 @@ export async function CommunitySection({ books }: { books: BookListItem[] }) {
           </a>
         </div>
 
-        {books.length > 0 && (
-          <ul className="flex items-center justify-center gap-3 py-4 sm:gap-5" aria-hidden="true">
-            {books.slice(0, 4).map((book, index) => (
-              <li
-                key={book.id}
-                className={`w-1/4 max-w-40 rounded-md bg-white p-2 pb-6 shadow-[0_16px_30px_-16px_rgb(43_29_21/0.6)] transition-transform hover:rotate-0 ${tilts[index]}`}
-              >
-                <div className="bg-cream px-[14%] py-[12%]">
-                  <BookCover
-                    slug={book.slug}
-                    title={book.title}
-                    author={book.author}
-                    coverUrl={book.coverUrl}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul className="flex items-center justify-center gap-3 py-4 sm:gap-5" aria-hidden="true">
+          {books.length >= 4
+            ? books.slice(0, 4).map((book, index) => (
+                <li key={book.id} className={`${POLAROID} ${tilts[index]}`}>
+                  <div className="bg-cream px-[14%] py-[12%]">
+                    <BookCover
+                      slug={book.slug}
+                      title={book.title}
+                      author={book.author}
+                      coverUrl={book.coverUrl}
+                    />
+                  </div>
+                </li>
+              ))
+            : PHOTOS.map((photo, index) => (
+                <li key={photo} className={`${POLAROID} ${tilts[index]}`}>
+                  <div className="relative aspect-square overflow-hidden bg-cream">
+                    <Image
+                      src={photo}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 10vw, 22vw"
+                      className="object-cover"
+                    />
+                  </div>
+                </li>
+              ))}
+        </ul>
 
         <div className="relative mx-auto flex w-full max-w-80 flex-col items-center">
           <p className="mb-4 flex items-center gap-2 font-display text-2xl text-cocoa">

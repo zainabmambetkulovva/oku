@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // ESLint и проверка типов — отдельными шагами CI (pnpm lint, pnpm typecheck)
   eslint: { ignoreDuringBuilds: true },
+  // Картинки уже сжаты в webp; без серверной обработки они надёжно отдаются и на Vercel (сервисы)
+  images: { unoptimized: true },
   async headers() {
     return [
       {

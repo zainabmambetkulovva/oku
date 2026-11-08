@@ -56,7 +56,13 @@
   "categories": {
     "books": "{count, plural, =0 {нет книг} one {# книга} few {# книги} other {# книг}}",
     "open": "Открыть категорию",
-    "audiobooks": "Аудиокниги"
+    "audiobooks": "Аудиокниги",
+    "defaults": {
+      "psychology": "Психология",
+      "self-development": "Саморазвитие",
+      "islamic-literature": "Исламская литература",
+      "kids": "Детские книги"
+    }
   },
   "player": {
     "subtitle": "Бесплатные главы доступны всем. Полную версию слушают после покупки.",

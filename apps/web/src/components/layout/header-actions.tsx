@@ -104,7 +104,7 @@ export function HeaderActions() {
         <CartIcon />
         {hydrated && <CountBadge value={cart} />}
       </Link>
-      <Link href="/account" className={`${iconButton} hidden sm:grid`} aria-label={t('account')}>
+      <Link href="/login" className={`${iconButton} hidden sm:grid`} aria-label={t('account')}>
         <UserIcon />
       </Link>
     </div>

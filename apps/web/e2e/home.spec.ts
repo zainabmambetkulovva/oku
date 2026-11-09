@@ -38,6 +38,8 @@ test.describe('home page', () => {
       [...document.images]
         // Скрытые на этом экране картинки браузер не загружает
         .filter((image) => image.getClientRects().length > 0)
+        // Только иллюстрации макета (обложки книг в каруселях грузятся при пролистывании)
+        .filter((image) => image.getAttribute('src')?.includes('/_next/static/media/'))
         .map((image) => ({
           src: image.getAttribute('src'),
           loaded: image.complete && image.naturalWidth > 0,

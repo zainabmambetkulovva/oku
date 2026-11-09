@@ -110,6 +110,12 @@ jobs:
 
       # ── Сквозные проверки frontend: API + web + браузер ──────────────────────
       - name: Seed demo catalog (with generated audio)
+        env:
+          # Учётные записи для e2e админки (только в CI, не секреты)
+          SEED_ADMIN_EMAIL: admin@e2e.oku24.kg
+          SEED_ADMIN_PASSWORD: E2eAdmin123
+          SEED_USER_EMAIL: reader@e2e.oku24.kg
+          SEED_USER_PASSWORD: E2eReader123
         run: |
           command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
           # Чистая база: после интеграционных тестов в ней остаются их данные
@@ -122,6 +128,8 @@ jobs:
           CORS_ORIGINS: http://localhost:3001
           # Без кэша: каталог только что заполнен seed
           REDIS_URL: ''
+          # e2e входят в админку много раз подряд с одного адреса
+          AUTH_THROTTLE_LIMIT: '200'
         run: |
           (cd apps/api && PORT=3000 node dist/main > ../../api.log 2>&1 &)
           (cd apps/web && pnpm start > ../../web.log 2>&1 &)
@@ -136,6 +144,11 @@ jobs:
         run: pnpm --filter @oku_24/web exec playwright install --with-deps chromium
 
       - name: E2E tests (Playwright)
+        env:
+          SEED_ADMIN_EMAIL: admin@e2e.oku24.kg
+          SEED_ADMIN_PASSWORD: E2eAdmin123
+          SEED_USER_EMAIL: reader@e2e.oku24.kg
+          SEED_USER_PASSWORD: E2eReader123
         run: pnpm test:e2e
 
       - name: Upload Playwright report

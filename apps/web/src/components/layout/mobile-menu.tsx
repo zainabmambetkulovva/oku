@@ -32,7 +32,7 @@ export function MobileMenu() {
     { href: '/#about', label: t('about') },
     { href: '/#contacts', label: t('contacts') },
     { href: '/favorites', label: t('favorites') },
-    { href: '/account', label: t('account') },
+    { href: '/login', label: t('account') },
   ];
 
   return (

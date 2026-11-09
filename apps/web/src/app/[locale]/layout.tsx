@@ -10,6 +10,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { Footer } from '@/components/layout/footer';
+import { FlyingButterflies } from '@/components/ornaments/flying-butterflies';
 import { Header } from '@/components/layout/header';
 import { routing } from '@/i18n/routing';
 import { QueryProvider } from '@/providers/query-provider';
@@ -59,6 +60,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider>
           <QueryProvider>
             <Header />
+            <FlyingButterflies />
             <main className="flex-1">{children}</main>
             <Footer />
           </QueryProvider>

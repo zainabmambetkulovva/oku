@@ -10,7 +10,7 @@ export async function Hero() {
   const t = await getTranslations('hero');
 
   return (
-    <section className="relative isolate overflow-hidden" aria-labelledby="hero-title">
+    <section className="relative isolate overflow-x-clip pb-8" aria-labelledby="hero-title">
       <CornerOrnament className="pointer-events-none absolute top-24 -left-16 hidden size-44 text-gold/40 md:block" />
       <CornerOrnament className="pointer-events-none absolute -bottom-10 -left-14 size-36 text-gold/30" />
 

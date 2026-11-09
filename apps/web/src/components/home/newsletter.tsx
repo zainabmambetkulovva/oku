@@ -25,7 +25,7 @@ export function Newsletter() {
   });
 
   return (
-    <section className="container-page mt-24" aria-labelledby="newsletter-title">
+    <section className="container-page mt-14" aria-labelledby="newsletter-title">
       <div className="card relative overflow-hidden px-6 py-10 sm:px-12">
         <CornerOrnament className="pointer-events-none absolute -right-12 -bottom-16 size-40 text-gold/30" />
         <div className="relative grid items-center gap-6 md:grid-cols-2">

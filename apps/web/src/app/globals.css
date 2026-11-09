@@ -68,6 +68,99 @@
       stroke-dashoffset: -400;
     }
   }
+  @keyframes fly-a {
+    0% {
+      transform: translate(0, 0) rotate(8deg);
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.9;
+    }
+    30% {
+      transform: translate(35vw, -14vh) rotate(-6deg);
+    }
+    60% {
+      transform: translate(70vw, 6vh) rotate(10deg);
+    }
+    95% {
+      opacity: 0.9;
+    }
+    100% {
+      transform: translate(110vw, -10vh) rotate(0deg);
+      opacity: 0;
+    }
+  }
+  @keyframes fly-b {
+    0% {
+      transform: translate(0, 0) rotate(-10deg);
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.85;
+    }
+    35% {
+      transform: translate(-40vw, -20vh) rotate(6deg);
+    }
+    70% {
+      transform: translate(-75vw, -6vh) rotate(-8deg);
+    }
+    95% {
+      opacity: 0.85;
+    }
+    100% {
+      transform: translate(-110vw, -24vh) rotate(4deg);
+      opacity: 0;
+    }
+  }
+  @keyframes fly-c {
+    0% {
+      transform: translate(0, 0) rotate(4deg);
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.8;
+    }
+    25% {
+      transform: translate(25vw, 18vh) rotate(-8deg);
+    }
+    55% {
+      transform: translate(55vw, -8vh) rotate(8deg);
+    }
+    80% {
+      transform: translate(85vw, 12vh) rotate(-4deg);
+    }
+    100% {
+      transform: translate(110vw, 0) rotate(0deg);
+      opacity: 0;
+    }
+  }
+  @keyframes fly-d {
+    0% {
+      transform: translate(0, 0) rotate(-6deg);
+      opacity: 0;
+    }
+    6% {
+      opacity: 0.8;
+    }
+    40% {
+      transform: translate(-45vw, 30vh) rotate(8deg);
+    }
+    75% {
+      transform: translate(-80vw, 16vh) rotate(-6deg);
+    }
+    100% {
+      transform: translate(-110vw, 40vh) rotate(0deg);
+      opacity: 0;
+    }
+  }
+  @keyframes shine {
+    from {
+      background-position: 160% 0;
+    }
+    to {
+      background-position: -60% 0;
+    }
+  }
   @keyframes bump {
     0% {
       transform: scale(1);
@@ -135,6 +228,55 @@
   .arch {
     border-top-left-radius: 999px;
     border-top-right-radius: 999px;
+  }
+  /* Появление блоков при прокрутке */
+  .reveal {
+    transition:
+      opacity 0.8s ease,
+      transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal[data-reveal='hidden'] {
+    opacity: 0;
+    transform: translateY(36px);
+  }
+  .reveal[data-reveal='shown'] {
+    opacity: 1;
+    transform: none;
+  }
+  /* Живые карточки: подъём, лёгкий наклон и пробегающий блик при наведении */
+  .lift {
+    position: relative;
+    transition:
+      transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.45s ease;
+    transform-style: preserve-3d;
+  }
+  .lift::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+        100deg,
+        transparent 35%,
+        rgb(255 255 255 / 0.5) 50%,
+        transparent 65%
+      )
+      no-repeat;
+    background-size: 250% 100%;
+    background-position: 160% 0;
+    opacity: 0;
+  }
+  @media (hover: hover) {
+    .lift:hover {
+      transform: perspective(900px) translateY(-8px) rotateX(3deg);
+      box-shadow: var(--shadow-card-hover);
+    }
+    .lift:hover::after {
+      opacity: 1;
+      animation: shine 0.9s ease;
+    }
   }
   /* Мелкий надзаголовок над заголовком секции */
   .eyebrow {

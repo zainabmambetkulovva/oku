@@ -8,7 +8,8 @@ import { ArrowRight, buttonClasses } from '../ui/button';
 import { Carousel } from '../ui/carousel';
 import { SectionHeading } from '../ui/section-heading';
 
-const SLIDE = 'w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23.6%]';
+const SLIDE =
+  'w-[calc((100%_-_1rem)/2)] shrink-0 snap-start sm:w-[calc((100%_-_2rem)/3)] lg:w-[calc((100%_-_3rem)/4)]';
 
 async function ViewAll({ href }: { href: string }) {
   const t = await getTranslations('sections');
@@ -72,7 +73,7 @@ export async function NewBooksSection({ books }: { books: BookListItem[] }) {
   const t = await getTranslations('sections');
   if (books.length === 0) return null;
   return (
-    <section className="container-page mt-20" aria-labelledby="new-title">
+    <section className="container-page mt-14" aria-labelledby="new-title">
       <SectionHeading
         id="new-title"
         title={t('new')}
@@ -81,7 +82,7 @@ export async function NewBooksSection({ books }: { books: BookListItem[] }) {
       />
       <Carousel prevLabel={t('prev')} nextLabel={t('next')}>
         {books.map((book) => (
-          <li key={book.id} className={`${SLIDE} lg:w-[18.6%]`}>
+          <li key={book.id} className={`${SLIDE} lg:w-[calc((100%_-_4rem)/5)]`}>
             <BookCard book={book} />
           </li>
         ))}
@@ -95,7 +96,7 @@ export async function AudiobooksSection({ audiobooks }: { audiobooks: AudiobookL
   const t = await getTranslations('sections');
   if (audiobooks.length === 0) return null;
   return (
-    <section className="container-page mt-20" aria-labelledby="audiobooks-title">
+    <section className="container-page mt-14" aria-labelledby="audiobooks-title">
       <SectionHeading
         id="audiobooks-title"
         title={t('audiobooks')}

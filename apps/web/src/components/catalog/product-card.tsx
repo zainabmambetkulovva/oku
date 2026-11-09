@@ -34,7 +34,7 @@ export async function BookCard({ book }: { book: BookListItem }) {
   const t = await getTranslations('product');
 
   return (
-    <article className="card group relative flex h-full flex-col p-3.5 transition-shadow duration-300 hover:shadow-[var(--shadow-card-hover)]">
+    <article className="card lift group flex h-full flex-col p-3.5">
       <FavoriteButton type="BOOK" id={book.id} className="absolute top-2.5 right-2.5 z-10" />
       <Link href={`/books/${book.slug}`} className="block px-[16%] pt-3 pb-2">
         <BookCover
@@ -92,7 +92,7 @@ export async function AudiobookCard({ audiobook }: { audiobook: AudiobookListIte
     .join(' ');
 
   return (
-    <article className="card group relative flex h-full flex-col p-3.5 transition-shadow duration-300 hover:shadow-[var(--shadow-card-hover)]">
+    <article className="card lift group flex h-full flex-col p-3.5">
       <FavoriteButton
         type="AUDIOBOOK"
         id={audiobook.id}

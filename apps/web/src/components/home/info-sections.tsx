@@ -20,7 +20,7 @@ export async function AboutSection() {
       <div className="container-page grid items-center gap-8 lg:grid-cols-[1.45fr_1fr_0.75fr]">
         {/* Уголок для чтения у окна с видом на горы */}
         <div className="relative lg:-ml-24 xl:-ml-32" aria-hidden="true">
-          <div className="absolute inset-x-0 top-[8%] bottom-0 -z-10 rounded-r-[3rem] bg-gradient-to-b from-[#fbe9d9]/80 to-[#ecd0b6]/80" />
+          <div className="absolute -inset-x-[6%] -inset-y-[18%] -z-10 bg-[radial-gradient(ellipse_at_50%_55%,rgb(255_243_230/0.9)_0%,rgb(250_230_210/0.55)_40%,transparent_70%)]" />
           <Image
             src={readingRoom}
             alt=""

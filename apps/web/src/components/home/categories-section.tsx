@@ -56,7 +56,7 @@ function CategoryCard({
     <Link
       href={href}
       aria-label={ariaLabel}
-      className="group relative flex h-full flex-col overflow-hidden rounded-[1.6rem] rounded-t-[3.5rem] border border-white/50 bg-gradient-to-b from-[#fcefe2] to-[#ebcfb4] shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
+      className="lift group flex h-full flex-col overflow-hidden rounded-[1.6rem] rounded-t-[3.5rem] border border-white/50 bg-gradient-to-b from-[#fcefe2] to-[#ebcfb4] shadow-[var(--shadow-card)]"
     >
       <div className="relative grid aspect-[1/0.72] place-items-center overflow-hidden px-3 pt-4">
         {children}

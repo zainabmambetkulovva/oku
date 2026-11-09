@@ -52,8 +52,11 @@ export async function ReviewsSection({ reviews }: { reviews: LatestReview[] }) {
         ) : (
           <Carousel prevLabel={ts('prev')} nextLabel={ts('next')}>
             {reviews.map((review, index) => (
-              <li key={review.id} className="w-[82%] shrink-0 snap-start sm:w-[48%] lg:w-[32%]">
-                <figure className="card flex h-full flex-col p-5">
+              <li
+                key={review.id}
+                className="w-full shrink-0 snap-start sm:w-[calc((100%_-_1rem)/2)] lg:w-[calc((100%_-_2rem)/3)]"
+              >
+                <figure className="card lift flex h-full flex-col p-5">
                   <figcaption className="flex items-center gap-3">
                     <span
                       className={`grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br text-base font-semibold text-white ${AVATAR_TONES[index % AVATAR_TONES.length]}`}
@@ -114,7 +117,7 @@ export async function CommunitySection() {
   const tilts = ['-rotate-6', 'rotate-3', '-rotate-2', 'rotate-6'];
 
   return (
-    <section className="relative mt-12 overflow-hidden" aria-labelledby="community-title">
+    <section className="relative mt-12 overflow-x-clip py-4" aria-labelledby="community-title">
       <LeafBranch className="pointer-events-none absolute top-0 -left-6 hidden h-40 w-28 lg:block" />
       <div className="container-page grid items-center gap-10 lg:grid-cols-[0.8fr_1.5fr_1fr]">
         <div>

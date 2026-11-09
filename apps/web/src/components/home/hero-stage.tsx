@@ -48,12 +48,12 @@ export function HeroStage({ label }: { label: string }) {
     >
       {/* Каменные арки за сценой, внутри — светлое небо */}
       <div
-        className="arch absolute -top-[6%] left-1/2 h-[96%] w-[86%] -translate-x-1/2 border-[18px] border-[#f6e2cf]/70 bg-gradient-to-b from-[#f3dcc7]/60 to-transparent shadow-[inset_0_0_40px_rgb(160_110_70/0.12)]"
+        className="arch absolute top-[1%] left-1/2 h-[96%] w-[86%] -translate-x-1/2 [mask-image:linear-gradient(to_bottom,black_55%,transparent_96%)] border-[18px] border-[#f6e2cf]/70 bg-gradient-to-b from-[#f3dcc7]/60 to-transparent shadow-[inset_0_0_40px_rgb(160_110_70/0.12)]"
         style={layer(-6)}
         aria-hidden="true"
       />
       <div
-        className="arch absolute top-[2%] left-1/2 h-[80%] w-[58%] -translate-x-1/2 border-[14px] border-[#f8e8d8] bg-[radial-gradient(ellipse_at_50%_35%,#fffaf2_0%,#fbe7d3_45%,#f1d3b8_100%)] shadow-[0_30px_60px_-30px_rgb(91_56_30/0.45),inset_0_0_30px_rgb(160_110_70/0.15)] transition-transform duration-300 ease-out"
+        className="arch absolute top-[5%] left-1/2 h-[80%] w-[58%] -translate-x-1/2 [mask-image:linear-gradient(to_bottom,black_55%,transparent_96%)] border-[14px] border-[#f8e8d8] bg-[radial-gradient(ellipse_at_50%_35%,#fffaf2_0%,#fbe7d3_45%,#f1d3b8_100%)] shadow-[0_30px_60px_-30px_rgb(91_56_30/0.45),inset_0_0_30px_rgb(160_110_70/0.15)] transition-transform duration-300 ease-out"
         style={layer(-10)}
         aria-hidden="true"
       />

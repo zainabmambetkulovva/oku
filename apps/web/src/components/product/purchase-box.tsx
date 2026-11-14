@@ -61,7 +61,7 @@ export function PurchaseBox({ item, stockQuantity }: PurchaseBoxProps) {
         <p className="font-display text-[2rem] leading-none text-cocoa">
           {formatPrice(item.price)}
         </p>
-        <FavoriteButton type={item.type} id={item.id} className="size-11 bg-white/70" />
+        <FavoriteButton item={{ ...item, stock: stockQuantity }} className="size-11 bg-white/70" />
       </div>
 
       {isBook && (

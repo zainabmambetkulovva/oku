@@ -35,7 +35,19 @@ export async function BookCard({ book }: { book: BookListItem }) {
 
   return (
     <article className="card lift group flex h-full flex-col p-3.5">
-      <FavoriteButton type="BOOK" id={book.id} className="absolute top-2.5 right-2.5 z-10" />
+      <FavoriteButton
+        item={{
+          type: 'BOOK',
+          id: book.id,
+          slug: book.slug,
+          title: book.title,
+          author: book.author,
+          coverUrl: book.coverUrl,
+          price: book.price,
+          stock: book.stockQuantity,
+        }}
+        className="absolute top-2.5 right-2.5 z-10"
+      />
       <Link href={`/books/${book.slug}`} className="block px-[16%] pt-3 pb-2">
         <BookCover
           slug={book.slug}
@@ -97,8 +109,15 @@ export async function AudiobookCard({ audiobook }: { audiobook: AudiobookListIte
   return (
     <article className="card lift group flex h-full flex-col p-3.5">
       <FavoriteButton
-        type="AUDIOBOOK"
-        id={audiobook.id}
+        item={{
+          type: 'AUDIOBOOK',
+          id: audiobook.id,
+          slug: audiobook.slug,
+          title: audiobook.title,
+          author: audiobook.author,
+          coverUrl: audiobook.coverUrl,
+          price: audiobook.price,
+        }}
         className="absolute top-2.5 right-2.5 z-10"
       />
       <Link href={`/audiobooks/${audiobook.slug}`} className="relative block px-[10%] pt-3 pb-2">

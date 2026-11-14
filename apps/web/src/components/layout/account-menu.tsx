@@ -46,7 +46,7 @@ export function AccountMenu({ className }: { className: string }) {
     const next =
       pathname.startsWith('/login') || pathname === '/'
         ? ''
-        : `?next=${encodeURIComponent(`/${locale}${pathname}`)}`;
+        : `?next=${encodeURIComponent(pathname)}`;
     return (
       <Link
         href={`/login${next}`}

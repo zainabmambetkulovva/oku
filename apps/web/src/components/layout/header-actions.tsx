@@ -39,7 +39,7 @@ export function HeaderActions() {
   const t = useTranslations('nav');
   const hydrated = useHydrated();
   const cart = useCart((state) => cartCount(state.items));
-  const favorites = useFavorites((state) => state.keys.length);
+  const favorites = useFavorites((state) => state.items.length);
   const [searchOpen, setSearchOpen] = useState(false);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
 

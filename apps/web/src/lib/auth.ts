@@ -109,11 +109,15 @@ export function googleSignInUrl(locale: string, next: string | null): string {
   return `${apiBaseUrl()}/auth/google?${query.toString()}`;
 }
 
-/** Только относительные адреса внутри сайта — защита от перенаправления на чужой сайт. */
+/**
+ * Адрес возврата после входа: только путь внутри сайта (защита от перенаправления
+ * на чужой сайт) и без префикса языка — роутер сайта добавляет язык сам.
+ */
 export function safeNext(value: string | null | undefined): string | null {
-  return value && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')
-    ? value
-    : null;
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
+    return null;
+  }
+  return value.replace(/^\/(ru|ky)(?=\/|\?|$)/, '') || '/';
 }
 
 let refreshing: Promise<boolean> | null = null;

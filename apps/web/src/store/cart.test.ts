@@ -1,4 +1,4 @@
-import { cartCount, useCart } from './cart';
+import { cartCount, cartSubtotal, fromServer, useCart } from './cart';
 
 const book = {
   type: 'BOOK' as const,
@@ -67,5 +67,49 @@ describe('stock limits', () => {
     expect(useCart.getState().items[0].quantity).toBe(3);
     useCart.getState().setQuantity('BOOK', 's1', 10);
     expect(useCart.getState().items[0].quantity).toBe(3);
+  });
+});
+
+describe('account cart', () => {
+  it('maps the server cart and remembers a changed price', () => {
+    const items = fromServer(
+      {
+        items: [
+          {
+            id: 'line-1',
+            quantity: 2,
+            issues: ['INSUFFICIENT_STOCK'],
+            product: { ...book, price: 70_000, stockQuantity: 1 },
+          },
+        ],
+      },
+      [{ ...book, quantity: 2 }],
+    );
+    expect(items).toEqual([
+      {
+        ...book,
+        price: 70_000,
+        quantity: 2,
+        stock: 1,
+        lineId: 'line-1',
+        issues: ['INSUFFICIENT_STOCK'],
+        previousPrice: 65_000,
+      },
+    ]);
+  });
+
+  it('counts only orderable lines in the subtotal', () => {
+    expect(
+      cartSubtotal([
+        { ...book, quantity: 2 },
+        { ...audiobook, quantity: 1, issues: ['ALREADY_OWNED'] },
+      ]),
+    ).toBe(130_000);
+  });
+
+  it('forgets the account cart on sign-out', () => {
+    useCart.setState({ items: [{ ...book, quantity: 1, lineId: 'x' }], mode: 'server' });
+    useCart.getState().detach();
+    expect(useCart.getState()).toMatchObject({ items: [], mode: 'guest' });
   });
 });

@@ -2,28 +2,28 @@
 
 import { useTranslations } from 'next-intl';
 import { useHydrated } from '@/lib/use-hydrated';
-import { useFavorites } from '@/store/favorites';
-import type { ProductType } from '@/store/cart';
+import { type FavoriteItem, useFavorites } from '@/store/favorites';
 import { HeartIcon } from '../ui/icons';
 
 export function FavoriteButton({
-  type,
-  id,
+  item,
   className = '',
 }: {
-  type: ProductType;
-  id: string;
+  /** Данные товара — чтобы показать его на странице избранного */
+  item: FavoriteItem;
   className?: string;
 }) {
   const t = useTranslations('product');
   const hydrated = useHydrated();
-  const active = useFavorites((state) => state.keys.includes(`${type}:${id}`)) && hydrated;
+  const active =
+    useFavorites((state) => state.items.some((i) => i.type === item.type && i.id === item.id)) &&
+    hydrated;
   const toggle = useFavorites((state) => state.toggle);
 
   return (
     <button
       type="button"
-      onClick={() => toggle(type, id)}
+      onClick={() => toggle(item)}
       aria-pressed={active}
       aria-label={active ? t('removeFromFavorites') : t('addToFavorites')}
       className={`grid size-8 place-items-center rounded-full text-cocoa-500 transition hover:scale-110 hover:text-[#b4442e] ${active ? 'text-[#b4442e]' : ''} ${className}`}

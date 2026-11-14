@@ -23,11 +23,25 @@ export function Toaster() {
           className="pointer-events-auto flex w-full max-w-md animate-[page-in_0.35s_cubic-bezier(0.2,0.7,0.2,1)] items-center gap-3 rounded-2xl bg-cocoa px-4 py-3 text-sm text-milk shadow-2xl"
           data-testid="toast"
         >
-          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-gold text-cocoa-900">
-            <CheckIcon className="size-4" />
+          <span
+            className={`grid size-7 shrink-0 place-items-center rounded-full ${toast.tone === 'error' ? 'bg-[#e8b4a6] text-[#5a1f12]' : 'bg-gold text-cocoa-900'}`}
+          >
+            {toast.tone === 'error' ? '!' : <CheckIcon className="size-4" />}
           </span>
           <span className="min-w-0 flex-1">{toast.message}</span>
-          {toast.action && (
+          {toast.action && 'onClick' in toast.action && (
+            <button
+              type="button"
+              className="shrink-0 font-semibold text-gold-light underline"
+              onClick={() => {
+                (toast.action as { onClick: () => void }).onClick();
+                dismiss(toast.id);
+              }}
+            >
+              {toast.action.label}
+            </button>
+          )}
+          {toast.action && 'href' in toast.action && (
             <Link
               href={toast.action.href}
               className="shrink-0 font-semibold text-gold-light underline"

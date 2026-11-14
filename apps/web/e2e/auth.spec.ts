@@ -99,7 +99,8 @@ test.describe('login', () => {
     const google = page.getByTestId('google-sign-in');
     await expect(google).toHaveText('Google аркылуу кирүү');
     const href = await google.getAttribute('href');
-    expect(href).toContain('/auth/google?locale=ky&next=%2Fky%2Fbooks');
+    // Язык передаётся отдельно, адрес возврата — без префикса языка
+    expect(href).toContain('/auth/google?locale=ky&next=%2Fbooks');
     // Без ключей Google API честно возвращает на вход с сообщением (в CI ключей нет)
     test.skip(Boolean(process.env.GOOGLE_CONFIGURED), 'Google keys are configured');
     await google.click();

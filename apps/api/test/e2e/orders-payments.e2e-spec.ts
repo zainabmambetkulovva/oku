@@ -239,6 +239,31 @@ describe('Cart, orders and payments (e2e)', () => {
       ]);
     });
 
+    it('does not double books on a repeated merge and caps them by stock', async () => {
+      await as(user).post('/cart/items', { bookId: book.id, quantity: 2 }).expect(201);
+
+      // Та же гостевая корзина ещё раз (например, вход в двух вкладках) — без удвоения
+      const again = await as(user)
+        .post('/cart/merge', { items: [{ bookId: book.id, quantity: 2 }] })
+        .expect(200);
+      expect(again.body.data.cart.items[0].quantity).toBe(2);
+
+      // Гость положил больше, чем есть на складе (5) — берём весь остаток, а не пропускаем
+      const capped = await as(user)
+        .post('/cart/merge', { items: [{ bookId: book.id, quantity: 9 }] })
+        .expect(200);
+      expect(capped.body.data.cart.items[0].quantity).toBe(5);
+      expect(capped.body.data.skipped).toEqual([]);
+
+      const soldOut = await createBook({ title: 'Распродано', stockQuantity: 0 });
+      const result = await as(user)
+        .post('/cart/merge', { items: [{ bookId: soldOut.id, quantity: 1 }] })
+        .expect(200);
+      expect(result.body.data.skipped).toEqual([
+        expect.objectContaining({ reason: 'Book is out of stock' }),
+      ]);
+    });
+
     it('requires authentication', async () => {
       await t.http().get(api('/cart')).expect(401);
     });

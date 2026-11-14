@@ -139,14 +139,21 @@ export class CartService {
   }
 
   /**
-   * Добавляет позиции гостевой корзины. Неподходящие позиции пропускаются
+   * Переносит гостевую корзину в корзину пользователя после входа.
+   * Книга, которая уже есть в корзине, не удваивается: берётся большее из двух
+   * количеств, но не больше остатка на складе. Неподходящие позиции пропускаются
    * и возвращаются в skipped с причиной.
    */
   async merge(user: AuthenticatedUser, dto: MergeCartDto) {
     const skipped: { item: AddCartItemDto; reason: string }[] = [];
+    const cart = await this.ensureCart(user.id);
     for (const item of dto.items) {
       try {
-        await this.addItem(user, item);
+        if (item.bookId && !item.audiobookId) {
+          await this.mergeBook(cart.id, item.bookId, item.quantity ?? 1);
+        } else {
+          await this.addItem(user, { ...item, quantity: undefined });
+        }
       } catch (error) {
         if (!(error instanceof HttpException)) {
           throw error;
@@ -155,6 +162,31 @@ export class CartService {
       }
     }
     return { cart: await this.getCart(user), skipped };
+  }
+
+  private async mergeBook(cartId: string, bookId: string, requested: number): Promise<void> {
+    const book = await this.prisma.book.findFirst({
+      where: { id: bookId, status: 'ACTIVE', deletedAt: null },
+    });
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+    if (book.stockQuantity === 0) {
+      throw new ConflictException('Book is out of stock');
+    }
+    const existing = await this.prisma.cartItem.findUnique({
+      where: { cartId_bookId: { cartId, bookId } },
+    });
+    const quantity = Math.min(
+      Math.max(existing?.quantity ?? 0, requested),
+      book.stockQuantity,
+      MAX_LINE_QUANTITY,
+    );
+    await this.prisma.cartItem.upsert({
+      where: { cartId_bookId: { cartId, bookId } },
+      create: { cartId, bookId, quantity },
+      update: { quantity },
+    });
   }
 
   private async toLine(item: CartItemWithProduct, user: AuthenticatedUser) {

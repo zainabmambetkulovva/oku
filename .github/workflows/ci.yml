@@ -130,6 +130,8 @@ jobs:
           REDIS_URL: ''
           # e2e входят в админку много раз подряд с одного адреса
           AUTH_THROTTLE_LIMIT: '200'
+          # Все запросы SSR идут с одного адреса web-сервера — в тестах общий лимит выше
+          THROTTLE_LIMIT: '2000'
         run: |
           (cd apps/api && PORT=3000 node dist/main > ../../api.log 2>&1 &)
           (cd apps/web && pnpm start > ../../web.log 2>&1 &)

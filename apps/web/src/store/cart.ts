@@ -13,6 +13,8 @@ export interface GuestCartItem {
   /** Цена на момент добавления, тыйын. Итоговую сумму всегда считает сервер */
   price: number;
   quantity: number;
+  /** Остаток на складе на момент добавления — больше положить нельзя (сервер перепроверяет) */
+  stock?: number;
 }
 
 const MAX_QUANTITY = 99;
@@ -38,15 +40,17 @@ export const useCart = create<CartState>()(
           const existing = state.items.find((i) => i.type === item.type && i.id === item.id);
           if (existing) {
             // Аудиокнига — всегда одна
+            const limit = Math.min(MAX_QUANTITY, item.stock ?? existing.stock ?? MAX_QUANTITY);
             const next =
-              item.type === 'AUDIOBOOK' ? 1 : Math.min(MAX_QUANTITY, existing.quantity + quantity);
+              item.type === 'AUDIOBOOK' ? 1 : Math.min(limit, existing.quantity + quantity);
             return {
               items: state.items.map((i) =>
                 i === existing ? { ...i, ...item, quantity: next } : i,
               ),
             };
           }
-          const first = item.type === 'AUDIOBOOK' ? 1 : Math.min(MAX_QUANTITY, quantity);
+          const limit = Math.min(MAX_QUANTITY, item.stock ?? MAX_QUANTITY);
+          const first = item.type === 'AUDIOBOOK' ? 1 : Math.max(1, Math.min(limit, quantity));
           return { items: [...state.items, { ...item, quantity: first }] };
         }),
       setQuantity: (type, id, quantity) =>
@@ -56,7 +60,9 @@ export const useCart = create<CartState>()(
               ? {
                   ...i,
                   quantity:
-                    type === 'AUDIOBOOK' ? 1 : Math.max(1, Math.min(MAX_QUANTITY, quantity)),
+                    type === 'AUDIOBOOK'
+                      ? 1
+                      : Math.max(1, Math.min(MAX_QUANTITY, i.stock ?? MAX_QUANTITY, quantity)),
                 }
               : i,
           ),

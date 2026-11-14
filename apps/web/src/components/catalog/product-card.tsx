@@ -59,7 +59,9 @@ export async function BookCard({ book }: { book: BookListItem }) {
           label={t('reviews', { count: book.rating.count })}
         />
         <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <span className="text-sm font-bold text-cocoa">{formatPrice(book.price)}</span>
+          <span className="text-sm font-bold text-cocoa" data-testid="price">
+            {formatPrice(book.price)}
+          </span>
           <AddToCartButton
             variant="icon"
             disabled={!book.inStock}
@@ -71,6 +73,7 @@ export async function BookCard({ book }: { book: BookListItem }) {
               author: book.author,
               coverUrl: book.coverUrl,
               price: book.price,
+              stock: book.stockQuantity,
             }}
           />
         </div>
@@ -124,7 +127,9 @@ export async function AudiobookCard({ audiobook }: { audiobook: AudiobookListIte
           <span className="mt-1 text-[0.7rem] text-gold-dark">{t('freePreview')}</span>
         )}
         <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <span className="text-sm font-bold text-cocoa">{formatPrice(audiobook.price)}</span>
+          <span className="text-sm font-bold text-cocoa" data-testid="price">
+            {formatPrice(audiobook.price)}
+          </span>
           <AddToCartButton
             variant="icon"
             item={{

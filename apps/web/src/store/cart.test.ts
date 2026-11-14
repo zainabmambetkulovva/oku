@@ -47,3 +47,25 @@ describe('guest cart', () => {
     expect(JSON.parse(localStorage.getItem('oku24-cart')!).state.items).toHaveLength(1);
   });
 });
+
+describe('stock limits', () => {
+  beforeEach(() => useCart.getState().clear());
+
+  it('never puts more copies than in stock', () => {
+    const book = {
+      type: 'BOOK' as const,
+      id: 's1',
+      slug: 's',
+      title: 'T',
+      author: 'A',
+      coverUrl: null,
+      price: 100,
+      stock: 3,
+    };
+    useCart.getState().add(book, 2);
+    useCart.getState().add(book, 5);
+    expect(useCart.getState().items[0].quantity).toBe(3);
+    useCart.getState().setQuantity('BOOK', 's1', 10);
+    expect(useCart.getState().items[0].quantity).toBe(3);
+  });
+});

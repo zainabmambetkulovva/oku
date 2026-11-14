@@ -106,3 +106,35 @@ export interface LatestReview {
   createdAt: string;
   product: { type: 'BOOK' | 'AUDIOBOOK'; slug: string; title: string } | null;
 }
+
+export interface BookDetails extends BookListItem {
+  description: string | null;
+  publisher: string | null;
+  publicationYear: number | null;
+  pages: number | null;
+  isbn: string | null;
+  images: { id: string; url: string | null; altText: string | null }[];
+}
+
+export interface CategoryDetails {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrl: string | null;
+}
+
+export interface ReviewItem {
+  id: string;
+  rating: number;
+  text: string | null;
+  author: { name: string };
+  isVerifiedPurchase: boolean;
+  createdAt: string;
+}
+
+export interface ReviewSummary {
+  average: number | null;
+  count: number;
+  distribution: Record<'1' | '2' | '3' | '4' | '5', number>;
+}

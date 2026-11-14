@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useHydrated } from '@/lib/use-hydrated';
 import { useCart, type GuestCartItem } from '@/store/cart';
+import { useToasts } from '@/store/toast';
 import { CartIcon, CheckIcon } from '../ui/icons';
 import { ArrowRight } from '../ui/button';
 
@@ -21,6 +22,8 @@ export function AddToCartButton({
   variant = 'full',
 }: AddToCartButtonProps) {
   const t = useTranslations('product');
+  const tt = useTranslations('toast');
+  const showToast = useToasts((state) => state.show);
   const hydrated = useHydrated();
   const add = useCart((state) => state.add);
   const inCart =
@@ -45,6 +48,10 @@ export function AddToCartButton({
         onClick={() => {
           add(item);
           setJustAdded(true);
+          showToast({
+            message: tt('addedToCart', { title: item.title }),
+            action: { label: tt('openCart'), href: '/cart' },
+          });
         }}
         aria-label={label}
         title={label}
@@ -71,6 +78,10 @@ export function AddToCartButton({
       onClick={() => {
         add(item);
         setJustAdded(true);
+        showToast({
+          message: tt('addedToCart', { title: item.title }),
+          action: { label: tt('openCart'), href: '/cart' },
+        });
       }}
       className="inline-flex w-full items-center justify-between gap-2 rounded-full bg-cocoa px-3 py-2 text-xs font-semibold text-milk transition-colors hover:bg-cocoa-700 disabled:bg-cocoa-500"
     >

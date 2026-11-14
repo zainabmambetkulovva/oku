@@ -26,10 +26,13 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `COOKIE_SAMESITE` | `lax` (по умолчанию), `strict` или `none`. `none` нужен, если frontend и API на разных доменах; требует `COOKIE_SECURE=true` |
 | `FRONTEND_URL` | Адрес frontend — для ссылок в письмах |
 | `CORS_ORIGINS` | Адреса frontend через запятую, которым разрешены запросы к API |
-| `THROTTLE_TTL_MS`, `THROTTLE_LIMIT` | Ограничение частоты запросов: не больше `LIMIT` запросов за `TTL` мс с одного IP |
+| `THROTTLE_TTL_MS`, `THROTTLE_LIMIT` | Ограничение частоты запросов: не больше `LIMIT` запросов за `TTL` мс с одного IP (на Vercel — по адресу посетителя из `x-vercel-forwarded-for`) |
+| `INTERNAL_API_TOKEN` | Служебный ключ сервера сайта (случайная строка от 32 символов, тот же у web). Запросы серверной отрисовки с ним не ограничиваются лимитом. Не задан — исключений нет |
 | `AUTH_THROTTLE_TTL_MS`, `AUTH_THROTTLE_LIMIT` | Более строгий лимит для входа, регистрации и восстановления пароля |
-| `MAIL_TRANSPORT` | `log` — письма в лог (разработка), `smtp` — отправка через SMTP |
-| `MAIL_FROM` | Отправитель писем, например `OKU_24 <no-reply@oku24.kg>` |
+| `MAIL_TRANSPORT` | `log` — письма в лог (разработка), `brevo` — API Brevo, `smtp` — отправка через SMTP |
+| `MAIL_FROM` | Отправитель писем, например `OKU24 <no-reply@oku24.kg>`. Для Brevo — подтверждённый в Brevo адрес |
+| `BREVO_API_KEY` | Ключ API Brevo. Обязателен при `MAIL_TRANSPORT=brevo` |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Вход через Google (задаются вместе). Не заданы — кнопка Google сообщает, что вход пока недоступен |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` | Параметры SMTP-сервера. `SMTP_HOST` обязателен при `MAIL_TRANSPORT=smtp` |
 | `SWAGGER_ENABLED` | `true` / `false` — публиковать ли документацию на `/api/docs`. Не задано — включена везде, кроме `NODE_ENV=production` |
 | `S3_ENDPOINT` | Адрес S3-совместимого сервиса. Пустой — AWS S3. Для Cloudflare R2, Yandex Object Storage и т.п. — их адрес |
@@ -41,7 +44,7 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `S3_CREATE_BUCKETS` | `true` — создавать бакеты при старте (только разработка) |
 | `MEDIA_PUBLIC_BASE_URL` | Адрес, по которому браузер получает файлы публичного бакета — адрес CDN |
 | `REDIS_URL` | Redis для кэша каталога. Пустой — кэш отключён |
-| `API_PUBLIC_URL` | Публичный адрес API (`https://api.<домен>`) — из него строится адрес вебхука платёжной системы |
+| `API_PUBLIC_URL` | Публичный адрес API (`https://api.<домен>`; на Vercel — адрес сайта) — из него строятся адрес вебхука платёжной системы и адрес возврата Google `API_PUBLIC_URL/api/v1/auth/google/callback` |
 | `DELIVERY_PRICE_COURIER`, `DELIVERY_PRICE_POST` | Цена доставки курьером и почтой, тыйын. Самовывоз бесплатный |
 | `ORDER_PAYMENT_TTL_MINUTES` | Минут на оплату онлайн-заказа (по умолчанию 10) |
 | `JOBS_ENABLED` | Фоновые задачи: отмена неоплаченных заказов раз в минуту |
@@ -62,6 +65,7 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `NEXT_PUBLIC_API_URL` | Адрес API для браузера, например `https://api.oku24.kg/api/v1`. Встраивается при сборке — задать до `pnpm build`. На Vercel не задаётся: без него браузер ходит на `/api/v1` своего домена |
 | `NEXT_PUBLIC_CONTACT_PHONE`, `NEXT_PUBLIC_CONTACT_EMAIL` | Контакты в подвале; пустые не показываются |
 | `NEXT_PUBLIC_INSTAGRAM_URL` | Instagram (по умолчанию @oku_24) |
+| `INTERNAL_API_TOKEN` | Тот же служебный ключ, что у API. Только на сервере, в браузер не попадает |
 
 Адрес сайта нужно добавить в `CORS_ORIGINS` и `FRONTEND_URL` API.
 
@@ -163,8 +167,9 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
    | Хранилище | переменные из шага 1 |
    | Оплата | `PAYMENT_PROVIDER=finik`, `FINIK_ENV` (`beta` для проверки, затем `prod`), `FINIK_API_KEY`, `FINIK_ACCOUNT_ID`, `FINIK_PRIVATE_KEY`, `FINIK_PUBLIC_KEY` |
    | Роли | `ROLE_MANAGER_EMAILS` |
-   | Прочее | `JOBS_ENABLED=false` |
-   | Почта (по желанию) | `MAIL_TRANSPORT=smtp`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` |
+   | Прочее | `JOBS_ENABLED=false`, `INTERNAL_API_TOKEN` (случайная строка от 32 символов; одна переменная проекта видна и api, и web) |
+   | Почта | `MAIL_TRANSPORT=brevo`, `BREVO_API_KEY`, `MAIL_FROM` — см. шаг 8 |
+   | Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — см. шаг 7 |
 
    `API_SERVICE_URL`, `API_URL` и `NEXT_PUBLIC_API_URL` не задавать. Swagger в production выключен по умолчанию.
 4. Deploy.
@@ -179,11 +184,51 @@ Actions → **Production database** → Run workflow → `task: create-admin`, `
 
 **Вход в админку:** откройте `SITE/ru/login`, войдите email и паролем администратора — откроется админ-панель (`SITE/ru/admin`): книги, категории, загрузка обложек.
 
-**7. Проверка**
+**7. Вход через Google (Google Cloud Console)**
+
+1. https://console.cloud.google.com → создать проект (например, `OKU24`).
+2. APIs & Services → **OAuth consent screen** (Google Auth Platform → Branding):
+   - тип пользователей **External**;
+   - название приложения `OKU24`, e-mail поддержки, логотип (необязательно);
+   - домены (Authorized domains): домен сайта, например `vercel.app` или `oku24.kg`;
+   - ссылки на политику конфиденциальности и условия: `SITE/ru/privacy`, `SITE/ru/terms`;
+   - Data access (Scopes): `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile` — это не «чувствительные» scope, проверка Google для них не нужна;
+   - Audience: пока приложение в режиме **Testing**, войти могут только добавленные Test users; для всех покупателей нажать **Publish app**.
+3. APIs & Services → **Credentials** → Create credentials → **OAuth client ID**:
+   - Application type: **Web application**, имя `OKU24 web`;
+   - **Authorized JavaScript origins**: `SITE` (например, `https://oku24.vercel.app`);
+   - **Authorized redirect URIs** — строго совпадает с `API_PUBLIC_URL` + путь:
+     - `https://oku24.vercel.app/api/v1/auth/google/callback` (production);
+     - `http://localhost:3000/api/v1/auth/google/callback` (локальная разработка, по желанию);
+     - при переходе на свой домен добавить `https://<домен>/api/v1/auth/google/callback` и сменить `API_PUBLIC_URL`.
+4. Скопировать **Client ID** и **Client secret** в Vercel → Environment Variables: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (Sensitive). Не отправлять их в чат и не коммитить. Redeploy.
+5. Проверка: `SITE/ru/login` → «Войти через Google» → выбор аккаунта → возврат на сайт уже вошедшим. Ошибка `redirect_uri_mismatch` значит, что адрес в шаге 3 не совпал с `API_PUBLIC_URL/api/v1/auth/google/callback` буква в букву.
+
+Если аккаунт с этой почтой уже есть (регистрировался по паролю), Google привязывается к нему; пароль продолжает работать.
+
+**8. Почта через Brevo (подтверждение почты, восстановление пароля, уведомления о заказах)**
+
+1. https://app.brevo.com → регистрация (бесплатный план — 300 писем в день).
+2. **Домен отправителя** (Settings → Senders, Domains & Dedicated IPs → Domains → Add a domain), например `oku24.kg`. Brevo покажет записи DNS — добавить их у регистратора домена:
+   - `TXT` `brevo-code:…` — подтверждение владения доменом;
+   - `TXT` на `mail._domainkey` (DKIM) — точное значение из Brevo;
+   - `SPF`: `TXT` на `@` — `v=spf1 include:spf.brevo.com ~all`. Если SPF-запись уже есть, добавить `include:spf.brevo.com` в неё (у домена должна быть одна SPF-запись);
+   - `DMARC`: `TXT` на `_dmarc` — `v=DMARC1; p=none; rua=mailto:<ваш e-mail>` (позже можно ужесточить до `p=quarantine`).
+
+   Нажать Authenticate после обновления DNS (обычно до нескольких часов).
+3. **Отправитель** (Senders → Add a sender): имя `OKU24`, адрес на этом домене, например `no-reply@oku24.kg`. Без своего домена можно подтвердить личный адрес, но письма с бесплатных почтовых ящиков (gmail.com и т.п.) часто попадают в спам — для магазина нужен свой домен.
+4. **Ключ API**: SMTP & API → API Keys → Generate a new API key (имя `oku24-vercel`). Ключ показывается один раз.
+5. Vercel → Environment Variables: `MAIL_TRANSPORT=brevo`, `BREVO_API_KEY` (Sensitive), `MAIL_FROM=OKU24 <no-reply@oku24.kg>` (адрес из шага 3). Redeploy.
+6. Проверка: зарегистрироваться на сайте — письмо «подтвердите электронную почту» приходит на языке страницы регистрации (KG или RU); «Забыли пароль?» присылает ссылку на 60 минут. Журнал отправок — Brevo → Transactional → Logs.
+
+Пока Brevo не настроен (`MAIL_TRANSPORT=log`), письма не отправляются, а только пишутся в лог сервера.
+
+**9. Проверка**
 
 - `SITE` открывает главную, переключение языков работает.
 - `SITE/api/v1/health` отвечает `"database":"up"`.
 - `SITE/api/docs` — 404 (Swagger выключен).
+- `SITE/ru/register` — регистрация, письмо приходит (если настроен Brevo); `SITE/ru/login` — вход по паролю и через Google.
 
 ## Локальная разработка
 

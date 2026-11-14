@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiBaseUrl } from './api';
+import { apiBaseUrl, internalHeaders } from './api';
 
 describe('apiBaseUrl on the server', () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -18,5 +18,16 @@ describe('apiBaseUrl on the server', () => {
     vi.stubEnv('API_URL', undefined);
     vi.stubEnv('NEXT_PUBLIC_API_URL', undefined);
     expect(apiBaseUrl()).toBe('http://localhost:3000/api/v1');
+  });
+});
+
+describe('internalHeaders on the server', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('sends the internal token only when it is configured', () => {
+    vi.stubEnv('INTERNAL_API_TOKEN', 'k'.repeat(40));
+    expect(internalHeaders()).toEqual({ 'x-oku-internal-token': 'k'.repeat(40) });
+    vi.stubEnv('INTERNAL_API_TOKEN', '');
+    expect(internalHeaders()).toEqual({});
   });
 });

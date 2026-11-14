@@ -6,7 +6,8 @@ import { Link } from '@/i18n/navigation';
 import { useHydrated } from '@/lib/use-hydrated';
 import { cartCount, useCart } from '@/store/cart';
 import { useFavorites } from '@/store/favorites';
-import { CartIcon, HeartIcon, SearchIcon, UserIcon } from '../ui/icons';
+import { CartIcon, HeartIcon, SearchIcon } from '../ui/icons';
+import { AccountMenu } from './account-menu';
 import { SearchOverlay } from './search-overlay';
 
 function CountBadge({ value }: { value: number }) {
@@ -69,9 +70,7 @@ export function HeaderActions() {
         <CartIcon />
         {hydrated && <CountBadge value={cart} />}
       </Link>
-      <Link href="/login" className={`${iconButton} hidden sm:grid`} aria-label={t('account')}>
-        <UserIcon />
-      </Link>
+      <AccountMenu className={`${iconButton} hidden sm:grid`} />
     </div>
   );
 }

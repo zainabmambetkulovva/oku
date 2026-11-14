@@ -1,4 +1,5 @@
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { SITE_LOCALES, type SiteLocale } from '../auth.constants';
 import { IsNormalizedEmail, IsStrongPassword, Trim } from '../../../common/validation/decorators';
 
 export class RegisterDto {
@@ -21,4 +22,9 @@ export class RegisterDto {
   @IsString()
   @MaxLength(100)
   lastName?: string;
+
+  /** Язык сайта, на котором зарегистрировался пользователь: на нём придут письма */
+  @IsOptional()
+  @IsIn(SITE_LOCALES)
+  locale?: SiteLocale;
 }

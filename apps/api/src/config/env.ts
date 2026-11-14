@@ -45,10 +45,21 @@ export const envSchema = z
     // Более строгий лимит для входа, регистрации и восстановления пароля
     AUTH_THROTTLE_TTL_MS: z.coerce.number().int().positive().default(60_000),
     AUTH_THROTTLE_LIMIT: z.coerce.number().int().positive().default(10),
+    // Служебный ключ сервера сайта (тот же, что у web). Его запросы не ограничиваются лимитом.
+    // Случайная строка от 32 символов; не задан — исключений нет
+    INTERNAL_API_TOKEN: z.string().min(32, 'не короче 32 символов').optional(),
 
-    // Почта: log — письма выводятся в лог (разработка), smtp — отправка через SMTP
-    MAIL_TRANSPORT: z.enum(['log', 'smtp']).default('log'),
-    MAIL_FROM: z.string().min(1).default('OKU_24 <no-reply@oku24.local>'),
+    // Вход через Google (Google Cloud Console → OAuth client ID, тип «Web application»).
+    // Адрес возврата: API_PUBLIC_URL + /api/v1/auth/google/callback. Не заданы — кнопка сообщит,
+    // что вход через Google пока недоступен
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+
+    // Почта: log — письма выводятся в лог (разработка), brevo — API Brevo, smtp — любой SMTP
+    MAIL_TRANSPORT: z.enum(['log', 'brevo', 'smtp']).default('log'),
+    // Ключ API Brevo (SMTP & API → API Keys). Только в переменных окружения
+    BREVO_API_KEY: z.string().optional(),
+    MAIL_FROM: z.string().min(1).default('OKU24 <no-reply@oku24.local>'),
     SMTP_HOST: z.string().optional(),
     SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
     SMTP_SECURE: booleanString.default('false'),
@@ -126,6 +137,12 @@ export const envSchema = z
     }
     if (env.COOKIE_SAMESITE === 'none' && !env.COOKIE_SECURE) {
       issue('COOKIE_SAMESITE', 'значение none требует COOKIE_SECURE=true');
+    }
+    if (Boolean(env.GOOGLE_CLIENT_ID) !== Boolean(env.GOOGLE_CLIENT_SECRET)) {
+      issue('GOOGLE_CLIENT_SECRET', 'GOOGLE_CLIENT_ID и GOOGLE_CLIENT_SECRET задаются вместе');
+    }
+    if (env.MAIL_TRANSPORT === 'brevo' && !env.BREVO_API_KEY) {
+      issue('BREVO_API_KEY', 'обязателен при MAIL_TRANSPORT=brevo');
     }
     if (env.MAIL_TRANSPORT === 'smtp' && !env.SMTP_HOST) {
       issue('SMTP_HOST', 'обязателен при MAIL_TRANSPORT=smtp');

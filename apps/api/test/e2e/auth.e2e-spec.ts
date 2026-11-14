@@ -70,7 +70,7 @@ describe('Auth (e2e)', () => {
 
       expect(t.mail.to('reader@example.kg')).toHaveLength(1);
       expect(t.mail.to('reader@example.kg')[0].text).toContain(
-        'http://frontend.test/verify-email?token=',
+        'http://frontend.test/ru/verify-email?token=',
       );
 
       const stored = await t.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
@@ -465,6 +465,44 @@ describe('Auth (e2e)', () => {
     });
   });
 
+  describe('mail language', () => {
+    it('sends Kyrgyz mail to users who registered in Kyrgyz', async () => {
+      await t
+        .http()
+        .post('/api/v1/auth/register')
+        .send({ email: 'ky@example.kg', password: 'Secret123', locale: 'ky' })
+        .expect(201);
+      const [verify] = t.mail.to('ky@example.kg');
+      expect(verify.subject).toContain('ырастаңыз');
+      expect(verify.text).toContain('http://frontend.test/ky/verify-email?token=');
+
+      t.mail.clear();
+      await t
+        .http()
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'ky@example.kg' })
+        .expect(204);
+      expect(t.mail.to('ky@example.kg')[0].text).toContain('/ky/reset-password?token=');
+
+      // Язык страницы, с которой запрошен сброс, важнее сохранённого
+      t.mail.clear();
+      await t
+        .http()
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'ky@example.kg', locale: 'ru' })
+        .expect(204);
+      expect(t.mail.to('ky@example.kg')[0].subject).toBe('OKU24: восстановление пароля');
+    });
+
+    it('rejects unsupported languages', async () => {
+      await t
+        .http()
+        .post('/api/v1/auth/register')
+        .send({ email: 'en@example.kg', password: 'Secret123', locale: 'en' })
+        .expect(400);
+    });
+  });
+
   describe('password reset', () => {
     it('resets the password and ends all sessions', async () => {
       const user = await registerUser(t);
@@ -473,7 +511,7 @@ describe('Auth (e2e)', () => {
       await t.http().post('/api/v1/auth/forgot-password').send({ email: user.email }).expect(204);
       const mail = t.mail.to(user.email);
       expect(mail).toHaveLength(1);
-      expect(mail[0].text).toContain('http://frontend.test/reset-password?token=');
+      expect(mail[0].text).toContain('http://frontend.test/ru/reset-password?token=');
 
       await t
         .http()

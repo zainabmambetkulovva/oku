@@ -10,6 +10,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ResponseEnvelopeInterceptor } from './common/interceptors/response-envelope.interceptor';
 import { createValidationPipe } from './common/pipes/validation.pipe';
+import { throttlerHooks } from './common/throttle/throttle-options';
 import { Env, validateEnv } from './config/env';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
@@ -43,12 +44,19 @@ import { OrdersModule } from './modules/orders/orders.module';
     }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService<Env, true>) => [
-        {
-          ttl: config.get('THROTTLE_TTL_MS', { infer: true }),
-          limit: config.get('THROTTLE_LIMIT', { infer: true }),
-        },
-      ],
+      useFactory: (config: ConfigService<Env, true>) => ({
+        throttlers: [
+          {
+            ttl: config.get('THROTTLE_TTL_MS', { infer: true }),
+            limit: config.get('THROTTLE_LIMIT', { infer: true }),
+          },
+        ],
+        // Сервер сайта со служебным ключом не ограничивается; на Vercel считаем по адресу посетителя
+        ...throttlerHooks(
+          config.get('INTERNAL_API_TOKEN', { infer: true }),
+          Boolean(process.env.VERCEL),
+        ),
+      }),
     }),
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),

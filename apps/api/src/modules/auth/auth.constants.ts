@@ -18,3 +18,15 @@ export const PASSWORD_RESET_TTL_MINUTES = 60;
 export const REFRESH_REUSE_GRACE_MS = 10_000;
 
 export const BCRYPT_ROUNDS = 12;
+
+/** Языки сайта (и писем). */
+export const SITE_LOCALES = ['ru', 'ky'] as const;
+export type SiteLocale = (typeof SITE_LOCALES)[number];
+
+export const toSiteLocale = (value: string | null | undefined): SiteLocale =>
+  value === 'ky' ? 'ky' : 'ru';
+
+/** Cookie с состоянием входа через Google (state и PKCE verifier) на время перехода. */
+export const GOOGLE_FLOW_COOKIE = 'oku_google';
+export const GOOGLE_FLOW_COOKIE_PATH = '/api/v1/auth/google';
+export const GOOGLE_FLOW_TTL_MS = 10 * 60 * 1000;

@@ -34,3 +34,8 @@ process.env.JOBS_ENABLED = 'false';
 process.env.ORDER_PAYMENT_TTL_MINUTES = '10';
 process.env.ROLE_MANAGER_EMAILS = 'roles@test.local';
 process.env.LOW_STOCK_THRESHOLD = '3';
+
+// Вход через Google: тестовые значения. Обмен кода в тестах подменяется (fetch к Google не уходит)
+process.env.GOOGLE_CLIENT_ID = 'test-client.apps.googleusercontent.com';
+process.env.GOOGLE_CLIENT_SECRET = 'test-google-secret';
+process.env.API_PUBLIC_URL = 'http://api.test';

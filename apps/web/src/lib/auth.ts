@@ -12,6 +12,7 @@ export interface SessionUser {
   firstName: string | null;
   lastName: string | null;
   role: UserRole;
+  emailVerified: boolean;
 }
 
 interface AuthResponse {
@@ -66,6 +67,53 @@ export async function login(email: string, password: string): Promise<SessionUse
   const session = await authRequest('login', { email, password });
   useAuth.getState().setSession(session);
   return session.user;
+}
+
+export interface RegisterInput {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  locale: 'ru' | 'ky';
+}
+
+export async function register(input: RegisterInput): Promise<SessionUser> {
+  const session = await authRequest('register', input);
+  useAuth.getState().setSession(session);
+  return session.user;
+}
+
+/** POST без ответа (204): письма, подтверждение почты, новый пароль. */
+async function authAction(path: string, body: unknown): Promise<void> {
+  const response = await fetch(`${apiBaseUrl()}/auth/${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw await readError(response);
+}
+
+export const requestPasswordReset = (email: string, locale: 'ru' | 'ky') =>
+  authAction('forgot-password', { email, locale });
+
+export const resetPassword = (token: string, password: string) =>
+  authAction('reset-password', { token, password });
+
+export const verifyEmail = (token: string) => authAction('verify-email', { token });
+
+/** Адрес начала входа через Google (полный переход страницы, не fetch). */
+export function googleSignInUrl(locale: string, next: string | null): string {
+  const query = new URLSearchParams({ locale });
+  if (next) query.set('next', next);
+  return `${apiBaseUrl()}/auth/google?${query.toString()}`;
+}
+
+/** Только относительные адреса внутри сайта — защита от перенаправления на чужой сайт. */
+export function safeNext(value: string | null | undefined): string | null {
+  return value && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')
+    ? value
+    : null;
 }
 
 let refreshing: Promise<boolean> | null = null;

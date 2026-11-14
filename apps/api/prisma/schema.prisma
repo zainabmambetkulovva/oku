@@ -115,6 +115,10 @@ model User {
   status              UserStatus @default(ACTIVE)
   role                UserRole   @default(USER)
   emailVerifiedAt     DateTime?  @map("email_verified_at")
+  // Идентификатор аккаунта Google (поле sub) — для входа через Google
+  googleId            String?    @unique @map("google_id")
+  // Язык писем: ru или ky
+  locale              String     @default("ru") @db.VarChar(2)
   // Защита от перебора паролей: после N неудачных попыток вход блокируется до lockedUntil
   failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime?  @map("locked_until")

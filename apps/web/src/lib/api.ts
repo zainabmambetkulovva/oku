@@ -31,6 +31,17 @@ export function apiBaseUrl(): string {
   return trimSlashes(process.env.NEXT_PUBLIC_API_URL ?? API_PREFIX);
 }
 
+/**
+ * Служебный заголовок для запросов сервера сайта: с ним API не применяет общий лимит
+ * частоты (все серверные запросы приходят с одного адреса). Ключ INTERNAL_API_TOKEN
+ * доступен только на сервере — в браузерный код Next.js его не встраивает.
+ */
+export function internalHeaders(): Record<string, string> {
+  if (typeof window !== 'undefined') return {};
+  const token = process.env.INTERNAL_API_TOKEN;
+  return token ? { 'x-oku-internal-token': token } : {};
+}
+
 export class ApiRequestError extends Error {
   constructor(
     readonly status: number,
@@ -47,6 +58,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     headers: {
       Accept: 'application/json',
       ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+      ...internalHeaders(),
       ...init.headers,
     },
   });
@@ -66,7 +78,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 export async function apiFetchPage<T>(path: string, init: RequestInit = {}): Promise<Paginated<T>> {
   const response = await fetch(`${apiBaseUrl()}${path}`, {
     ...init,
-    headers: { Accept: 'application/json', ...init.headers },
+    headers: { Accept: 'application/json', ...internalHeaders(), ...init.headers },
   });
   const body = (await response.json().catch(() => null)) as Paginated<T> | ApiError | null;
   if (!response.ok || !body || !('data' in body)) {

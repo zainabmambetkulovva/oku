@@ -23,6 +23,8 @@ import {
   LOGIN_LOCKOUT_MINUTES,
   MAX_FAILED_LOGIN_ATTEMPTS,
   PASSWORD_RESET_TTL_MINUTES,
+  type SiteLocale,
+  toSiteLocale,
 } from './auth.constants';
 import { AuthResponse } from './dto/auth-response';
 import { LoginDto } from './dto/login.dto';
@@ -69,6 +71,7 @@ export class AuthService {
           passwordHash,
           firstName: dto.firstName,
           lastName: dto.lastName,
+          locale: dto.locale ?? 'ru',
           role: 'USER',
           status: 'ACTIVE',
         },
@@ -80,7 +83,7 @@ export class AuthService {
       throw error;
     }
 
-    await this.sendVerificationEmail(user.id, user.email);
+    await this.sendVerificationEmail(user.id, user.email, toSiteLocale(user.locale));
     return this.issueTokens(user.id);
   }
 
@@ -164,6 +167,11 @@ export class AuthService {
     await this.sessions.revokeAll(userId);
   }
 
+  /** Сессия для пользователя, личность которого уже подтверждена (например, через Google). */
+  signIn(userId: string): Promise<AuthResult> {
+    return this.issueTokens(userId);
+  }
+
   private async issueTokens(userId: string): Promise<AuthResult> {
     return this.buildResult(await this.sessions.create(userId));
   }
@@ -206,15 +214,24 @@ export class AuthService {
     ]);
   }
 
-  async resendVerification(userId: string): Promise<void> {
+  async resendVerification(userId: string, locale?: SiteLocale): Promise<void> {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
     if (user.emailVerifiedAt) {
       throw new BadRequestException('Email is already verified');
     }
-    await this.sendVerificationEmail(user.id, user.email);
+    await this.sendVerificationEmail(user.id, user.email, locale ?? toSiteLocale(user.locale));
   }
 
-  private async sendVerificationEmail(userId: string, email: string): Promise<void> {
+  /** Ссылка на страницу сайта на нужном языке. */
+  private siteLink(locale: SiteLocale, path: string, token: string): string {
+    return `${this.frontendUrl}/${locale}${path}?token=${encodeURIComponent(token)}`;
+  }
+
+  private async sendVerificationEmail(
+    userId: string,
+    email: string,
+    locale: SiteLocale,
+  ): Promise<void> {
     const token = generateSecureToken();
     const data = {
       tokenHash: hashToken(token),
@@ -227,14 +244,14 @@ export class AuthService {
       update: data,
     });
 
-    const url = `${this.frontendUrl}/verify-email?token=${encodeURIComponent(token)}`;
-    await this.sendSafely(emailVerificationMail(email, url, EMAIL_VERIFICATION_TTL_HOURS));
+    const url = this.siteLink(locale, '/verify-email', token);
+    await this.sendSafely(emailVerificationMail(email, url, EMAIL_VERIFICATION_TTL_HOURS, locale));
   }
 
   // ─── Восстановление пароля ─────────────────────────────────────────────────
 
   /** Ответ одинаковый для любого e-mail, чтобы нельзя было проверить, зарегистрирован ли адрес. */
-  async forgotPassword(email: string): Promise<void> {
+  async forgotPassword(email: string, locale?: SiteLocale): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || user.deletedAt || user.status !== 'ACTIVE') {
       return;
@@ -251,8 +268,11 @@ export class AuthService {
       update: data,
     });
 
-    const url = `${this.frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
-    await this.sendSafely(passwordResetMail(user.email, url, PASSWORD_RESET_TTL_MINUTES));
+    const mailLocale = locale ?? toSiteLocale(user.locale);
+    const url = this.siteLink(mailLocale, '/reset-password', token);
+    await this.sendSafely(
+      passwordResetMail(user.email, url, PASSWORD_RESET_TTL_MINUTES, mailLocale),
+    );
   }
 
   /** Новый пароль, снятие блокировки входа и выход со всех устройств. */

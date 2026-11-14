@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
+import { logout, useAuth } from '@/lib/auth';
 import { CloseIcon, MenuIcon } from '../ui/icons';
 import { LanguageSwitcher } from './language-switcher';
 import { LogoBadge } from './logo';
@@ -10,6 +11,8 @@ import { LogoBadge } from './logo';
 /** Меню для телефонов: выезжает слева, закрывается по Esc и при переходе. */
 export function MobileMenu() {
   const t = useTranslations('nav');
+  const ta = useTranslations('auth.account');
+  const user = useAuth((state) => state.user);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -34,7 +37,8 @@ export function MobileMenu() {
     { href: '/contacts', label: t('contacts') },
     { href: '/delivery', label: t('delivery') },
     { href: '/favorites', label: t('favorites') },
-    { href: '/login', label: t('account') },
+    ...(user?.role === 'ADMIN' ? [{ href: '/admin', label: ta('admin') }] : []),
+    ...(user ? [] : [{ href: '/login', label: t('account') }]),
   ];
 
   return (
@@ -78,6 +82,16 @@ export function MobileMenu() {
                   {link.label}
                 </Link>
               ))}
+              {user && (
+                <button
+                  type="button"
+                  onClick={() => void logout().then(() => setOpen(false))}
+                  className="rounded-xl px-3 py-3 text-left text-base font-medium text-[#8a3524] hover:bg-beige"
+                >
+                  {ta('logout')}{' '}
+                  <span className="text-sm font-normal text-muted">({user.email})</span>
+                </button>
+              )}
             </nav>
             <LanguageSwitcher className="mt-auto text-cocoa" />
           </div>

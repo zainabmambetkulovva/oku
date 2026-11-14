@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { createTransport } from 'nodemailer';
 import { Env } from '../../config/env';
-import { MailService } from './mail.service';
+import { BREVO_SEND_URL, MailService, parseSender } from './mail.service';
 import { emailVerificationMail, passwordResetMail } from './mail.templates';
 
 jest.mock('nodemailer', () => ({ createTransport: jest.fn() }));
@@ -57,7 +57,74 @@ describe('MailService', () => {
   });
 });
 
+describe('MailService with Brevo', () => {
+  const fetchMock = jest.fn();
+  beforeEach(() => {
+    jest.mocked(createTransport).mockReset();
+    fetchMock.mockReset();
+    global.fetch = fetchMock as unknown as typeof fetch;
+  });
+
+  const service = () => {
+    const instance = new MailService(
+      config({
+        MAIL_TRANSPORT: 'brevo',
+        MAIL_FROM: 'OKU24 <no-reply@oku24.kg>',
+        BREVO_API_KEY: 'test-key',
+      }),
+    );
+    jest
+      .spyOn((instance as unknown as { logger: { log: () => void } }).logger, 'log')
+      .mockImplementation(() => undefined);
+    return instance;
+  };
+
+  it('sends through the Brevo API with the key in the header', async () => {
+    fetchMock.mockResolvedValue(new Response('{"messageId":"1"}', { status: 201 }));
+
+    await service().send(message);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      BREVO_SEND_URL,
+      expect.objectContaining({ method: 'POST' }),
+    );
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    expect((init.headers as Record<string, string>)['api-key']).toBe('test-key');
+    expect(JSON.parse(init.body as string)).toEqual({
+      sender: { name: 'OKU24', email: 'no-reply@oku24.kg' },
+      to: [{ email: 'reader@oku24.kg' }],
+      subject: 'Subject',
+      htmlContent: '<p>Text</p>',
+      textContent: 'Text',
+    });
+    expect(createTransport).not.toHaveBeenCalled();
+  });
+
+  it('throws when Brevo rejects the message', async () => {
+    fetchMock.mockResolvedValue(new Response('{"code":"unauthorized"}', { status: 401 }));
+    await expect(service().send(message)).rejects.toThrow('Brevo responded with 401');
+  });
+
+  it('parses the sender', () => {
+    expect(parseSender('OKU24 <a@b.kg>')).toEqual({ name: 'OKU24', email: 'a@b.kg' });
+    expect(parseSender('"OKU 24" <a@b.kg>')).toEqual({ name: 'OKU 24', email: 'a@b.kg' });
+    expect(parseSender('a@b.kg')).toEqual({ email: 'a@b.kg' });
+  });
+});
+
 describe('mail templates', () => {
+  it('builds the verification e-mail in Kyrgyz', () => {
+    const mail = emailVerificationMail(
+      'a@b.kg',
+      'https://oku24.kg/ky/verify-email?token=t',
+      24,
+      'ky',
+    );
+    expect(mail.subject).toContain('ырастаңыз');
+    expect(mail.html).toContain('lang="ky"');
+    expect(mail.text).toContain('24 саат');
+  });
+
   it('builds the verification e-mail with the link', () => {
     const mail = emailVerificationMail('a@b.kg', 'https://oku24.kg/verify-email?token=t', 24);
 

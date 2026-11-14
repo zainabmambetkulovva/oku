@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiBaseUrl } from './api';
+import { apiBaseUrl, internalHeaders } from './api';
 
 describe('apiBaseUrl in the browser', () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -13,5 +13,14 @@ describe('apiBaseUrl in the browser', () => {
   it('respects NEXT_PUBLIC_API_URL for local development', () => {
     vi.stubEnv('NEXT_PUBLIC_API_URL', 'http://localhost:3000/api/v1/');
     expect(apiBaseUrl()).toBe('http://localhost:3000/api/v1');
+  });
+});
+
+describe('internalHeaders in the browser', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('never sends the internal token from the browser', () => {
+    vi.stubEnv('INTERNAL_API_TOKEN', 'k'.repeat(40));
+    expect(internalHeaders()).toEqual({});
   });
 });

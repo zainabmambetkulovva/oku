@@ -300,7 +300,9 @@ describe('Cart, orders and payments (e2e)', () => {
       expect(payment).toMatchObject({
         provider: 'test',
         amount: 150_000,
-        paymentUrl: expect.stringContaining('/checkout/test-payment?paymentId='),
+        paymentUrl: expect.stringContaining(
+          'http://frontend.test/ru/checkout/test-payment?paymentId=',
+        ),
       });
 
       await expect(

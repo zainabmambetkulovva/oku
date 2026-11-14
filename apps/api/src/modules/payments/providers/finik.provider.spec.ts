@@ -37,7 +37,8 @@ const paymentInput = {
   orderNumber: 'OKU-261105-7K3QX',
   amount: 65_050,
   currency: 'KGS',
-  returnUrl: 'https://oku24.kg/orders/OKU-261105-7K3QX',
+  returnUrl: 'https://oku24.kg/ru/orders/OKU-261105-7K3QX',
+  locale: 'ru' as const,
 };
 
 describe('FinikPaymentProvider', () => {

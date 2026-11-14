@@ -14,6 +14,7 @@ import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { DomainEventOutbox, DomainEventPublisher } from '../../common/events/domain-event-outbox';
 import { DomainEvents } from '../../common/events/domain-events';
 import { Env } from '../../config/env';
+import { toSiteLocale } from '../auth/auth.constants';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CacheService } from '../cache/cache.service';
 import { AudioAccessService } from '../listening/audio-access.service';
@@ -106,12 +107,19 @@ export class PaymentsService {
     });
 
     try {
+      // Покупатель вернётся на страницу заказа на своём языке
+      const { locale: userLocale } = await this.prisma.user.findUniqueOrThrow({
+        where: { id: order.userId },
+        select: { locale: true },
+      });
+      const locale = toSiteLocale(userLocale);
       const created = await this.activeProvider.createPayment({
         paymentId: payment.id,
         orderNumber: order.orderNumber,
         amount: payment.amount,
         currency: payment.currency,
-        returnUrl: `${this.frontendUrl}/orders/${order.orderNumber}?payment=${payment.id}`,
+        locale,
+        returnUrl: `${this.frontendUrl}/${locale}/orders/${order.orderNumber}?payment=${payment.id}`,
       });
       const updated = await this.prisma.payment.update({
         where: { id: payment.id },

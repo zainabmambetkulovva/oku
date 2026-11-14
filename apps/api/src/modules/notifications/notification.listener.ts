@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NotificationType, OrderStatus } from '@prisma/client';
+import { toSiteLocale } from '../auth/auth.constants';
 import {
   type AudioAccessGrantedEvent,
   DomainEvents,
@@ -13,62 +14,16 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { orderMail } from '../mail/mail.templates';
 import { NotificationsService } from './notifications.service';
+import { ACCESS_GRANTED, createdNotice, statusNotice } from './order-notices';
 
-const som = (tyiyn: number) => {
-  const value = tyiyn / 100;
-  return `${Number.isInteger(value) ? value : value.toFixed(2).replace('.', ',')} сом`;
-};
-
-interface StatusNotice {
-  type: NotificationType;
-  title: string;
-  message: (order: { orderNumber: string; isDigital: boolean; comment?: string }) => string;
-  email: boolean;
-}
-
-const STATUS_NOTICES: Partial<Record<OrderStatus, StatusNotice>> = {
-  PAID: {
-    type: 'ORDER_PAID',
-    title: 'Заказ оплачен',
-    message: ({ orderNumber }) => `Оплата заказа ${orderNumber} получена. Мы начали его собирать.`,
-    email: true,
-  },
-  PROCESSING: {
-    type: 'ORDER_PROCESSING',
-    title: 'Заказ принят в обработку',
-    message: ({ orderNumber }) => `Заказ ${orderNumber} подтверждён и готовится к отправке.`,
-    email: true,
-  },
-  SHIPPED: {
-    type: 'ORDER_SHIPPED',
-    title: 'Заказ отправлен',
-    message: ({ orderNumber }) => `Заказ ${orderNumber} передан в доставку.`,
-    email: true,
-  },
-  COMPLETED: {
-    type: 'ORDER_COMPLETED',
-    title: 'Заказ выполнен',
-    message: ({ orderNumber, isDigital }) =>
-      isDigital
-        ? `Заказ ${orderNumber} оплачен. Аудиокниги доступны в разделе «Мои аудиокниги».`
-        : `Заказ ${orderNumber} получен. Спасибо за покупку!`,
-    email: true,
-  },
-  CANCELLED: {
-    type: 'ORDER_CANCELLED',
-    title: 'Заказ отменён',
-    message: ({ orderNumber, comment }) =>
-      comment === 'Payment time expired'
-        ? `Заказ ${orderNumber} отменён: время на оплату истекло. Книги вернулись в продажу.`
-        : `Заказ ${orderNumber} отменён.`,
-    email: true,
-  },
-  REFUNDED: {
-    type: 'ORDER_REFUNDED',
-    title: 'Деньги возвращены',
-    message: ({ orderNumber }) => `Оплата по заказу ${orderNumber} возвращена.`,
-    email: true,
-  },
+/** Тип уведомления в кабинете по новому статусу заказа (письмо уходит всегда). */
+const STATUS_TYPES: Partial<Record<OrderStatus, NotificationType>> = {
+  PAID: 'ORDER_PAID',
+  PROCESSING: 'ORDER_PROCESSING',
+  SHIPPED: 'ORDER_SHIPPED',
+  COMPLETED: 'ORDER_COMPLETED',
+  CANCELLED: 'ORDER_CANCELLED',
+  REFUNDED: 'ORDER_REFUNDED',
 };
 
 /**
@@ -93,29 +48,20 @@ export class NotificationListener {
   async onOrderCreated({ orderId }: OrderCreatedEvent): Promise<void> {
     await this.safely('order.created', async () => {
       const order = await this.loadOrder(orderId);
-      const deadline =
-        order.paymentMethod === 'ONLINE' && order.expiresAt
-          ? ` Оплатите его до ${order.expiresAt.toLocaleTimeString('ru-RU', {
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZone: 'Asia/Bishkek',
-            })} (время Бишкека), иначе заказ будет отменён.`
-          : order.paymentMethod === 'CASH'
-            ? ' Оплата — наличными при получении.'
-            : '';
-      const message = `Заказ ${order.orderNumber} на сумму ${som(order.total)} оформлен.${deadline}`;
-      await this.notify(order, 'ORDER_CREATED', 'Заказ оформлен', message, true);
+      const { title, message } = createdNotice(toSiteLocale(order.user.locale), order);
+      await this.notify(order, 'ORDER_CREATED', title, message);
     });
   }
 
   @OnEvent(DomainEvents.OrderStatusChanged)
   async onStatusChanged(event: OrderStatusChangedEvent): Promise<void> {
     await this.safely('order.status.changed', async () => {
-      const notice = STATUS_NOTICES[event.newStatus];
-      if (!notice) {
+      const type = STATUS_TYPES[event.newStatus];
+      if (!type) {
         return;
       }
       const order = await this.loadOrder(event.orderId);
+      const notice = statusNotice(toSiteLocale(order.user.locale), event.newStatus)!;
       const isDigital = order.items.every((item) => item.productType === 'AUDIOBOOK');
       // Заказ из аудиокниг сразу переходит PAID → COMPLETED: сообщаем один раз
       if (event.newStatus === 'PAID' && isDigital) {
@@ -126,7 +72,7 @@ export class NotificationListener {
         isDigital,
         comment: event.comment,
       });
-      await this.notify(order, notice.type, notice.title, message, notice.email);
+      await this.notify(order, type, notice.title, message);
     });
   }
 
@@ -137,39 +83,38 @@ export class NotificationListener {
       return;
     }
     await this.safely('audio.access.granted', async () => {
-      const audiobook = await this.prisma.audiobook.findUniqueOrThrow({
-        where: { id: event.audiobookId },
-      });
-      await this.notifications.create(
-        event.userId,
-        'ACCESS_GRANTED',
-        'Открыт доступ к аудиокниге',
-        `Аудиокнига «${audiobook.title}» доступна в разделе «Мои аудиокниги».`,
-      );
+      const [audiobook, user] = await Promise.all([
+        this.prisma.audiobook.findUniqueOrThrow({ where: { id: event.audiobookId } }),
+        this.prisma.user.findUniqueOrThrow({
+          where: { id: event.userId },
+          select: { locale: true },
+        }),
+      ]);
+      const { title, message } = ACCESS_GRANTED[toSiteLocale(user.locale)](audiobook.title);
+      await this.notifications.create(event.userId, 'ACCESS_GRANTED', title, message);
     });
   }
 
   private loadOrder(orderId: string) {
     return this.prisma.order.findUniqueOrThrow({
       where: { id: orderId },
-      include: { user: { select: { email: true } }, items: true },
+      include: { user: { select: { email: true, locale: true } }, items: true },
     });
   }
 
+  /** Уведомление в кабинете и письмо со ссылкой на заказ — на языке покупателя. */
   private async notify(
-    order: { userId: string; orderNumber: string; user: { email: string } },
+    order: { userId: string; orderNumber: string; user: { email: string; locale: string } },
     type: NotificationType,
     title: string,
     message: string,
-    sendEmail: boolean,
   ): Promise<void> {
     await this.notifications.create(order.userId, type, title, message);
-    if (sendEmail) {
-      const url = `${this.frontendUrl}/orders/${order.orderNumber}`;
-      await this.mail.send(
-        orderMail(order.user.email, `${title} (${order.orderNumber})`, title, [message], url),
-      );
-    }
+    const locale = toSiteLocale(order.user.locale);
+    const url = `${this.frontendUrl}/${locale}/orders/${order.orderNumber}`;
+    await this.mail.send(
+      orderMail(order.user.email, `${title} (${order.orderNumber})`, title, [message], url, locale),
+    );
   }
 
   private async safely(event: string, handler: () => Promise<void>): Promise<void> {

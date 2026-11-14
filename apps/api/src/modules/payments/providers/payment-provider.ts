@@ -9,6 +9,8 @@ export interface CreatePaymentInput {
   currency: string;
   /** Куда вернуть покупателя после оплаты */
   returnUrl: string;
+  /** Язык покупателя: ru или ky */
+  locale: 'ru' | 'ky';
 }
 
 export interface CreatedPayment {

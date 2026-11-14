@@ -138,3 +138,76 @@ export interface ReviewSummary {
   count: number;
   distribution: Record<'1' | '2' | '3' | '4' | '5', number>;
 }
+
+export type OrderStatus =
+  'PENDING' | 'PAID' | 'PROCESSING' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED';
+
+export interface OrderDetails {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  items: {
+    id: string;
+    productType: 'BOOK' | 'AUDIOBOOK';
+    bookId: string | null;
+    audiobookId: string | null;
+    title: string;
+    author: string;
+    coverUrl: string | null;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }[];
+  subtotal: number;
+  deliveryPrice: number;
+  discount: number;
+  total: number;
+  currency: string;
+  recipientName: string;
+  recipientPhone: string;
+  deliveryMethod: DeliveryOption['method'] | null;
+  deliveryAddress: string | null;
+  paymentMethod: 'ONLINE' | 'CASH';
+  comment: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  statusHistory: {
+    oldStatus: OrderStatus | null;
+    newStatus: OrderStatus;
+    comment: string | null;
+    createdAt: string;
+  }[];
+  payments: {
+    id: string;
+    provider: string;
+    status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
+    amount: number;
+    paymentUrl: string | null;
+    paidAt: string | null;
+    createdAt: string;
+  }[];
+}
+
+export interface PaymentSession {
+  id: string;
+  provider: string;
+  paymentUrl: string;
+  amount: number;
+  expiresAt: string | null;
+}
+
+export interface SavedAddress {
+  id: string;
+  title: string;
+  recipientName: string;
+  phone: string;
+  country: string;
+  city: string;
+  street: string;
+  building: string;
+  apartment: string | null;
+  postalCode: string | null;
+  isDefault: boolean;
+}

@@ -115,12 +115,18 @@ export function orderMail(
   title: string,
   paragraphs: string[],
   orderUrl: string,
+  locale: MailLocale = 'ru',
 ): MailMessage {
   return {
     to,
     subject: `OKU24: ${subject}`,
     text: `${paragraphs.join('\n')}\n\n${orderUrl}`,
-    html: layout(title, paragraphs, { url: orderUrl, label: 'Открыть заказ' }),
+    html: layout(
+      title,
+      paragraphs,
+      { url: orderUrl, label: locale === 'ky' ? 'Буйрутманы ачуу' : 'Открыть заказ' },
+      locale,
+    ),
   };
 }
 

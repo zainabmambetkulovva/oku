@@ -342,8 +342,29 @@ describe('Favorites, reviews, notifications, newsletter (e2e)', () => {
       list = await notifications(user);
       expect(list.map((n) => n.type)).toEqual(['ORDER_PAID', 'ORDER_CREATED']);
       expect(t.mail.to(user.email).at(-1)!.text).toContain(
-        `http://frontend.test/orders/${order.orderNumber}`,
+        `http://frontend.test/ru/orders/${order.orderNumber}`,
       );
+    });
+
+    it('writes to Kyrgyz-speaking customers in Kyrgyz', async () => {
+      await t.prisma.user.update({ where: { id: user.id }, data: { locale: 'ky' } });
+      t.mail.clear();
+      await as(user).post('/cart/items', { bookId: book.id }).expect(201);
+      const { order, payment } = (await as(user).post('/orders', pickup).expect(201)).body.data;
+      expect(payment.paymentUrl).toContain('http://frontend.test/ky/checkout/test-payment');
+
+      const [created] = await notifications(user);
+      expect(created).toMatchObject({
+        title: 'Буйрутма берилди',
+        message: expect.stringContaining(`${order.orderNumber} буйрутмасы берилди`),
+      });
+      const mail = t.mail.to(user.email).at(-1)!;
+      expect(mail.subject).toContain('Буйрутма берилди');
+      expect(mail.text).toContain(`http://frontend.test/ky/orders/${order.orderNumber}`);
+      expect(mail.html).toContain('Буйрутманы ачуу');
+
+      await pay(payment.id, order.total).expect(200);
+      expect((await notifications(user))[0].title).toBe('Буйрутма төлөндү');
     });
 
     it('sends a single completion notice for a digital order', async () => {

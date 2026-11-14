@@ -10,7 +10,7 @@ import { useHydrated } from '@/lib/use-hydrated';
 import { cartCount, cartSubtotal, type GuestCartItem, useCart } from '@/store/cart';
 import { useToasts } from '@/store/toast';
 import { BookCover } from '../catalog/book-cover';
-import { Button, buttonClasses } from '../ui/button';
+import { buttonClasses } from '../ui/button';
 
 function CartLine({ item }: { item: GuestCartItem }) {
   const t = useTranslations('cartPage');
@@ -254,10 +254,17 @@ export function CartView({
         )}
         {status === 'authenticated' ? (
           <>
-            <Button className="w-full" disabled>
+            <Link
+              href="/checkout"
+              aria-disabled={hasIssues}
+              className={buttonClasses(
+                'primary',
+                `w-full ${hasIssues ? 'pointer-events-none opacity-50' : ''}`,
+              )}
+              data-testid="to-checkout"
+            >
               {t('checkout')}
-            </Button>
-            <p className="text-xs text-muted">{t('checkoutSoon')}</p>
+            </Link>
           </>
         ) : (
           <>

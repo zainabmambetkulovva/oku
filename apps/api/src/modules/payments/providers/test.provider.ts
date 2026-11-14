@@ -54,7 +54,9 @@ export class TestPaymentProvider implements PaymentProvider {
       order: input.orderNumber,
       amount: String(input.amount),
     });
-    return { paymentUrl: `${this.frontendUrl}/checkout/test-payment?${params.toString()}` };
+    return {
+      paymentUrl: `${this.frontendUrl}/${input.locale}/checkout/test-payment?${params.toString()}`,
+    };
   }
 
   async parseWebhook(request: Request): Promise<VerifiedPaymentEvent | null> {

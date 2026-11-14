@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { booksFlowers } from '@/assets/illustrations';
 import { PageSection, PageShell } from '@/components/pages/page-shell';
+import { PickupCard } from '@/components/pages/pickup-card';
 import { apiFetch, safely } from '@/lib/api';
 import { formatPrice } from '@/lib/format';
 import type { DeliveryOption } from '@/lib/types';
@@ -56,6 +57,7 @@ export default async function DeliveryPage({ params }: { params: Promise<{ local
             </ul>
           )}
         </PageSection>
+        <PickupCard />
         <div className="grid gap-6 md:grid-cols-2">
           {payment.map((item) => (
             <PageSection key={item.title} title={item.title}>

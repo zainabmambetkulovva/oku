@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { communityArch } from '@/assets/illustrations';
 import { PageShell } from '@/components/pages/page-shell';
+import { PickupCard } from '@/components/pages/pickup-card';
 import { buttonClasses } from '@/components/ui/button';
 import { InstagramIcon } from '@/components/ui/icons';
 import { SITE_CONTACTS } from '@/lib/site';
@@ -53,6 +54,7 @@ export default async function ContactsPage({ params }: { params: Promise<{ local
           <Image src={communityArch} alt="" sizes="16rem" className="h-auto w-56 shrink-0" />
           <p className="text-sm leading-relaxed text-ink/80 sm:text-base">{t('pickup')}</p>
         </div>
+        <PickupCard className="md:col-span-2" />
       </div>
     </PageShell>
   );

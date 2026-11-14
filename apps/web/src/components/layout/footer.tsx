@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import { OFFICIAL_CATEGORIES, SITE_CONTACTS } from '@/lib/site';
+import { OFFICIAL_CATEGORIES, PICKUP, SITE_CONTACTS } from '@/lib/site';
 import { NewsletterForm } from '../home/newsletter';
 import { CornerOrnament } from '../ornaments/ornaments';
 import { HeartIcon, InstagramIcon, MailIcon, PhoneIcon } from '../ui/icons';
@@ -30,6 +30,7 @@ export async function Footer() {
   const t = await getTranslations('footer');
   const nav = await getTranslations('nav');
   const tc = await getTranslations('categories.defaults');
+  const tp = await getTranslations('pickup');
   const linkClass = 'transition-colors hover:text-gold-light';
   const heading = 'mb-4 font-display text-lg text-gold-light';
 
@@ -73,6 +74,11 @@ export async function Footer() {
                 <InstagramIcon className="size-4" />
                 {SITE_CONTACTS.instagramHandle}
               </a>
+            </li>
+            <li className="text-milk/70">
+              {tp('address')}
+              <br />
+              {tp('hours', { hours: PICKUP.hours })}
             </li>
             {SITE_CONTACTS.phone && (
               <li>

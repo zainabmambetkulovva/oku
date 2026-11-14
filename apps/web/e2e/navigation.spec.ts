@@ -107,8 +107,13 @@ test.describe('navigation and info pages', () => {
       'href',
       'https://wa.me/996779040589',
     );
-    // Выдуманного адреса нет
-    await expect(page.getByText('уточняйте в WhatsApp')).toBeVisible();
+    // Адрес и часы работы пункта самовывоза — от владельца магазина
+    const pickup = page.getByTestId('pickup');
+    await expect(pickup).toContainText('г. Бишкек, проспект Чуй 394, Кыргызстан');
+    await expect(pickup).toContainText('Часы работы: 10:00–19:30');
+
+    await page.goto('/ky/delivery');
+    await expect(page.getByTestId('pickup')).toContainText('Бишкек ш., Чүй проспекти 394');
   });
 
   test('legal drafts are clearly marked', async ({ page }) => {

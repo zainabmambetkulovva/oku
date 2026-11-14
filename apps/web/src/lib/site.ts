@@ -14,6 +14,12 @@ export const SITE_CONTACTS = {
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || null,
 } as const;
 
+/** Пункт самовывоза (от владельца магазина). Тексты адреса — в messages: pickup.address. */
+export const PICKUP = {
+  hours: '10:00–19:30',
+  mapUrl: 'https://maps.google.com/?q=' + encodeURIComponent('Бишкек, проспект Чуй 394'),
+} as const;
+
 /** Пять официальных категорий каталога (ТЗ). Аудиокниги — отдельный каталог. */
 export const OFFICIAL_CATEGORIES = [
   { key: 'psychology', href: '/books?category=psychology' },

@@ -46,11 +46,14 @@ function CategoryCard({
   label,
   ariaLabel,
   children,
+  delay = 0,
 }: {
   href: string;
   label: string;
   ariaLabel: string;
   children: React.ReactNode;
+  /** Сдвиг «дыхания» иллюстрации, чтобы карточки качались не в такт */
+  delay?: number;
 }) {
   return (
     <Link
@@ -59,7 +62,12 @@ function CategoryCard({
       className="lift group flex h-full flex-col overflow-hidden rounded-[1.6rem] rounded-t-[3.5rem] border border-white/50 bg-gradient-to-b from-[#fcefe2] to-[#ebcfb4] shadow-[var(--shadow-card)]"
     >
       <div className="relative grid aspect-[1/0.72] place-items-center overflow-hidden px-3 pt-4">
-        {children}
+        <div
+          className="grid size-full animate-float place-items-center [animation-duration:7s]"
+          style={{ animationDelay: `${delay}s` }}
+        >
+          {children}
+        </div>
       </div>
       <div className="flex items-center justify-between gap-2 px-4 pt-1 pb-4">
         <h3 className="font-sans text-[0.85rem] leading-snug font-semibold text-ink">{label}</h3>
@@ -74,22 +82,18 @@ function CategoryCard({
 export async function CategoriesSection({ categories }: { categories: CategoryNode[] }) {
   const t = await getTranslations('categories');
   const ts = await getTranslations('sections');
-  const fromCatalog = flatten(categories)
-    .filter(
-      (category) =>
-        category.booksCount + category.audiobooksCount > 0 || category.children.length > 0,
-    )
-    .slice(0, 4);
-  // Пока в каталоге нет категорий с книгами — категории из макета (их создают в админке с теми же slug)
-  const items: { id: string; slug: string; name: string; imageUrl: string | null }[] =
-    fromCatalog.length > 0
-      ? fromCatalog
-      : DEFAULT_CATEGORIES.map((slug) => ({
-          id: slug,
-          slug,
-          name: t(`defaults.${slug}`),
-          imageUrl: null,
-        }));
+  // Ровно пять официальных категорий (ТЗ). Название и картинка — из админки, если такая
+  // категория уже создана с тем же slug; иначе — перевод и иллюстрация из макета.
+  const fromCatalog = flatten(categories);
+  const items = DEFAULT_CATEGORIES.map((slug) => {
+    const existing = fromCatalog.find((category) => category.slug === slug);
+    return {
+      id: existing?.id ?? slug,
+      slug,
+      name: existing?.name ?? t(`defaults.${slug}`),
+      imageUrl: existing?.imageUrl ?? null,
+    };
+  });
 
   const imageClass =
     'h-full w-full object-contain object-bottom transition-transform duration-500 group-hover:scale-105';
@@ -118,12 +122,13 @@ export async function CategoriesSection({ categories }: { categories: CategoryNo
           }
         />
         <ul className="scroll-row sm:grid sm:grid-cols-3 sm:overflow-visible lg:grid-cols-5">
-          {items.map((category) => {
+          {items.map((category, index) => {
             const art = illustrationFor(category.slug);
             return (
               <li key={category.id} className="w-[46%] shrink-0 snap-start sm:w-auto">
                 <CategoryCard
                   href={`/books?category=${category.slug}`}
+                  delay={index * 0.8}
                   label={category.name}
                   ariaLabel={`${t('open')}: ${category.name}`}
                 >
@@ -150,6 +155,7 @@ export async function CategoriesSection({ categories }: { categories: CategoryNo
           <li className="w-[46%] shrink-0 snap-start sm:w-auto">
             <CategoryCard
               href="/audiobooks"
+              delay={3.2}
               label={t('audiobooks')}
               ariaLabel={`${t('open')}: ${t('audiobooks')}`}
             >

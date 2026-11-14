@@ -13,7 +13,7 @@ test.describe('home page', () => {
     await page.goto('/ru');
     await expect(page).toHaveTitle(/OKU24/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Открой мир, который скрывается между страницами',
+      'Каждая книга — целая вселенная',
     );
     await expect(
       page.getByRole('heading', { name: 'Книги, которые выбирают читатели' }),
@@ -55,7 +55,7 @@ test.describe('home page', () => {
     await page.getByRole('link', { name: 'KG' }).first().click();
     await expect(page).toHaveURL(/\/ky$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Барактардын арасында жашырынган дүйнөнү ач',
+      'Ар бир китеп — бүтүндөй аалам',
     );
     await expect(page.getByText('750 сом').first()).toBeVisible();
 

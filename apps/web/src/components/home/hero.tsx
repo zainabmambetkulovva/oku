@@ -26,12 +26,15 @@ export async function Hero() {
           >
             {t('title')}
           </h1>
-          <p className="mt-5 max-w-sm text-base leading-relaxed text-ink/75 sm:text-lg">
+          <p className="mt-5 max-w-md font-display text-lg leading-snug text-cocoa-700 italic sm:text-xl">
             {t('subtitle')}
           </p>
-          <div className="mt-8">
-            <Link href="/books" className={buttonClasses('primary', 'px-7 py-3.5')}>
-              {t('toCatalog')} <ArrowRight />
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/books" className={buttonClasses('primary', 'magnetic px-7 py-3.5')}>
+              {t('explore')} <ArrowRight />
+            </Link>
+            <Link href="/about" className={buttonClasses('outline', 'magnetic px-7 py-3.5')}>
+              {t('aboutUs')}
             </Link>
           </div>
         </div>

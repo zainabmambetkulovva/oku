@@ -29,7 +29,7 @@ export function FlyingButterflies() {
           key={route}
           className={`absolute ${start} ${size}`}
           style={{
-            animation: `${route} ${duration}s linear ${delay}s infinite`,
+            animation: `${route} ${duration}s linear ${delay}s infinite both`,
             opacity: 0,
           }}
         >

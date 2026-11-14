@@ -31,7 +31,6 @@ async function EmptyShelf() {
 /** «Книги, которые выбирают читатели»: текст слева, лента популярных книг справа. */
 export async function BestsellersSection({ books }: { books: BookListItem[] }) {
   const t = await getTranslations('sections');
-  const th = await getTranslations('hero');
 
   return (
     <section className="relative mt-12" aria-labelledby="popular-title">
@@ -49,7 +48,7 @@ export async function BestsellersSection({ books }: { books: BookListItem[] }) {
             {t('bestsellersSubtitle')}
           </p>
           <Link href="/books?sort=popular" className={buttonClasses('primary', 'mt-6')}>
-            {th('toCatalog')} <ArrowRight />
+            {t('toCatalog')} <ArrowRight />
           </Link>
         </div>
         {books.length === 0 ? (

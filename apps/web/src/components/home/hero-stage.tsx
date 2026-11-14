@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { Butterfly, Sparkle } from '../ornaments/decor';
+import { HeroParticles } from './hero-particles';
 import { HeroScene } from './hero-scene';
 import { heroBook } from '@/assets/illustrations';
 
@@ -11,6 +12,15 @@ import { heroBook } from '@/assets/illustrations';
  * бабочки и объёмные 3D-книги вокруг. Слои слегка смещаются за курсором (параллакс);
  * при «уменьшить движение» всё стоит на месте.
  */
+/** Листы бумаги, вылетающие из книги: позиция, путь, наклон и время. */
+const PAGES = [
+  { left: '30%', top: '52%', dx: '-70px', r0: '-12deg', r1: '-40deg', duration: 9, delay: 1.6 },
+  { left: '62%', top: '50%', dx: '80px', r0: '10deg', r1: '38deg', duration: 11, delay: 3.2 },
+  { left: '46%', top: '46%', dx: '20px', r0: '-4deg', r1: '22deg', duration: 10, delay: 5.4 },
+  { left: '22%', top: '58%', dx: '-40px', r0: '6deg', r1: '-28deg', duration: 12, delay: 7.1 },
+  { left: '72%', top: '56%', dx: '50px', r0: '-8deg', r1: '30deg', duration: 13, delay: 8.6 },
+];
+
 export function HeroStage({ label }: { label: string }) {
   const stage = useRef<HTMLDivElement>(null);
 
@@ -118,23 +128,61 @@ export function HeroStage({ label }: { label: string }) {
         </g>
       </svg>
 
-      {/* Раскрытая книга-мир */}
+      {/* Мягкие облака за книгой */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={layer(-4)}>
+        <span className="absolute top-[30%] left-[4%] h-[14%] w-[34%] animate-[cloud-drift_16s_ease-in-out_infinite] rounded-full bg-white/70 blur-2xl" />
+        <span className="absolute top-[22%] right-[2%] h-[12%] w-[30%] animate-[cloud-drift_20s_ease-in-out_infinite_reverse] rounded-full bg-white/60 blur-2xl" />
+        <span className="absolute bottom-[24%] left-[18%] h-[10%] w-[62%] animate-[cloud-drift_24s_ease-in-out_infinite] rounded-full bg-[#fff6ea]/80 blur-3xl" />
+      </div>
+
+      {/* Раскрытая книга-мир: при загрузке раскрывается от корешка */}
       <div
         className="absolute bottom-[12%] left-1/2 w-[84%] -translate-x-1/2 transition-transform duration-300 ease-out"
         style={layer(8)}
       >
         <div className="animate-float [animation-duration:7s]">
-          <Image
-            src={heroBook}
-            alt=""
-            width={1400}
-            height={942}
-            priority
-            sizes="(min-width: 1024px) 50vw, 94vw"
-            className="h-auto w-full drop-shadow-[0_24px_30px_rgb(91_56_30/0.35)]"
-          />
+          <div className="relative animate-[book-reveal_1.4s_cubic-bezier(0.2,0.7,0.2,1)_0.15s_both]">
+            <Image
+              src={heroBook}
+              alt=""
+              width={1400}
+              height={942}
+              priority
+              sizes="(min-width: 1024px) 50vw, 94vw"
+              className="h-auto w-full drop-shadow-[0_24px_30px_rgb(91_56_30/0.35)]"
+            />
+          </div>
+          {/* Обложки раскрываются в стороны и исчезают */}
+          <div
+            className="pointer-events-none absolute inset-x-[3%] top-[48%] bottom-[2%]"
+            aria-hidden="true"
+          >
+            <span className="absolute inset-y-0 left-0 w-1/2 origin-right animate-[cover-left_1.2s_cubic-bezier(0.5,0,0.2,1)_0.1s_both] rounded-l-xl bg-gradient-to-br from-[#6b4429] to-[#3a2416] shadow-xl ring-1 ring-[#c49a5e]/60" />
+            <span className="absolute inset-y-0 right-0 w-1/2 origin-left animate-[cover-right_1.2s_cubic-bezier(0.5,0,0.2,1)_0.1s_both] rounded-r-xl bg-gradient-to-bl from-[#6b4429] to-[#3a2416] shadow-xl ring-1 ring-[#c49a5e]/60" />
+          </div>
         </div>
       </div>
+
+      {/* Летящие страницы */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={layer(12)}>
+        {PAGES.map((page, index) => (
+          <span
+            key={index}
+            className="absolute block h-[7%] w-[6%] rounded-[2px] bg-gradient-to-br from-[#fffaf1] to-[#efdcc2] shadow-[0_4px_10px_rgb(91_56_30/0.18)]"
+            style={{
+              left: page.left,
+              top: page.top,
+              animation: `page-drift ${page.duration}s ease-in-out ${page.delay}s infinite both`,
+              ['--dx' as string]: page.dx,
+              ['--r0' as string]: page.r0,
+              ['--r1' as string]: page.r1,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Золотые искры */}
+      <HeroParticles className="absolute inset-0 size-full" />
 
       {/* Раскрытые 3D-книги парят вокруг */}
       <div className="pointer-events-none absolute inset-0" style={layer(16)}>
@@ -143,7 +191,6 @@ export function HeroStage({ label }: { label: string }) {
 
       <Butterfly className="top-[12%] left-[8%] size-12" />
       <Butterfly className="top-[3%] right-[10%] size-10" delay={2.5} />
-      <Butterfly className="top-[44%] right-[1%] size-9" delay={5} />
       <Sparkle className="absolute top-[20%] right-[30%] size-3 animate-pulse text-gold" />
       <Sparkle className="absolute bottom-[34%] left-[6%] size-4 animate-pulse text-gold-light [animation-delay:1s]" />
     </div>

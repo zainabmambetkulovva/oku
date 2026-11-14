@@ -29,8 +29,10 @@ export function MobileMenu() {
     { href: '/', label: t('home') },
     { href: '/books', label: t('books') },
     { href: '/audiobooks', label: t('audiobooks') },
-    { href: '/#about', label: t('about') },
-    { href: '/#contacts', label: t('contacts') },
+    { href: '/#community', label: t('community') },
+    { href: '/about', label: t('about') },
+    { href: '/contacts', label: t('contacts') },
+    { href: '/delivery', label: t('delivery') },
     { href: '/favorites', label: t('favorites') },
     { href: '/login', label: t('account') },
   ];

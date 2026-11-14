@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
+import { SITE_CONTACTS } from '@/lib/site';
 import type { LatestReview } from '@/lib/types';
 import { LeafBranch, Sparkle } from '../ornaments/decor';
 import { CornerOrnament } from '../ornaments/ornaments';
@@ -27,7 +28,11 @@ export async function ReviewsSection({ reviews }: { reviews: LatestReview[] }) {
   const ts = await getTranslations('sections');
 
   return (
-    <section className="relative mt-12 overflow-x-clip" aria-labelledby="reviews-title">
+    <section
+      id="community"
+      className="relative mt-12 scroll-mt-24 overflow-x-clip"
+      aria-labelledby="reviews-title"
+    >
       <CornerOrnament className="pointer-events-none absolute -top-6 -left-16 hidden size-40 text-gold/35 lg:block" />
       <LeafBranch
         className="pointer-events-none absolute -right-4 bottom-0 hidden h-40 w-28 lg:block"
@@ -113,7 +118,7 @@ const PHOTOS = [photoShelf, photoBooks, photoMountains, photoChair];
 /** «Будь частью читательского сообщества»: снимки-полароиды и ссылка на Instagram. */
 export async function CommunitySection() {
   const t = await getTranslations('community');
-  const instagram = process.env.NEXT_PUBLIC_INSTAGRAM_URL || 'https://www.instagram.com/oku_24/';
+  const instagram = SITE_CONTACTS.instagram;
   const tilts = ['-rotate-6', 'rotate-3', '-rotate-2', 'rotate-6'];
 
   return (

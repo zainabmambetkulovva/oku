@@ -19,7 +19,7 @@ const PNG = {
 };
 
 async function signIn(page: Page, email: string, password: string) {
-  await page.getByLabel('E-mail').fill(email);
+  await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Пароль').fill(password);
   await page.getByRole('button', { name: 'Войти' }).click();
 }

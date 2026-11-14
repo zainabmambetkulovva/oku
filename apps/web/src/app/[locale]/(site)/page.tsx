@@ -3,7 +3,6 @@ import { CategoriesSection } from '@/components/home/categories-section';
 import { CommunitySection, ReviewsSection } from '@/components/home/community-sections';
 import { Hero } from '@/components/home/hero';
 import { AboutSection, StripSection } from '@/components/home/info-sections';
-import { Newsletter } from '@/components/home/newsletter';
 import { PlayerSection } from '@/components/home/player-section';
 import {
   AudiobooksSection,
@@ -28,7 +27,7 @@ const empty = { data: [], meta: { total: 0, page: 1, limit: 0, totalPages: 0 } }
 /**
  * Главная по утверждённому макету (первый экран, категории, бестселлеры, «О нас»,
  * преимущества, отзывы, сообщество) и разделы из ТЗ 2.4 в том же стиле:
- * новинки, аудиокниги с плеером, подписка.
+ * новинки, аудиокниги с плеером; подписка — в подвале.
  */
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -89,9 +88,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </Reveal>
       <Reveal>
         <CommunitySection />
-      </Reveal>
-      <Reveal>
-        <Newsletter />
       </Reveal>
     </>
   );

@@ -1,12 +1,13 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
-import { Link, useRouter } from '@/i18n/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from '@/i18n/navigation';
 import { useHydrated } from '@/lib/use-hydrated';
 import { cartCount, useCart } from '@/store/cart';
 import { useFavorites } from '@/store/favorites';
-import { CartIcon, CloseIcon, HeartIcon, SearchIcon, UserIcon } from '../ui/icons';
+import { CartIcon, HeartIcon, SearchIcon, UserIcon } from '../ui/icons';
+import { SearchOverlay } from './search-overlay';
 
 function CountBadge({ value }: { value: number }) {
   const [bump, setBump] = useState(false);
@@ -35,63 +36,27 @@ function CountBadge({ value }: { value: number }) {
 /** Поиск, избранное, корзина и кабинет в шапке. */
 export function HeaderActions() {
   const t = useTranslations('nav');
-  const router = useRouter();
   const hydrated = useHydrated();
   const cart = useCart((state) => cartCount(state.items));
   const favorites = useFavorites((state) => state.keys.length);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (searchOpen) inputRef.current?.focus();
-  }, [searchOpen]);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
 
   const iconButton =
     'relative grid size-10 place-items-center rounded-full text-cocoa transition hover:bg-cocoa-100';
 
   return (
     <div className="flex items-center gap-0.5 sm:gap-1">
-      {searchOpen ? (
-        <form
-          role="search"
-          className="absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 items-center gap-2 rounded-full border border-sand bg-milk px-4 py-2 shadow-lg sm:static sm:w-72 sm:translate-y-0 sm:shadow-none"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const value = query.trim();
-            if (value) router.push(`/books?search=${encodeURIComponent(value)}`);
-          }}
-        >
-          <SearchIcon className="size-4 shrink-0 text-muted" />
-          <input
-            ref={inputRef}
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t('searchPlaceholder')}
-            aria-label={t('search')}
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
-            onKeyDown={(event) => event.key === 'Escape' && setSearchOpen(false)}
-          />
-          <button
-            type="button"
-            onClick={() => setSearchOpen(false)}
-            aria-label={t('close')}
-            className="text-muted hover:text-cocoa"
-          >
-            <CloseIcon className="size-4" />
-          </button>
-        </form>
-      ) : (
-        <button
-          type="button"
-          className={iconButton}
-          onClick={() => setSearchOpen(true)}
-          aria-label={t('search')}
-        >
-          <SearchIcon />
-        </button>
-      )}
+      <button
+        type="button"
+        className={iconButton}
+        onClick={() => setSearchOpen(true)}
+        aria-label={t('search')}
+        aria-haspopup="dialog"
+      >
+        <SearchIcon />
+      </button>
+      {searchOpen && <SearchOverlay onClose={closeSearch} />}
       <Link
         href="/favorites"
         className={`${iconButton} hidden sm:grid`}

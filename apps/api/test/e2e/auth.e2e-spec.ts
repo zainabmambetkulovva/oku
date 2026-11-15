@@ -56,6 +56,9 @@ describe('Auth (e2e)', () => {
         role: 'USER',
         status: 'ACTIVE',
         emailVerified: false,
+        locale: 'ru',
+        hasPassword: true,
+        googleLinked: false,
         createdAt: expect.any(String),
       });
       expect(user).not.toHaveProperty('passwordHash');

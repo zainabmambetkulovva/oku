@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { authFetch, logout, refreshSession, useAuth } from '@/lib/auth';
+import { useUnreadCount } from '../account/use-account';
 import { UserIcon } from '../ui/icons';
 
 /** Кабинет в шапке: гостю — ссылка на вход, покупателю — меню с выходом. */
@@ -14,6 +15,7 @@ export function AccountMenu({ className }: { className: string }) {
   const pathname = usePathname();
   const { status, user } = useAuth();
   const [open, setOpen] = useState(false);
+  const unread = useUnreadCount();
   const [resent, setResent] = useState(false);
   const box = useRef<HTMLDivElement>(null);
 
@@ -76,6 +78,12 @@ export function AccountMenu({ className }: { className: string }) {
         <span className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#e7cfa3] to-[#c49a5e] text-sm font-semibold text-white">
           {name.charAt(0).toUpperCase()}
         </span>
+        {unread > 0 && (
+          <span
+            className="absolute top-1 right-1 size-2.5 rounded-full bg-[#b4442e] ring-2 ring-milk"
+            aria-hidden="true"
+          />
+        )}
       </button>
       {open && (
         <div
@@ -103,17 +111,35 @@ export function AccountMenu({ className }: { className: string }) {
               </button>
             </div>
           )}
+          <Link href="/account" role="menuitem" className={item}>
+            {t('dashboard')}
+          </Link>
+          <Link href="/account/orders" role="menuitem" className={item}>
+            {t('orders')}
+          </Link>
+          <Link href="/account/audiobooks" role="menuitem" className={item}>
+            {t('audiobooks')}
+          </Link>
+          <Link
+            href="/account/notifications"
+            role="menuitem"
+            className={`${item} flex justify-between`}
+          >
+            {t('notifications')}
+            {unread > 0 && (
+              <span className="grid min-w-5 place-items-center rounded-full bg-cocoa px-1.5 text-[0.65rem] font-bold text-milk">
+                {unread}
+              </span>
+            )}
+          </Link>
+          <Link href="/favorites" role="menuitem" className={item}>
+            {t('favorites')}
+          </Link>
           {user.role === 'ADMIN' && (
             <Link href="/admin" role="menuitem" className={item}>
               {t('admin')}
             </Link>
           )}
-          <Link href="/favorites" role="menuitem" className={item}>
-            {t('favorites')}
-          </Link>
-          <Link href="/cart" role="menuitem" className={item}>
-            {t('cart')}
-          </Link>
           <button
             type="button"
             role="menuitem"

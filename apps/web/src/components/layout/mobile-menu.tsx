@@ -37,8 +37,8 @@ export function MobileMenu() {
     { href: '/contacts', label: t('contacts') },
     { href: '/delivery', label: t('delivery') },
     { href: '/favorites', label: t('favorites') },
+    user ? { href: '/account', label: t('account') } : { href: '/login', label: t('account') },
     ...(user?.role === 'ADMIN' ? [{ href: '/admin', label: ta('admin') }] : []),
-    ...(user ? [] : [{ href: '/login', label: t('account') }]),
   ];
 
   return (

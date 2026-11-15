@@ -107,6 +107,38 @@ describe('Users (e2e)', () => {
       expect(response.body.message).toBe('Current password is incorrect');
     });
 
+    it('requires the current password when one is set', async () => {
+      const user = await registerUser(t);
+      await t
+        .http()
+        .post('/api/v1/users/me/password')
+        .set(bearer(user.accessToken))
+        .send({ newPassword: 'NewSecret456' })
+        .expect(400);
+    });
+
+    it('lets a Google-only account set its first password', async () => {
+      const user = await registerUser(t);
+      await t.prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: null, googleId: 'google-sub-x' },
+      });
+      const before = await t.http().get('/api/v1/users/me').set(bearer(user.accessToken));
+      expect(before.body.data).toMatchObject({ hasPassword: false, googleLinked: true });
+
+      await t
+        .http()
+        .post('/api/v1/users/me/password')
+        .set(bearer(user.accessToken))
+        .send({ newPassword: 'FirstPass123' })
+        .expect(204);
+      await login(t, user.email, 'FirstPass123');
+      const after = await t.http().get('/api/v1/users/me').set(bearer(user.accessToken));
+      expect(after.body.data.hasPassword).toBe(true);
+      expect(after.body.data).not.toHaveProperty('passwordHash');
+      expect(after.body.data).not.toHaveProperty('googleId');
+    });
+
     it('requires a new password that differs from the current one', async () => {
       const user = await registerUser(t);
       await t
@@ -114,6 +146,25 @@ describe('Users (e2e)', () => {
         .post('/api/v1/users/me/password')
         .set(bearer(user.accessToken))
         .send({ currentPassword: user.password, newPassword: user.password })
+        .expect(400);
+    });
+  });
+
+  describe('mail language', () => {
+    it('changes the language of e-mails in the profile', async () => {
+      const user = await registerUser(t);
+      const response = await t
+        .http()
+        .patch('/api/v1/users/me')
+        .set(bearer(user.accessToken))
+        .send({ locale: 'ky' })
+        .expect(200);
+      expect(response.body.data.locale).toBe('ky');
+      await t
+        .http()
+        .patch('/api/v1/users/me')
+        .set(bearer(user.accessToken))
+        .send({ locale: 'en' })
         .expect(400);
     });
   });

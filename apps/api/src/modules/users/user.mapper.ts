@@ -11,12 +11,21 @@ export const publicUserSelect = {
   role: true,
   status: true,
   emailVerifiedAt: true,
+  locale: true,
+  // Только чтобы сказать, есть ли пароль и привязан ли Google; сами значения не отдаются
+  passwordHash: true,
+  googleId: true,
   createdAt: true,
 } satisfies Prisma.UserSelect;
 
 export type PublicUserRecord = Prisma.UserGetPayload<{ select: typeof publicUserSelect }>;
 
-export type PublicUser = Omit<PublicUserRecord, 'emailVerifiedAt'> & { emailVerified: boolean };
+export type PublicUser = Omit<PublicUserRecord, 'emailVerifiedAt' | 'passwordHash' | 'googleId'> & {
+  emailVerified: boolean;
+  /** Есть пароль (у входивших только через Google его может не быть) */
+  hasPassword: boolean;
+  googleLinked: boolean;
+};
 
 /** Превращает запись пользователя в безопасный ответ API (явный список полей). */
 export function toPublicUser(user: PublicUserRecord): PublicUser {
@@ -30,6 +39,9 @@ export function toPublicUser(user: PublicUserRecord): PublicUser {
     role: user.role,
     status: user.status,
     emailVerified: user.emailVerifiedAt !== null,
+    locale: user.locale,
+    hasPassword: user.passwordHash !== null,
+    googleLinked: user.googleId !== null,
     createdAt: user.createdAt,
   };
 }

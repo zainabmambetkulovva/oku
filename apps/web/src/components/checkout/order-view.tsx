@@ -10,22 +10,13 @@ import { formatPrice } from '@/lib/format';
 import { PICKUP, SITE_CONTACTS } from '@/lib/site';
 import type { OrderDetails, PaymentSession } from '@/lib/types';
 import { BookCover } from '../catalog/book-cover';
+import { OrderStatusBadge } from './order-status';
 import { FormAlert } from '../auth/auth-card';
 import { Button, buttonClasses } from '../ui/button';
 
 /** Сколько ждать подтверждения оплаты от Finik после возврата со страницы оплаты. */
 const POLL_MS = 3000;
 const POLL_LIMIT_MS = 2 * 60 * 1000;
-
-const STATUS_STYLE: Record<OrderDetails['status'], string> = {
-  PENDING: 'bg-[#f6e3c3] text-[#7a4a12]',
-  PAID: 'bg-[#e3ecd5] text-[#3f5a24]',
-  PROCESSING: 'bg-[#e3ecd5] text-[#3f5a24]',
-  SHIPPED: 'bg-[#dfe7f1] text-[#2c4a6b]',
-  COMPLETED: 'bg-[#e3ecd5] text-[#3f5a24]',
-  CANCELLED: 'bg-sand/60 text-ink/70',
-  REFUNDED: 'bg-sand/60 text-ink/70',
-};
 
 function useCountdown(deadline: string | null) {
   const [now, setNow] = useState(() => Date.now());
@@ -137,7 +128,6 @@ export function OrderView({ orderNumber }: { orderNumber: string }) {
         : order.status === 'CANCELLED' && expired
           ? 'CANCELLED_EXPIRED'
           : order.status;
-  const badgeKey = order.status === 'PENDING' && isCash ? 'PENDING_CASH' : order.status;
   const time = order.expiresAt
     ? new Intl.DateTimeFormat('ru-RU', {
         hour: '2-digit',
@@ -183,12 +173,7 @@ export function OrderView({ orderNumber }: { orderNumber: string }) {
       <div className="space-y-6">
         <section className="card space-y-4 p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span
-              className={`rounded-full px-3 py-1 text-sm font-semibold ${STATUS_STYLE[order.status]}`}
-              data-testid="order-status"
-            >
-              {t(`status.${badgeKey}`)}
-            </span>
+            <OrderStatusBadge order={order} className="text-sm" />
             <span className="text-xs text-muted">
               {t('created', { date: dateFormat.format(new Date(order.createdAt)) })}
             </span>

@@ -2,18 +2,33 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiRequestError, apiFetch } from '@/lib/api';
+import { authFetch, refreshSession, useAuth } from '@/lib/auth';
 import { formatClock } from '@/lib/format';
 import type { AudiobookDetails, StreamLink } from '@/lib/types';
 import { BookCover } from '../catalog/book-cover';
 import { BackIcon, ForwardIcon, LockIcon, PauseIcon, PlayIcon, VolumeIcon } from '../ui/icons';
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+/** Как часто сохранять место прослушивания во время игры, мс. */
+const SAVE_EVERY_MS = 15_000;
+
+interface AccessInfo {
+  hasFullAccess: boolean;
+  availableChapterIds: string[];
+}
+
+interface Progress {
+  chapterId: string | null;
+  positionSeconds: number;
+  completed: boolean;
+}
 
 /**
- * Интерактивный аудиоплеер главной (ТЗ 2.4, п. 7; ТЗ 9.1): главы, перемотка,
- * скорость, громкость. Файл главы — по временной ссылке от API после проверки доступа.
+ * Аудиоплеер: главы, перемотка, скорость, громкость. Файл главы — по временной
+ * ссылке от API после проверки доступа. Вошедшему покупателю доступны все главы,
+ * место прослушивания сохраняется в аккаунте и продолжается на любом устройстве.
  */
 export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
   const t = useTranslations('player');
@@ -25,13 +40,62 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
   const [speed, setSpeed] = useState(1);
   const [volume, setVolume] = useState(0.9);
   const [message, setMessage] = useState<string | null>(null);
+  const status = useAuth((state) => state.status);
+  const signedIn = status === 'authenticated';
+  const [access, setAccess] = useState<AccessInfo | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  /** Куда перемотать после загрузки главы (продолжение с места остановки) */
+  const resumeAt = useRef<number | null>(null);
+  const lastSaved = useRef(0);
+  const base = `/audiobooks/${encodeURIComponent(audiobook.slug)}`;
+
+  useEffect(() => {
+    if (status === 'unknown') void refreshSession();
+  }, [status]);
+
+  // Какие главы доступны и где покупатель остановился в прошлый раз
+  useEffect(() => {
+    if (status === 'unknown') return;
+    const load = signedIn ? authFetch : apiFetch;
+    load<AccessInfo>(`${base}/access`)
+      .then(setAccess)
+      .catch(() => setAccess(null));
+    if (signedIn) {
+      authFetch<Progress | null>(`${base}/progress`)
+        .then((saved) => setProgress(saved ?? null))
+        .catch(() => setProgress(null));
+    } else {
+      setProgress(null);
+    }
+  }, [status, signedIn, base]);
+
+  const available = (id: string) =>
+    access
+      ? access.availableChapterIds.includes(id)
+      : Boolean(audiobook.chapters.find((chapter) => chapter.id === id)?.isFreePreview);
 
   const stream = useMutation({
     mutationFn: (id: string) =>
-      apiFetch<StreamLink>(
-        `/audiobooks/${encodeURIComponent(audiobook.slug)}/chapters/${id}/stream`,
-      ),
+      (signedIn ? authFetch : apiFetch)<StreamLink>(`${base}/chapters/${id}/stream`),
   });
+
+  /** Сохранить место прослушивания (только вошедшему и только в доступной главе). */
+  const save = useCallback(
+    (completed = false) => {
+      const element = audio.current;
+      const chapter = audiobook.chapters.find((item) => item.id === chapterId);
+      if (!signedIn || !element || !chapter || !available(chapter.id)) return;
+      lastSaved.current = Date.now();
+      const positionSeconds = Math.min(Math.floor(element.currentTime), chapter.durationSeconds);
+      const next = { chapterId: chapter.id, positionSeconds, completed };
+      setProgress(next);
+      void authFetch(`${base}/progress`, { method: 'PUT', body: JSON.stringify(next) }).catch(
+        () => undefined,
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [signedIn, chapterId, base, audiobook.chapters, access],
+  );
 
   useEffect(() => {
     if (audio.current) audio.current.playbackRate = speed;
@@ -43,15 +107,17 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
   const firstFree = audiobook.chapters.find((chapter) => chapter.isFreePreview);
   const current = audiobook.chapters.find((chapter) => chapter.id === chapterId);
 
-  async function playChapter(id: string) {
+  async function playChapter(id: string, from?: number) {
     setMessage(null);
     if (id === chapterId && audio.current?.src) {
       return audio.current.paused ? audio.current.play() : audio.current.pause();
     }
+    if (audio.current?.src && chapterId) save();
     try {
       const link = await stream.mutateAsync(id);
       setChapterId(id);
-      setTime(0);
+      setTime(from ?? 0);
+      resumeAt.current = from && from > 0 ? from : null;
       if (audio.current) {
         audio.current.src = link.url;
         audio.current.playbackRate = speed;
@@ -63,6 +129,17 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
       else setMessage(t('error'));
     }
   }
+
+  const nextChapter = () => {
+    const index = audiobook.chapters.findIndex((chapter) => chapter.id === chapterId);
+    return audiobook.chapters.slice(index + 1).find((chapter) => available(chapter.id));
+  };
+
+  const resumeChapter =
+    progress?.chapterId && !progress.completed
+      ? audiobook.chapters.find((chapter) => chapter.id === progress.chapterId)
+      : undefined;
+  const canResume = Boolean(resumeChapter && available(resumeChapter.id) && !chapterId);
 
   const seek = (seconds: number) => {
     if (audio.current) audio.current.currentTime = Math.max(0, Math.min(duration || 0, seconds));
@@ -90,14 +167,59 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
           {audiobook.narrator && <> · {t('narrator', { name: audiobook.narrator })}</>}
         </p>
 
+        {access?.hasFullAccess && (
+          <p
+            className="mt-2 inline-block rounded-full bg-[#e3ecd5] px-3 py-1 text-xs font-semibold text-[#3f5a24]"
+            data-testid="full-access"
+          >
+            {t('fullAccess')}
+          </p>
+        )}
+        {canResume && resumeChapter && (
+          <button
+            type="button"
+            onClick={() => void playChapter(resumeChapter.id, progress!.positionSeconds)}
+            className="mt-3 block rounded-full border border-gold bg-white/70 px-4 py-2 text-sm font-semibold text-cocoa hover:bg-white"
+            data-testid="player-resume"
+          >
+            {t('resume', {
+              number: resumeChapter.chapterNumber,
+              time: formatClock(progress!.positionSeconds),
+            })}
+          </button>
+        )}
+
         <audio
           ref={audio}
           preload="none"
           onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onEnded={() => setPlaying(false)}
-          onTimeUpdate={(event) => setTime(event.currentTarget.currentTime)}
-          onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+          onPause={() => {
+            setPlaying(false);
+            if (!audio.current?.ended) save();
+          }}
+          onEnded={() => {
+            setPlaying(false);
+            const next = nextChapter();
+            if (next) {
+              save();
+              void playChapter(next.id);
+            } else {
+              save(true);
+            }
+          }}
+          onTimeUpdate={(event) => {
+            setTime(event.currentTarget.currentTime);
+            if (Date.now() - lastSaved.current > SAVE_EVERY_MS && !event.currentTarget.paused) {
+              save();
+            }
+          }}
+          onLoadedMetadata={(event) => {
+            setDuration(event.currentTarget.duration);
+            if (resumeAt.current !== null) {
+              event.currentTarget.currentTime = resumeAt.current;
+              resumeAt.current = null;
+            }
+          }}
           onError={() => audio.current?.src && setMessage(t('error'))}
         />
 
@@ -205,13 +327,13 @@ export function AudioPlayer({ audiobook }: { audiobook: AudiobookDetails }) {
                   <span className={`text-xs ${active ? 'text-milk/80' : 'text-muted'}`}>
                     {formatClock(chapter.durationSeconds)}
                   </span>
-                  {chapter.isFreePreview ? (
+                  {chapter.isFreePreview && !access?.hasFullAccess ? (
                     <span
                       className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold ${active ? 'bg-milk/20' : 'bg-cocoa-100 text-cocoa'}`}
                     >
                       {t('free')}
                     </span>
-                  ) : (
+                  ) : available(chapter.id) ? null : (
                     <span className="flex items-center gap-1 text-[0.65rem]" title={t('locked')}>
                       <LockIcon className="size-3.5" />
                       <span className="sr-only">{t('locked')}</span>

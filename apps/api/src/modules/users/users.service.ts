@@ -26,20 +26,31 @@ export class UsersService {
   async updateProfile(userId: string, dto: UpdateProfileDto): Promise<PublicUser> {
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: { firstName: dto.firstName, lastName: dto.lastName, phone: dto.phone },
+      data: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        phone: dto.phone,
+        locale: dto.locale,
+      },
       select: publicUserSelect,
     });
     return toPublicUser(user);
   }
 
-  /** Смена пароля завершает все сессии, кроме текущей. */
+  /**
+   * Смена пароля завершает все сессии, кроме текущей. Если пароля ещё нет
+   * (вход только через Google), пароль задаётся без текущего.
+   */
   async changePassword(user: AuthenticatedUser, dto: ChangePasswordDto): Promise<void> {
     const { passwordHash } = await this.prisma.user.findUniqueOrThrow({
       where: { id: user.id },
       select: { passwordHash: true },
     });
 
-    if (!passwordHash || !(await this.passwords.verify(dto.currentPassword, passwordHash))) {
+    if (
+      passwordHash &&
+      !(dto.currentPassword && (await this.passwords.verify(dto.currentPassword, passwordHash)))
+    ) {
       throw new BadRequestException('Current password is incorrect');
     }
     if (dto.currentPassword === dto.newPassword) {

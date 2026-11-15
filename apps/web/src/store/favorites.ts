@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { ApiRequestError } from '@/lib/api';
 import { authFetch } from '@/lib/auth';
 import type { Paginated } from '@/lib/types';
 import type { ProductType } from './cart';
@@ -114,7 +115,7 @@ export const useFavorites = create<FavoritesState>()(
         const { mode, items } = get();
         if (mode === 'guest' && items.length > 0) {
           // Добавление идемпотентно: уже избранное на сервере не дублируется
-          await Promise.allSettled(
+          const results = await Promise.allSettled(
             items.map((item) =>
               authFetch('/users/me/favorites', {
                 method: 'POST',
@@ -122,6 +123,14 @@ export const useFavorites = create<FavoritesState>()(
               }),
             ),
           );
+          // Снятый с продажи товар (404) переносить незачем; при сетевой ошибке гостевое
+          // избранное остаётся в браузере, перенос повторится при следующем открытии сайта
+          const lost = results.some(
+            (result) =>
+              result.status === 'rejected' &&
+              !(result.reason instanceof ApiRequestError && result.reason.status === 404),
+          );
+          if (lost) throw new Error('Favorites were not moved to the account');
         }
         set({ items: await loadServerFavorites(), mode: 'server' });
       },

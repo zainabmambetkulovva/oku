@@ -1,3 +1,4 @@
+import { afterEach, vi } from 'vitest';
 import { useFavorites } from './favorites';
 
 const book = {
@@ -25,5 +26,18 @@ describe('guest favorites', () => {
     useFavorites.setState({ items: [book], mode: 'server' });
     useFavorites.getState().detach();
     expect(useFavorites.getState()).toMatchObject({ items: [], mode: 'guest' });
+  });
+});
+
+describe('moving favorites into the account', () => {
+  beforeEach(() => useFavorites.setState({ items: [book], mode: 'guest' }));
+  afterEach(() => vi.restoreAllMocks());
+
+  it('keeps guest favorites when the server could not save them', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('{"statusCode":429}', { status: 429 }),
+    );
+    await expect(useFavorites.getState().attach()).rejects.toThrow();
+    expect(useFavorites.getState()).toMatchObject({ items: [book], mode: 'guest' });
   });
 });

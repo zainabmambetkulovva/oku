@@ -18,6 +18,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import {
   CreateReviewDto,
   LatestReviewsQueryDto,
+  ReportReviewDto,
   ReviewsQueryDto,
   UpdateReviewDto,
 } from './dto/reviews.dto';
@@ -101,6 +102,18 @@ export class ReviewsController {
     @Body() dto: UpdateReviewDto,
   ) {
     return this.reviews.update(user, id, dto);
+  }
+
+  /** Пожаловаться на чужой отзыв (оскорбления, спам и т.п.). */
+  @ApiBearerAuth()
+  @Post('reviews/:id/report')
+  @HttpCode(HttpStatus.OK)
+  report(
+    @AuthUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReportReviewDto,
+  ) {
+    return this.reviews.report(user, id, dto.reason);
   }
 
   @ApiBearerAuth()

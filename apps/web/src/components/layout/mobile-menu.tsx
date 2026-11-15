@@ -32,7 +32,7 @@ export function MobileMenu() {
     { href: '/', label: t('home') },
     { href: '/books', label: t('books') },
     { href: '/audiobooks', label: t('audiobooks') },
-    { href: '/#community', label: t('community') },
+    { href: '/community', label: t('community') },
     { href: '/about', label: t('about') },
     { href: '/contacts', label: t('contacts') },
     { href: '/delivery', label: t('delivery') },

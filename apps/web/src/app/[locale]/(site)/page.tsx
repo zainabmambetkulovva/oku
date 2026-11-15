@@ -3,7 +3,9 @@ import { CategoriesSection } from '@/components/home/categories-section';
 import { CommunitySection, ReviewsSection } from '@/components/home/community-sections';
 import { Hero } from '@/components/home/hero';
 import { AboutSection, StripSection } from '@/components/home/info-sections';
-import { PlayerSection } from '@/components/home/player-section';
+import { InteractiveTeaser } from '@/components/community/interactive-teaser';
+import { QuoteOfDayBlock } from '@/components/community/quote-of-day';
+import { PlayerSection, showcaseAudiobooks } from '@/components/home/player-section';
 import {
   AudiobooksSection,
   BestsellersSection,
@@ -17,6 +19,7 @@ import type {
   BookListItem,
   CategoryNode,
   LatestReview,
+  QuoteOfDay,
 } from '@/lib/types';
 
 // Каталог меняется из админки — страница собирается на каждый запрос (ответы API кэшируются в Redis)
@@ -33,7 +36,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [categories, popular, fresh, audiobooks, reviews] = await Promise.all([
+  const [categories, popular, fresh, audiobooks, reviews, quote] = await Promise.all([
     safely(() => apiFetch<CategoryNode[]>('/categories'), [], 'categories'),
     safely(
       () => apiFetchPage<BookListItem>('/books?sort=popular&limit=12'),
@@ -47,17 +50,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       'audiobooks',
     ),
     safely(() => apiFetch<LatestReview[]>('/reviews/latest?limit=9'), [], 'latest reviews'),
+    safely(() => apiFetch<QuoteOfDay | null>(`/quotes/today?locale=${locale}`), null, 'quote'),
   ]);
 
-  const featured =
-    audiobooks.data.find((audiobook) => audiobook.hasFreePreview) ?? audiobooks.data[0];
-  const featuredDetails = featured
-    ? await safely(
-        () => apiFetch<AudiobookDetails>(`/audiobooks/${encodeURIComponent(featured.slug)}`),
-        null,
-        'featured audiobook',
-      )
-    : null;
+  const showcase = await showcaseAudiobooks(audiobooks.data, (slug) =>
+    safely(
+      () => apiFetch<AudiobookDetails>(`/audiobooks/${encodeURIComponent(slug)}`),
+      null,
+      'showcase audiobook',
+    ),
+  );
 
   return (
     <>
@@ -81,7 +83,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <AudiobooksSection audiobooks={audiobooks.data} />
       </Reveal>
       <Reveal>
-        <PlayerSection audiobook={featuredDetails} />
+        <PlayerSection audiobooks={showcase} />
+      </Reveal>
+      <Reveal>
+        <QuoteOfDayBlock quote={quote} />
+      </Reveal>
+      <Reveal>
+        <InteractiveTeaser />
       </Reveal>
       <Reveal>
         <ReviewsSection reviews={reviews} />

@@ -211,3 +211,12 @@ export interface SavedAddress {
   postalCode: string | null;
   isDefault: boolean;
 }
+
+export interface QuoteOfDay {
+  id: string;
+  text: string;
+  author: string;
+  source: string | null;
+  locale: 'ru' | 'ky';
+  book: { slug: string; title: string } | null;
+}

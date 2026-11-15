@@ -23,6 +23,7 @@ import { ListeningModule } from './modules/listening/listening.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { QuotesModule } from './modules/quotes/quotes.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { NewsletterModule } from './modules/newsletter/newsletter.module';
 import { AdminModule } from './modules/admin/admin.module';
@@ -78,6 +79,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     PaymentsModule,
     FavoritesModule,
     ReviewsModule,
+    QuotesModule,
     NotificationsModule,
     NewsletterModule,
     AdminModule,

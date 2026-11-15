@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { apiFetchPage } from '@/lib/api';
 import type { ReviewItem } from '@/lib/types';
+import { ReportButton } from './report-button';
 
 /** Список отзывов с кнопкой «Показать ещё». */
 export function ReviewsList({
@@ -62,6 +63,7 @@ export function ReviewsList({
                 {review.text}
               </p>
             )}
+            {review.text && <ReportButton reviewId={review.id} />}
           </li>
         ))}
       </ul>

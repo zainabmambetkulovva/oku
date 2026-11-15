@@ -55,7 +55,7 @@ export async function Header() {
           <Link href="/audiobooks" className={linkClass}>
             {t('audiobooks')}
           </Link>
-          <Link href="/#community" className={linkClass}>
+          <Link href="/community" className={linkClass}>
             {t('community')}
           </Link>
           <Link href="/about" className={linkClass}>

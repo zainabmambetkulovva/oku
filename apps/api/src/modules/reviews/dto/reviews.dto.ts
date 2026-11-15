@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/swagger';
 import { ReviewStatus } from '@prisma/client';
-import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/pagination/pagination';
 import { Trim } from '../../../common/validation/decorators';
 
@@ -37,6 +37,21 @@ export class AdminReviewsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsIn(['book', 'audiobook'])
   productType?: 'book' | 'audiobook';
+
+  /** true — только отзывы с жалобами читателей */
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  reported?: boolean;
+}
+
+export class ReportReviewDto {
+  /** Что не так с отзывом (по желанию) */
+  @IsOptional()
+  @Trim()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 }
 
 export class ModerateReviewDto {

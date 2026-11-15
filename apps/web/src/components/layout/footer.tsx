@@ -127,7 +127,7 @@ export async function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/#community" className={linkClass}>
+              <Link href="/community" className={linkClass}>
                 {nav('community')}
               </Link>
             </li>

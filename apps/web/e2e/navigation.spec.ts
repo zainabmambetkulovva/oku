@@ -38,7 +38,7 @@ test.describe('navigation and info pages', () => {
     await expect(items).toHaveCount(6);
     await expect(nav.getByRole('link', { name: 'Сообщество' })).toHaveAttribute(
       'href',
-      '/ru#community',
+      '/ru/community',
     );
   });
 

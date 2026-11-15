@@ -100,6 +100,26 @@ export type UploadKind = 'book-cover' | 'book-image' | 'category-image';
 
 const json = (body: unknown) => ({ body: JSON.stringify(body) });
 
+export interface AdminQuote {
+  id: string;
+  text: string;
+  author: string;
+  source: string | null;
+  bookId: string | null;
+  book: { slug: string; title: string } | null;
+  locale: 'ru' | 'ky';
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface QuoteInput {
+  text: string;
+  author: string;
+  source?: string;
+  locale: 'ru' | 'ky';
+  isActive: boolean;
+}
+
 export const adminApi = {
   dashboard: () => authFetch<Dashboard>('/admin/dashboard'),
   sales: () => authFetch<SalesSeries>('/admin/analytics/sales?groupBy=day'),
@@ -129,6 +149,13 @@ export const adminApi = {
   updateCategory: (id: string, input: Partial<CategoryInput>) =>
     authFetch<AdminCategory>(`/admin/categories/${id}`, { method: 'PATCH', ...json(input) }),
   deleteCategory: (id: string) => authFetch<void>(`/admin/categories/${id}`, { method: 'DELETE' }),
+
+  quotes: (page = 1) => authFetch<Paginated<AdminQuote>>(`/admin/quotes?limit=50&page=${page}`),
+  createQuote: (input: QuoteInput) =>
+    authFetch<AdminQuote>('/admin/quotes', { method: 'POST', ...json(input) }),
+  updateQuote: (id: string, input: Partial<QuoteInput>) =>
+    authFetch<AdminQuote>(`/admin/quotes/${id}`, { method: 'PATCH', ...json(input) }),
+  deleteQuote: (id: string) => authFetch<void>(`/admin/quotes/${id}`, { method: 'DELETE' }),
 };
 
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

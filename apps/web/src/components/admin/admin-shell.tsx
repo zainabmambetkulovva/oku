@@ -24,6 +24,11 @@ const NAV = [
     key: 'categories',
     icon: 'M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v6H4zM13 14h7v6h-7z',
   },
+  {
+    href: '/admin/quotes',
+    key: 'quotes',
+    icon: 'M7 7h4v4c0 3-1.5 5-4 6M15 7h4v4c0 3-1.5 5-4 6',
+  },
 ] as const;
 
 /**

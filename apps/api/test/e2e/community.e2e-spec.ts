@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { AudioAccessService } from '../../src/modules/listening/audio-access.service';
+import { bishkekDay } from '../../src/modules/quotes/quotes.service';
 import { OrderLifecycleService } from '../../src/modules/orders/order-lifecycle.service';
 import {
   signTestWebhook,
@@ -318,6 +319,99 @@ describe('Favorites, reviews, notifications, newsletter (e2e)', () => {
         .get(api(`/books/${book.slug}/reviews?sort=rating_desc`))
         .expect(200);
       expect(list.body.data.map((r: { rating: number }) => r.rating)).toEqual([5, 2]);
+    });
+  });
+
+  describe('review reports', () => {
+    it("lets readers report others' reviews once and shows reports to administrators", async () => {
+      const { body } = await as(user).post(`/books/${book.slug}/reviews`, {
+        rating: 1,
+        text: 'Спам',
+      });
+      const reviewId = body.data.id as string;
+      const reader = await registerUser(t);
+      const other = await registerUser(t);
+
+      await as(user).post(`/reviews/${reviewId}/report`).expect(400);
+      await as(reader).post(`/reviews/${reviewId}/report`, { reason: 'Реклама' }).expect(200);
+      // Повтор той же жалобы ничего не меняет
+      await as(reader).post(`/reviews/${reviewId}/report`, { reason: 'Ещё раз' }).expect(200);
+      await as(other).post(`/reviews/${reviewId}/report`).expect(200);
+      await t
+        .http()
+        .post(api(`/reviews/${reviewId}/report`))
+        .expect(401);
+      await as(reader).post(`/reviews/${randomUUID()}/report`).expect(404);
+
+      const admin = await createAdmin(t);
+      const reported = (await as(admin).get('/admin/reviews?reported=true').expect(200)).body;
+      expect(reported.meta.total).toBe(1);
+      expect(reported.data[0]).toMatchObject({ id: reviewId, reportsCount: 2 });
+      expect(reported.data[0].reports.map((r: { reason: string }) => r.reason)).toContain(
+        'Реклама',
+      );
+      // Отзыв остаётся на сайте, пока администратор его не скроет
+      expect((await t.http().get(api(`/books/${book.slug}/reviews`))).body.meta.total).toBe(1);
+      await as(reader).get('/admin/reviews').expect(403);
+    });
+  });
+
+  describe('quotes of the day', () => {
+    const quote = (text: string, locale: 'ru' | 'ky', extra: object = {}) => ({
+      text,
+      author: 'Чингиз Айтматов',
+      locale,
+      ...extra,
+    });
+
+    it('shows nothing until an administrator adds quotes', async () => {
+      const response = await t.http().get(api('/quotes/today?locale=ky')).expect(200);
+      expect(response.body.data).toBeNull();
+    });
+
+    it('lets administrators manage quotes and rotates them daily by language', async () => {
+      const admin = await createAdmin(t);
+      await as(user).post('/admin/quotes', quote('Нет', 'ru')).expect(403);
+      await as(admin)
+        .post('/admin/quotes', { ...quote('Нет', 'ru'), locale: 'en' })
+        .expect(400);
+
+      const first = (
+        await as(admin)
+          .post(
+            '/admin/quotes',
+            quote('Первая цитата', 'ru', { source: 'Джамиля', bookId: book.id }),
+          )
+          .expect(201)
+      ).body.data;
+      await as(admin).post('/admin/quotes', quote('Экинчи цитата', 'ky')).expect(201);
+
+      const ru = (await t.http().get(api('/quotes/today?locale=ru')).expect(200)).body.data;
+      expect(ru).toMatchObject({
+        text: 'Первая цитата',
+        author: 'Чингиз Айтматов',
+        source: 'Джамиля',
+        book: { slug: book.slug, title: 'Джамиля' },
+      });
+      const ky = (await t.http().get(api('/quotes/today?locale=ky')).expect(200)).body.data;
+      expect(ky.text).toBe('Экинчи цитата');
+
+      // Скрытая цитата не показывается; без цитат на языке — цитата на другом языке
+      await as(admin).patch(`/admin/quotes/${first.id}`, { isActive: false }).expect(200);
+      const fallback = (await t.http().get(api('/quotes/today?locale=ru')).expect(200)).body.data;
+      expect(fallback.text).toBe('Экинчи цитата');
+
+      const list = (await as(admin).get('/admin/quotes?isActive=false').expect(200)).body;
+      expect(list.data.map((q: { id: string }) => q.id)).toEqual([first.id]);
+      await as(admin).delete(`/admin/quotes/${first.id}`).expect(204);
+      expect(await t.prisma.auditLog.count({ where: { entityType: 'quote' } })).toBe(4);
+    });
+
+    it('changes the quote at midnight in Bishkek', () => {
+      // 23:59 и 00:00 по Бишкеку (UTC+6) — разные дни
+      const before = Date.UTC(2026, 10, 15, 17, 59);
+      const after = Date.UTC(2026, 10, 15, 18, 0);
+      expect(bishkekDay(after) - bishkekDay(before)).toBe(1);
     });
   });
 

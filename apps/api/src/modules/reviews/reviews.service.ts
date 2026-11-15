@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, Review } from '@prisma/client';
 import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { paginated, skipFor } from '../../common/pagination/pagination';
@@ -208,6 +213,7 @@ export class ReviewsService {
       ...(query.status && { status: query.status }),
       ...(query.productType === 'book' && { bookId: { not: null } }),
       ...(query.productType === 'audiobook' && { audiobookId: { not: null } }),
+      ...(query.reported && { reports: { some: {} } }),
     };
     const [reviews, total] = await this.prisma.$transaction([
       this.prisma.review.findMany({
@@ -215,6 +221,8 @@ export class ReviewsService {
         include: {
           ...reviewInclude,
           user: { select: { id: true, email: true, firstName: true, lastName: true } },
+          reports: { select: { reason: true, createdAt: true }, orderBy: { createdAt: 'desc' } },
+          _count: { select: { reports: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip: skipFor(query),
@@ -222,7 +230,33 @@ export class ReviewsService {
       }),
       this.prisma.review.count({ where }),
     ]);
-    return paginated(reviews, total, query);
+    return paginated(
+      reviews.map(({ _count, ...review }) => ({ ...review, reportsCount: _count.reports })),
+      total,
+      query,
+    );
+  }
+
+  /**
+   * Жалоба читателя на отзыв. Повторная жалоба того же читателя ничего не меняет;
+   * на свой отзыв пожаловаться нельзя. Отзыв остаётся на сайте до решения администратора.
+   */
+  async report(user: AuthenticatedUser, reviewId: string, reason?: string) {
+    const review = await this.prisma.review.findFirst({
+      where: { id: reviewId, status: 'APPROVED' },
+    });
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+    if (review.userId === user.id) {
+      throw new BadRequestException('You cannot report your own review');
+    }
+    await this.prisma.reviewReport.upsert({
+      where: { reviewId_userId: { reviewId, userId: user.id } },
+      create: { reviewId, userId: user.id, reason: reason || null },
+      update: {},
+    });
+    return { reported: true };
   }
 
   async moderate(reviewId: string, status: 'APPROVED' | 'REJECTED', actor: AdminActor) {

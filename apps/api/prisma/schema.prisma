@@ -139,6 +139,7 @@ model User {
   orderStatusChanges      OrderStatusHistory[]
   emailVerificationTokens EmailVerificationToken[]
   passwordResetTokens     PasswordResetToken[]
+  reviewReports           ReviewReport[]
 
   @@map("users")
 }
@@ -266,6 +267,7 @@ model Book {
   orderItems     OrderItem[]
   favorites      Favorite[]
   reviews        Review[]
+  quotes         Quote[]
 
   // Поиск по части названия и автора (pg_trgm)
   @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "books_title_trgm_idx")
@@ -605,12 +607,51 @@ model Review {
   book      Book?      @relation(fields: [bookId], references: [id], onDelete: Cascade)
   audiobook Audiobook? @relation(fields: [audiobookId], references: [id], onDelete: Cascade)
 
+  reports ReviewReport[]
+
   @@unique([userId, bookId])
   @@unique([userId, audiobookId])
   @@index([bookId, status])
   @@index([audiobookId, status])
   @@index([status])
   @@map("reviews")
+}
+
+/// Жалоба читателя на отзыв (один раз от каждого). Решение принимает администратор
+model ReviewReport {
+  id        String   @id @default(uuid())
+  reviewId  String   @map("review_id")
+  userId    String   @map("user_id")
+  reason    String?  @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+  @@map("review_reports")
+}
+
+// ─── Цитаты дня ──────────────────────────────────────────────────────────────
+
+/// Цитата дня на главной: текст и автор задаёт администратор, язык — ru или ky
+model Quote {
+  id        String   @id @default(uuid())
+  text      String   @db.VarChar(600)
+  author    String   @db.VarChar(150)
+  /// Книга, из которой цитата (по желанию)
+  source    String?  @db.VarChar(200)
+  bookId    String?  @map("book_id")
+  locale    String   @db.VarChar(2)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  book Book? @relation(fields: [bookId], references: [id], onDelete: SetNull)
+
+  @@index([locale, isActive])
+  @@map("quotes")
 }
 
 // ─── История прослушивания ───────────────────────────────────────────────────

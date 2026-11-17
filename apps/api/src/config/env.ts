@@ -30,14 +30,14 @@ export const envSchema = z
       .default('15m'),
     // Refresh-токен — в httpOnly cookie, хранится в таблице sessions в виде хеша
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
-    COOKIE_SECURE: booleanString.default('false'),
+    COOKIE_SECURE: booleanString.prefault('false'),
     COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
 
     // Адрес frontend — для ссылок в письмах (подтверждение почты, сброс пароля)
     FRONTEND_URL: z.string().url().default('http://localhost:3001'),
 
     // Адреса frontend, которым разрешены запросы к API (через запятую)
-    CORS_ORIGINS: commaSeparatedList.default('http://localhost:3001'),
+    CORS_ORIGINS: commaSeparatedList.prefault('http://localhost:3001'),
 
     // Ограничение частоты запросов: не больше THROTTLE_LIMIT за THROTTLE_TTL_MS
     THROTTLE_TTL_MS: z.coerce.number().int().positive().default(60_000),
@@ -62,7 +62,7 @@ export const envSchema = z
     MAIL_FROM: z.string().min(1).default('OKU24 <no-reply@oku24.local>'),
     SMTP_HOST: z.string().optional(),
     SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
-    SMTP_SECURE: booleanString.default('false'),
+    SMTP_SECURE: booleanString.prefault('false'),
     SMTP_USER: z.string().optional(),
     SMTP_PASSWORD: z.string().optional(),
 
@@ -77,9 +77,9 @@ export const envSchema = z
     S3_SECRET_ACCESS_KEY: z.string().optional(),
     S3_PUBLIC_BUCKET: z.string().optional(),
     S3_PRIVATE_BUCKET: z.string().optional(),
-    S3_FORCE_PATH_STYLE: booleanString.default('false'),
+    S3_FORCE_PATH_STYLE: booleanString.prefault('false'),
     // Создавать бакеты при старте, если их нет (только для разработки)
-    S3_CREATE_BUCKETS: booleanString.default('false'),
+    S3_CREATE_BUCKETS: booleanString.prefault('false'),
     // Адрес, по которому браузер получает файлы публичного бакета (CDN)
     MEDIA_PUBLIC_BASE_URL: z.string().url().optional(),
 
@@ -103,12 +103,15 @@ export const envSchema = z
     // Должны быть администраторами; остальные администраторы ролями не управляют
     ROLE_MANAGER_EMAILS: commaSeparatedList
       .transform((emails) => emails.map((email) => email.toLowerCase()))
-      .default(''),
+      .prefault(''),
     // Порог «заканчивается на складе» для dashboard
     LOW_STOCK_THRESHOLD: z.coerce.number().int().min(0).default(3),
 
     // Фоновые задачи (отмена неоплаченных заказов). В тестах выключены
-    JOBS_ENABLED: booleanString.default('true'),
+    JOBS_ENABLED: booleanString.prefault('true'),
+    // Отменять просроченные заказы при обращениях к заказам — для serverless (Vercel),
+    // где задача по расписанию не выполняется
+    ORDER_EXPIRY_ON_REQUEST: booleanString.prefault('false'),
 
     // Платёжная система: finik — Finik (кошелёк, QR); test — тестовый провайдер для разработки
     PAYMENT_PROVIDER: z.enum(['test', 'finik']).default('test'),

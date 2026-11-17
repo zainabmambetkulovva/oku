@@ -58,15 +58,13 @@ export function HeaderActions() {
         <SearchIcon />
       </button>
       {searchOpen && <SearchOverlay onClose={closeSearch} />}
-      <Link
-        href="/favorites"
-        className={`${iconButton} hidden sm:grid`}
-        aria-label={t('favorites')}
-      >
+      <Link href="/favorites" className={`${iconButton} hidden sm:grid`}>
+        <span className="sr-only">{t('favorites')}</span>
         <HeartIcon />
         {hydrated && <CountBadge value={favorites} />}
       </Link>
-      <Link href="/cart" className={iconButton} aria-label={t('cart')} data-testid="header-cart">
+      <Link href="/cart" className={iconButton} data-testid="header-cart">
+        <span className="sr-only">{t('cart')}</span>
         <CartIcon />
         {hydrated && <CountBadge value={cart} />}
       </Link>

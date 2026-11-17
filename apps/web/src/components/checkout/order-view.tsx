@@ -104,7 +104,8 @@ export function OrderView({ orderNumber }: { orderNumber: string }) {
     );
   }
   if (missing) return <p className="card mt-8 p-8 text-sm">{t('notFound')}</p>;
-  if (!order) return <p className="mt-8 animate-pulse text-sm text-muted">{t('loading')}</p>;
+  if (!order)
+    return <p className="mt-8 min-h-[60vh] animate-pulse text-sm text-muted">{t('loading')}</p>;
 
   const dateFormat = new Intl.DateTimeFormat(locale === 'ky' ? 'ky-KG' : 'ru-RU', {
     dateStyle: 'long',

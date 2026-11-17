@@ -66,6 +66,21 @@ export function resolveException(exception: unknown): ResolvedError {
       };
     }
   }
+  // Ошибки разбора запроса (body-parser, http-errors): слишком большое тело — 413,
+  // неверная кодировка — 415 и т.п. Флаг expose означает, что сообщение безопасно показывать
+  const clientError = exception as { status?: unknown; expose?: unknown; message?: unknown } | null;
+  if (
+    clientError &&
+    typeof clientError.status === 'number' &&
+    clientError.status >= 400 &&
+    clientError.status < 500 &&
+    clientError.expose === true
+  ) {
+    return {
+      statusCode: clientError.status,
+      message: typeof clientError.message === 'string' ? clientError.message : 'Bad request',
+    };
+  }
   return { statusCode: 500, message: 'Internal server error' };
 }
 

@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { OrderExpiryJob } from '../../src/modules/orders/order-expiry.job';
 import { OrderLifecycleService } from '../../src/modules/orders/order-lifecycle.service';
 import {
   signTestWebhook,
@@ -618,6 +619,25 @@ describe('Cart, orders and payments (e2e)', () => {
       });
 
       await as(user).post(`/orders/${order.orderNumber}/payments`).expect(409);
+    });
+
+    it('are cancelled on the next order request when ORDER_EXPIRY_ON_REQUEST is on', async () => {
+      const job = t.app.get(OrderExpiryJob);
+      Object.assign(job, { onRequest: true });
+      try {
+        const { order } = await orderBook(user);
+        await t.prisma.order.update({
+          where: { id: order.id },
+          data: { expiresAt: new Date(Date.now() - 1000) },
+        });
+        // Оформление уже запустило проверку; следующая — не раньше чем через минуту
+        Object.assign(job, { lastOnRequestRun: 0 });
+
+        const viewed = (await as(user).get(`/orders/${order.orderNumber}`)).body.data;
+        expect(viewed.status).toBe('CANCELLED');
+      } finally {
+        Object.assign(job, { onRequest: false });
+      }
     });
 
     it('flag a payment that arrives after cancellation for a refund', async () => {

@@ -1,3 +1,4 @@
+import { alternates } from '@/lib/seo';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { AudiobookShowcase } from '@/components/community/audiobook-showcase';
 import { BlindDate } from '@/components/community/blind-date';
@@ -17,7 +18,11 @@ type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'communityPage' });
-  return { title: t('title'), description: t('lead') };
+  return {
+    title: t('title'),
+    description: t('lead'),
+    alternates: alternates(locale, '/community'),
+  };
 }
 
 /** «Сообщество»: цитата дня, тест подбора книги, свидание вслепую, аудиовитрина, отзывы. */

@@ -159,7 +159,7 @@ export function CartView({
   }, [hydrated, mode]);
 
   if (!hydrated) {
-    return <p className="mt-8 animate-pulse text-sm text-muted">{t('loading')}</p>;
+    return <p className="mt-8 min-h-[60vh] animate-pulse text-sm text-muted">{t('loading')}</p>;
   }
 
   if (items.length === 0) {

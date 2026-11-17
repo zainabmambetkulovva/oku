@@ -17,6 +17,7 @@ import { AudioAccessService } from '../listening/audio-access.service';
 import { StorageService } from '../storage/storage.service';
 import { DeliveryService } from './delivery.service';
 import { CheckoutDto, DeliveryAddressDto, OrdersQueryDto } from './dto/checkout.dto';
+import { OrderExpiryJob } from './order-expiry.job';
 import { OrderLifecycleService } from './order-lifecycle.service';
 import { orderInclude, OrderWithRelations, toOrderResponse } from './order.mapper';
 import { generateOrderNumber } from './order-number';
@@ -47,6 +48,7 @@ export class OrdersService {
     private readonly storage: StorageService,
     private readonly cache: CacheService,
     private readonly events: DomainEventPublisher,
+    private readonly expiry: OrderExpiryJob,
     config: ConfigService<Env, true>,
   ) {
     this.paymentTtlMs = config.get('ORDER_PAYMENT_TTL_MINUTES', { infer: true }) * 60 * 1000;
@@ -60,6 +62,8 @@ export class OrdersService {
    * экземпляр нельзя продать двоим. Корзина очищается в той же транзакции.
    */
   async checkout(user: AuthenticatedUser, dto: CheckoutDto): Promise<OrderWithRelations> {
+    // Сначала вернуть на склад товар из просроченных заказов
+    await this.expiry.runOnRequest();
     const lines = await this.validatedLines(user);
     const hasBooks = lines.some((line) => line.productType === 'BOOK');
     const hasAudiobooks = lines.some((line) => line.productType === 'AUDIOBOOK');
@@ -281,6 +285,7 @@ export class OrdersService {
   // ─── Заказы покупателя ─────────────────────────────────────────────────────
 
   async list(user: AuthenticatedUser, query: OrdersQueryDto) {
+    await this.expiry.runOnRequest();
     const where: Prisma.OrderWhereInput = {
       userId: user.id,
       ...(query.status && { status: query.status }),
@@ -304,6 +309,7 @@ export class OrdersService {
 
   /** Только свой заказ: чужой выглядит как несуществующий (404). */
   async findOwn(user: AuthenticatedUser, orderNumber: string): Promise<OrderWithRelations> {
+    await this.expiry.runOnRequest();
     const order = await this.prisma.order.findFirst({
       where: { orderNumber, userId: user.id },
       include: orderInclude,

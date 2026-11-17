@@ -36,6 +36,17 @@ describe('Application (e2e)', () => {
     });
   });
 
+  it('rejects an oversized request body with 413 instead of 500', async () => {
+    const response = await t
+      .http()
+      .post('/api/v1/auth/login')
+      .set('Content-Type', 'application/json')
+      .send(JSON.stringify({ email: 'a'.repeat(2_000_000), password: 'x' }))
+      .expect(413);
+
+    expect(response.body).toMatchObject({ statusCode: 413, error: 'Payload Too Large' });
+  });
+
   it('sets security headers', async () => {
     const response = await t.http().get('/api/v1/health');
 

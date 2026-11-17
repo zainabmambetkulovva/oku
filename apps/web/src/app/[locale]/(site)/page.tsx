@@ -1,3 +1,4 @@
+import { alternates } from '@/lib/seo';
 import { setRequestLocale } from 'next-intl/server';
 import { CategoriesSection } from '@/components/home/categories-section';
 import { CommunitySection, ReviewsSection } from '@/components/home/community-sections';
@@ -24,6 +25,11 @@ import type {
 
 // Каталог меняется из админки — страница собирается на каждый запрос (ответы API кэшируются в Redis)
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return { alternates: alternates(locale, '/') };
+}
 
 const empty = { data: [], meta: { total: 0, page: 1, limit: 0, totalPages: 0 } };
 

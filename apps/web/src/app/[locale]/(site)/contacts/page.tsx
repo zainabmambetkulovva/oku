@@ -1,3 +1,4 @@
+import { alternates } from '@/lib/seo';
 import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { communityArch } from '@/assets/illustrations';
@@ -10,7 +11,7 @@ import { SITE_CONTACTS } from '@/lib/site';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'pages.contacts' });
-  return { title: t('title'), description: t('lead') };
+  return { title: t('title'), description: t('lead'), alternates: alternates(locale, '/contacts') };
 }
 
 export default async function ContactsPage({ params }: { params: Promise<{ locale: string }> }) {

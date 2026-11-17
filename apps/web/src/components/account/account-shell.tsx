@@ -29,7 +29,11 @@ export function AccountShell({ children }: { children: React.ReactNode }) {
   }, [status]);
 
   if (status === 'unknown') {
-    return <p className="container-page py-12 animate-pulse text-sm text-muted">{t('loading')}</p>;
+    return (
+      <p className="container-page min-h-[70vh] py-12 animate-pulse text-sm text-muted">
+        {t('loading')}
+      </p>
+    );
   }
   if (status === 'guest') {
     return (

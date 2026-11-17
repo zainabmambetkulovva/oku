@@ -105,7 +105,8 @@ export function FavoritesView({ recommendations }: { recommendations: ReactNode 
   const items = useFavorites((state) => state.items);
   const status = useAuth((state) => state.status);
 
-  if (!hydrated) return <p className="mt-8 animate-pulse text-sm text-muted">{tc('loading')}</p>;
+  if (!hydrated)
+    return <p className="mt-8 min-h-[60vh] animate-pulse text-sm text-muted">{tc('loading')}</p>;
 
   return (
     <>

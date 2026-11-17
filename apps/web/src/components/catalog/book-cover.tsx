@@ -48,7 +48,7 @@ export function BookCover({
     >
       {/* корешок */}
       <span className="absolute inset-y-0 left-0 w-[6%] bg-black/15" aria-hidden="true" />
-      <span className="relative text-[clamp(0.5rem,1.6vw,0.7rem)] uppercase tracking-[0.12em] opacity-80">
+      <span className="relative text-[clamp(0.5rem,1.6vw,0.7rem)] uppercase tracking-[0.12em] opacity-95">
         {author}
       </span>
       <HornMotif className="relative mx-auto w-1/3" />

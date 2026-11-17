@@ -48,6 +48,7 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `DELIVERY_PRICE_COURIER`, `DELIVERY_PRICE_POST` | Цена доставки курьером и почтой, тыйын. Самовывоз бесплатный |
 | `ORDER_PAYMENT_TTL_MINUTES` | Минут на оплату онлайн-заказа (по умолчанию 10) |
 | `JOBS_ENABLED` | Фоновые задачи: отмена неоплаченных заказов раз в минуту |
+| `ORDER_EXPIRY_ON_REQUEST` | Для Vercel (`true`): отмена неоплаченных заказов при обращениях к заказам, не чаще раза в минуту |
 | `ROLE_MANAGER_EMAILS` | Email через запятую — только эти администраторы назначают и снимают роли |
 | `LOW_STOCK_THRESHOLD` | Порог «заканчивается на складе» на dashboard (по умолчанию 3) |
 | `PAYMENT_PROVIDER` | `finik` в production; `test` — тестовый провайдер для разработки (в production запрещён) |
@@ -66,6 +67,7 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 | `NEXT_PUBLIC_CONTACT_PHONE`, `NEXT_PUBLIC_CONTACT_EMAIL` | Контакты в подвале; пустые не показываются |
 | `NEXT_PUBLIC_INSTAGRAM_URL` | Instagram (по умолчанию @oku_24) |
 | `INTERNAL_API_TOKEN` | Тот же служебный ключ, что у API. Только на сервере, в браузер не попадает |
+| `NEXT_PUBLIC_SITE_URL` | Адрес сайта для canonical, hreflang, sitemap.xml и robots.txt. Без него — домен production из Vercel |
 
 Адрес сайта нужно добавить в `CORS_ORIGINS` и `FRONTEND_URL` API.
 
@@ -81,7 +83,7 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 - Сайт и API работают на одном домене, поэтому браузер обращается к `/api/v1` без CORS, а refresh-cookie остаётся first-party.
 - Сервис `web` вызывает `api` с сервера через binding: Vercel подставляет внутренний адрес сервиса в `API_SERVICE_URL` во время выполнения функций (не при сборке и не в middleware). Сам эту переменную не задавать.
 - Переменные backend из таблицы выше задаются в настройках проекта Vercel. Для production: `FRONTEND_URL` и `CORS_ORIGINS` — адрес сайта, `COOKIE_SECURE=true`, `JOBS_ENABLED=false` (см. ниже), внешние PostgreSQL (Neon), S3 и Redis.
-- Фоновая задача отмены неоплаченных заказов (`@nestjs/schedule`) в serverless-функциях не выполняется по расписанию; для Vercel её нужно перевести на Vercel Cron.
+- Фоновая задача отмены неоплаченных заказов (`@nestjs/schedule`) в serverless-функциях не выполняется по расписанию, поэтому на Vercel задаётся `ORDER_EXPIRY_ON_REQUEST=true`: просроченные заказы отменяются перед оформлением нового заказа и при просмотре заказов.
 - Миграции не запускаются при деплое: `pnpm db:migrate:deploy` выполняется отдельно перед выкладкой.
 - Локальная проверка всех сервисов вместе: `vercel dev` из корня репозитория.
 
@@ -167,7 +169,7 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
    | Хранилище | переменные из шага 1 |
    | Оплата | `PAYMENT_PROVIDER=finik`, `FINIK_ENV` (`beta` для проверки, затем `prod`), `FINIK_API_KEY`, `FINIK_ACCOUNT_ID`, `FINIK_PRIVATE_KEY`, `FINIK_PUBLIC_KEY` |
    | Роли | `ROLE_MANAGER_EMAILS` |
-   | Прочее | `JOBS_ENABLED=false`, `INTERNAL_API_TOKEN` (случайная строка от 32 символов; одна переменная проекта видна и api, и web) |
+   | Прочее | `JOBS_ENABLED=false`, `ORDER_EXPIRY_ON_REQUEST=true`, `INTERNAL_API_TOKEN` (случайная строка от 32 символов; одна переменная проекта видна и api, и web) |
    | Почта | `MAIL_TRANSPORT=brevo`, `BREVO_API_KEY`, `MAIL_FROM` — см. шаг 8 |
    | Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — см. шаг 7 |
 
@@ -311,4 +313,4 @@ Workflow `.github/workflows/ci.yml` проверяет каждый push и pull
 
 ## Мониторинг и резервное копирование
 
-Настраиваются на финальном этапе: логирование ошибок, мониторинг работоспособности, автоматические бэкапы Neon.
+См. [launch-checklist.md](launch-checklist.md), пункты 2 и 7: бэкапы Neon, проверка `/api/v1/health`, оповещения Vercel об ошибках.

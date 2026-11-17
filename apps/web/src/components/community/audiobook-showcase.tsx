@@ -14,17 +14,17 @@ export function AudiobookShowcase({ audiobooks }: { audiobooks: AudiobookDetails
   return (
     <div className="space-y-4" data-testid="audiobook-showcase">
       {audiobooks.length > 1 && (
-        <ul className="scroll-row gap-3" role="tablist">
+        <div className="scroll-row gap-3" role="tablist">
           {audiobooks.map((item, index) => (
-            <li key={item.id} className="w-24 shrink-0 sm:w-28">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={index === current}
-                aria-label={item.title}
-                onClick={() => setCurrent(index)}
-                className={`block w-full rounded-xl p-1 transition ${index === current ? 'bg-gold/40 ring-2 ring-gold' : 'opacity-75 hover:opacity-100'}`}
-              >
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={index === current}
+              onClick={() => setCurrent(index)}
+              className={`block w-24 shrink-0 rounded-xl p-1 transition sm:w-28 ${index === current ? 'bg-gold/40 ring-2 ring-gold' : 'saturate-50 hover:saturate-100'}`}
+            >
+              <span aria-hidden="true" className="block">
                 <BookCover
                   slug={item.slug}
                   title={item.title}
@@ -32,10 +32,11 @@ export function AudiobookShowcase({ audiobooks }: { audiobooks: AudiobookDetails
                   coverUrl={item.coverUrl}
                   square
                 />
-              </button>
-            </li>
+              </span>
+              <span className="sr-only">{item.title}</span>
+            </button>
           ))}
-        </ul>
+        </div>
       )}
       <AudioPlayer key={audiobook.slug} audiobook={audiobook} />
     </div>

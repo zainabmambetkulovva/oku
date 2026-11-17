@@ -1,3 +1,4 @@
+import { alternates } from '@/lib/seo';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { CatalogView } from '@/components/catalog/catalog-view';
 import { AudiobookCard } from '@/components/catalog/product-card';
@@ -15,7 +16,11 @@ type Props = {
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'catalog' });
-  return { title: t('audiobooksTitle'), description: t('audiobooksLead') };
+  return {
+    title: t('audiobooksTitle'),
+    description: t('audiobooksLead'),
+    alternates: alternates(locale, '/audiobooks'),
+  };
 }
 
 /** Каталог аудиокниг — пятая официальная категория. */

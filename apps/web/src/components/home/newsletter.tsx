@@ -59,8 +59,9 @@ export function NewsletterForm() {
         />
         <Button
           type="submit"
+          variant="ghost"
           disabled={subscribe.isPending}
-          className="magnetic bg-gold text-cocoa-900 hover:bg-gold-light"
+          className="magnetic bg-gold !text-cocoa-900 hover:bg-gold-light"
         >
           {t('submit')}
         </Button>

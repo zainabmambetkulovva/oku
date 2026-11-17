@@ -1,3 +1,4 @@
+import { alternates, jsonLdString, productJsonLd } from '@/lib/seo';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { BookCard } from '@/components/catalog/product-card';
@@ -28,7 +29,7 @@ async function loadBook(slug: string): Promise<BookDetails> {
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const book = await safely(
     () => apiFetch<BookDetails>(`/books/${encodeURIComponent(slug)}`),
     null,
@@ -39,6 +40,7 @@ export async function generateMetadata({ params }: Props) {
   return {
     title: `${book.title} — ${book.author}`,
     description,
+    alternates: alternates(locale, `/books/${book.slug}`),
     openGraph: { title: book.title, description, images: book.coverUrl ? [book.coverUrl] : [] },
   };
 }
@@ -60,6 +62,15 @@ export default async function BookPage({ params }: Props) {
 
   return (
     <div className="container-page py-8 sm:py-12">
+      <script
+        type="application/ld+json"
+        // Разметка для поисковиков: экранирована, данные из каталога
+        dangerouslySetInnerHTML={{
+          __html: jsonLdString(
+            productJsonLd(locale, { ...book, kind: 'book', inStock: book.stockQuantity > 0 }),
+          ),
+        }}
+      />
       <Breadcrumbs href="/books" title={book.title} />
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">

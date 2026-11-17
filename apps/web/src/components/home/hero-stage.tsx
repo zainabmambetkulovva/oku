@@ -145,8 +145,8 @@ export function HeroStage({ label }: { label: string }) {
             <Image
               src={heroBook}
               alt=""
-              width={1400}
-              height={942}
+              width={1200}
+              height={807}
               priority
               sizes="(min-width: 1024px) 50vw, 94vw"
               className="h-auto w-full drop-shadow-[0_24px_30px_rgb(91_56_30/0.35)]"

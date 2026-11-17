@@ -131,7 +131,7 @@ export function CheckoutForm({ deliveryOptions }: { deliveryOptions: DeliveryOpt
   }, [name, phone, hasBooks, method, needsAddress, addressId, address]);
 
   if (!hydrated || status === 'unknown') {
-    return <p className="mt-8 animate-pulse text-sm text-muted">{t('loading')}</p>;
+    return <p className="mt-8 min-h-[60vh] animate-pulse text-sm text-muted">{t('loading')}</p>;
   }
   if (status === 'guest') {
     return (
@@ -146,7 +146,8 @@ export function CheckoutForm({ deliveryOptions }: { deliveryOptions: DeliveryOpt
       </div>
     );
   }
-  if (!ready) return <p className="mt-8 animate-pulse text-sm text-muted">{t('loading')}</p>;
+  if (!ready)
+    return <p className="mt-8 min-h-[60vh] animate-pulse text-sm text-muted">{t('loading')}</p>;
   if (items.length === 0) {
     return (
       <div className="card mt-8 max-w-xl p-8" data-testid="checkout-empty">

@@ -78,6 +78,27 @@ describe('resolveException', () => {
     });
   });
 
+  it('maps body-parser client errors to their status', () => {
+    const tooLarge = Object.assign(new Error('request entity too large'), {
+      status: 413,
+      statusCode: 413,
+      expose: true,
+      type: 'entity.too.large',
+    });
+    expect(resolveException(tooLarge)).toEqual({
+      statusCode: 413,
+      message: 'request entity too large',
+    });
+  });
+
+  it('does not expose non-client errors carrying a status', () => {
+    const internal = Object.assign(new Error('secret'), { status: 503, expose: false });
+    expect(resolveException(internal)).toEqual({
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+
   it('hides details of unknown errors', () => {
     expect(resolveException(new Error('secret internal detail'))).toEqual({
       statusCode: 500,

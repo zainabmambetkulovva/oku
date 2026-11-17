@@ -88,7 +88,8 @@ test.describe('community', () => {
     await showcase.scrollIntoViewIfNeeded();
     const tabs = showcase.getByRole('tab');
     expect(await tabs.count()).toBeGreaterThan(1);
-    const second = await tabs.nth(1).getAttribute('aria-label');
+    // Видимая обложка скрыта от чтения с экрана, название вкладки — в sr-only
+    const second = await tabs.nth(1).locator('.sr-only').textContent();
     await tabs.nth(1).click();
     await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
     await expect(

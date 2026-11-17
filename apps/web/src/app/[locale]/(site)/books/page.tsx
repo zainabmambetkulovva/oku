@@ -1,3 +1,4 @@
+import { alternates } from '@/lib/seo';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { CatalogView } from '@/components/catalog/catalog-view';
 import { BookCard } from '@/components/catalog/product-card';
@@ -42,6 +43,8 @@ export async function generateMetadata({ params, searchParams }: Props) {
   return {
     title: category?.name ?? fallback ?? t('booksTitle'),
     description: category?.description ?? t('booksLead'),
+    // Страница категории — отдельный адрес-оригинал; поиск и фильтры — варианты основной страницы
+    alternates: alternates(locale, query.category ? `/books?category=${query.category}` : '/books'),
   };
 }
 

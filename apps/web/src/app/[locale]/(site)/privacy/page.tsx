@@ -1,3 +1,4 @@
+import { alternates } from '@/lib/seo';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { PageShell } from '@/components/pages/page-shell';
 
@@ -9,7 +10,7 @@ const UPDATED = '2026-11-14';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'pages.privacy' });
-  return { title: t('title') };
+  return { title: t('title'), alternates: alternates(locale, '/privacy') };
 }
 
 export default async function LegalPage({ params }: { params: Promise<{ locale: string }> }) {

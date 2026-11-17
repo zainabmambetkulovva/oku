@@ -1,3 +1,4 @@
+import { alternates, jsonLdString, productJsonLd } from '@/lib/seo';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { BookCover } from '@/components/catalog/book-cover';
@@ -29,7 +30,7 @@ async function loadAudiobook(slug: string): Promise<AudiobookDetails> {
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const item = await safely(
     () => apiFetch<AudiobookDetails>(`/audiobooks/${encodeURIComponent(slug)}`),
     null,
@@ -40,6 +41,7 @@ export async function generateMetadata({ params }: Props) {
   return {
     title: `${item.title} — ${item.author}`,
     description,
+    alternates: alternates(locale, `/audiobooks/${item.slug}`),
     openGraph: { title: item.title, description, images: item.coverUrl ? [item.coverUrl] : [] },
   };
 }
@@ -67,6 +69,12 @@ export default async function AudiobookPage({ params }: Props) {
 
   return (
     <div className="container-page py-8 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdString(productJsonLd(locale, { ...audiobook, kind: 'audiobook' })),
+        }}
+      />
       <Breadcrumbs href="/audiobooks" title={audiobook.title} />
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-14">

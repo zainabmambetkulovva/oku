@@ -10,6 +10,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { routing } from '@/i18n/routing';
+import { siteUrl } from '@/lib/seo';
 import { QueryProvider } from '@/providers/query-provider';
 
 export async function generateMetadata({
@@ -22,10 +23,8 @@ export async function generateMetadata({
   return {
     title: { default: t('title'), template: `%s — OKU24` },
     description: t('description'),
-    alternates: {
-      canonical: `/${locale}`,
-      languages: Object.fromEntries(routing.locales.map((code) => [code, `/${code}`])),
-    },
+    // Адрес-оригинал задаёт каждая страница сама (иначе все страницы указывали бы на главную)
+    metadataBase: new URL(siteUrl()),
     openGraph: {
       title: t('title'),
       description: t('description'),

@@ -162,7 +162,7 @@ export async function Footer() {
       </div>
 
       <div className="relative border-t border-milk/10">
-        <div className="container-page flex flex-col gap-2 py-5 text-xs text-milk/55 sm:flex-row sm:justify-between">
+        <div className="container-page flex flex-col gap-2 py-5 text-xs text-milk/75 sm:flex-row sm:justify-between">
           <p>{t('rights', { year: new Date().getFullYear() })}</p>
           <p className="flex items-center gap-1.5">
             {t('tagline')} <HeartIcon filled className="size-3.5 text-gold" />

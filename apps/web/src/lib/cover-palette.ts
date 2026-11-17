@@ -8,7 +8,7 @@ export const COVER_PALETTE = [
   { background: '#1F3550', text: '#F1E6D2', accent: '#D7B06C' },
   { background: '#6B2E2A', text: '#F6E8D6', accent: '#D9B26F' },
   { background: '#1E1A17', text: '#EED9AE', accent: '#C9A45C' },
-  { background: '#8D6733', text: '#FFF6E6', accent: '#3B2419' },
+  { background: '#7A5629', text: '#FFF6E6', accent: '#2E1C12' },
   { background: '#4D5A3A', text: '#F1EAD8', accent: '#E3C98E' },
 ] as const;
 

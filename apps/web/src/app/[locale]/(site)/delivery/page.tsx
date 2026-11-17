@@ -1,3 +1,4 @@
+import { alternates } from '@/lib/seo';
 import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { booksFlowers } from '@/assets/illustrations';
@@ -14,7 +15,7 @@ type Item = { title: string; text: string };
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'pages.delivery' });
-  return { title: t('title'), description: t('lead') };
+  return { title: t('title'), description: t('lead'), alternates: alternates(locale, '/delivery') };
 }
 
 /** Тарифы доставки — из API (те же, что применяются при оформлении заказа). */

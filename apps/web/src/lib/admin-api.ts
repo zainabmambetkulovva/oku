@@ -1,6 +1,7 @@
 'use client';
 
-import { authFetch } from './auth';
+import { apiBaseUrl } from './api';
+import { authFetch, useAuth } from './auth';
 import type { Paginated } from './types';
 
 export type ProductStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
@@ -96,7 +97,8 @@ export interface SalesSeries {
   series: { period: string; ordersCount: number; revenue: number }[];
 }
 
-export type UploadKind = 'book-cover' | 'book-image' | 'category-image';
+export type UploadKind =
+  'book-cover' | 'book-image' | 'category-image' | 'audiobook-cover' | 'audio-chapter';
 
 const json = (body: unknown) => ({ body: JSON.stringify(body) });
 
@@ -118,6 +120,183 @@ export interface QuoteInput {
   source?: string;
   locale: 'ru' | 'ky';
   isActive: boolean;
+}
+
+// ─── Заказы, платежи, пользователи, отзывы, журнал ────────────────────────────
+
+export type OrderStatusValue =
+  'PENDING' | 'PAID' | 'PROCESSING' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED';
+
+export interface AdminOrder {
+  id: string;
+  orderNumber: string;
+  status: OrderStatusValue;
+  items: {
+    id: string;
+    productType: 'BOOK' | 'AUDIOBOOK';
+    title: string;
+    author: string;
+    coverUrl: string | null;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }[];
+  subtotal: number;
+  deliveryPrice: number;
+  total: number;
+  recipientName: string;
+  recipientPhone: string;
+  deliveryMethod: 'PICKUP' | 'COURIER' | 'POST' | null;
+  deliveryAddress: string | null;
+  paymentMethod: 'ONLINE' | 'CASH';
+  comment: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  customer: {
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+  };
+  statusHistory: {
+    oldStatus: OrderStatusValue | null;
+    newStatus: OrderStatusValue;
+    comment: string | null;
+    changedBy: { id: string; email: string } | null;
+    createdAt: string;
+  }[];
+  payments: AdminPayment[];
+}
+
+export interface AdminPayment {
+  id: string;
+  provider: string;
+  providerPaymentId: string | null;
+  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
+  paymentMethod: string;
+  amount: number;
+  paidAt: string | null;
+  requiresReview: boolean;
+  reviewReason?: string | null;
+  createdAt: string;
+  order?: { orderNumber: string; status: OrderStatusValue };
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+  role: 'USER' | 'ADMIN';
+  status: 'ACTIVE' | 'INACTIVE' | 'BANNED';
+  emailVerified: boolean;
+  locale: string;
+  googleLinked: boolean;
+  createdAt: string;
+  isLocked: boolean;
+  ordersCount: number;
+  isRoleManager: boolean;
+  stats?: {
+    ordersCount: number;
+    paidOrdersCount: number;
+    totalSpent: number;
+    audiobooksCount: number;
+    reviewsCount: number;
+  };
+}
+
+export interface AdminReview {
+  id: string;
+  rating: number;
+  text: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+  user: { id: string; email: string; firstName: string | null; lastName: string | null };
+  book: { slug: string; title: string } | null;
+  audiobook: { slug: string; title: string } | null;
+  reportsCount: number;
+  reports: { reason: string | null; createdAt: string }[];
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  oldData: unknown;
+  newData: unknown;
+  ipAddress: string | null;
+  createdAt: string;
+  user: { id: string; email: string } | null;
+}
+
+export interface Subscriber {
+  id: string;
+  email: string;
+  isActive: boolean;
+  subscribedAt: string;
+  unsubscribedAt: string | null;
+}
+
+// ─── Аудиокниги ──────────────────────────────────────────────────────────────
+
+export interface AdminChapter {
+  id: string;
+  title: string;
+  chapterNumber: number;
+  durationSeconds: number;
+  storageKey: string;
+  isFreePreview: boolean;
+}
+
+export interface AdminAudiobook {
+  id: string;
+  title: string;
+  slug: string;
+  author: string;
+  narrator: string | null;
+  description: string | null;
+  coverKey: string | null;
+  coverUrl: string | null;
+  language: ContentLanguage | null;
+  durationSeconds: number;
+  price: number;
+  salesCount: number;
+  status: ProductStatus;
+  categories: { id: string; name: string; slug: string }[];
+  chapters: AdminChapter[];
+}
+
+export interface AudiobookInput {
+  title: string;
+  author: string;
+  narrator: string | null;
+  description: string | null;
+  coverKey?: string | null;
+  language: ContentLanguage | null;
+  price: number;
+  categoryIds: string[];
+}
+
+export interface AccessGrant {
+  id: string;
+  grantedAt: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  orderItemId: string | null;
+  isActive: boolean;
+  user: { id: string; email: string; firstName: string | null; lastName: string | null };
+}
+
+/** Строка запроса без пустых значений. */
+export function queryString(params: Record<string, string | number | boolean | undefined | null>) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+  }
+  return query.toString();
 }
 
 export const adminApi = {
@@ -156,7 +335,117 @@ export const adminApi = {
   updateQuote: (id: string, input: Partial<QuoteInput>) =>
     authFetch<AdminQuote>(`/admin/quotes/${id}`, { method: 'PATCH', ...json(input) }),
   deleteQuote: (id: string) => authFetch<void>(`/admin/quotes/${id}`, { method: 'DELETE' }),
+
+  orders: (params: Record<string, string | number | boolean | undefined>) =>
+    authFetch<Paginated<AdminOrder>>(`/admin/orders?${queryString({ limit: 20, ...params })}`),
+  order: (orderNumber: string) =>
+    authFetch<AdminOrder>(`/admin/orders/${encodeURIComponent(orderNumber)}`),
+  setOrderStatus: (orderNumber: string, status: string, comment?: string) =>
+    authFetch<AdminOrder>(`/admin/orders/${encodeURIComponent(orderNumber)}/status`, {
+      method: 'PATCH',
+      ...json({ status, comment: comment || undefined }),
+    }),
+  refundOrder: (orderNumber: string, comment?: string) =>
+    authFetch<AdminOrder>(`/admin/orders/${encodeURIComponent(orderNumber)}/refund`, {
+      method: 'POST',
+      ...json({ comment: comment || undefined }),
+    }),
+
+  payments: (params: Record<string, string | number | boolean | undefined>) =>
+    authFetch<Paginated<AdminPayment>>(`/admin/payments?${queryString({ limit: 20, ...params })}`),
+  resolvePayment: (id: string, refunded: boolean, note: string) =>
+    authFetch<AdminPayment>(`/admin/payments/${id}/resolve`, {
+      method: 'POST',
+      ...json({ refunded, note }),
+    }),
+
+  users: (params: Record<string, string | number | undefined>) =>
+    authFetch<Paginated<AdminUser>>(`/admin/users?${queryString({ limit: 20, ...params })}`),
+  user: (id: string) => authFetch<AdminUser>(`/admin/users/${id}`),
+  userOrders: (id: string) =>
+    authFetch<Paginated<AdminOrder>>(`/admin/users/${id}/orders?limit=20`),
+  setUserStatus: (id: string, status: AdminUser['status']) =>
+    authFetch<AdminUser>(`/admin/users/${id}/status`, { method: 'PATCH', ...json({ status }) }),
+  unlockUser: (id: string) => authFetch<AdminUser>(`/admin/users/${id}/unlock`, { method: 'POST' }),
+  setUserRole: (id: string, role: AdminUser['role']) =>
+    authFetch<AdminUser>(`/admin/users/${id}/role`, { method: 'PATCH', ...json({ role }) }),
+
+  reviews: (params: Record<string, string | number | boolean | undefined>) =>
+    authFetch<Paginated<AdminReview>>(`/admin/reviews?${queryString({ limit: 20, ...params })}`),
+  moderateReview: (id: string, status: 'APPROVED' | 'REJECTED') =>
+    authFetch<unknown>(`/admin/reviews/${id}`, { method: 'PATCH', ...json({ status }) }),
+  deleteReview: (id: string) => authFetch<void>(`/admin/reviews/${id}`, { method: 'DELETE' }),
+
+  auditLogs: (params: Record<string, string | number | undefined>) =>
+    authFetch<Paginated<AuditEntry>>(`/admin/audit-logs?${queryString({ limit: 30, ...params })}`),
+  subscribers: (params: Record<string, string | number | undefined>) =>
+    authFetch<Paginated<Subscriber>>(
+      `/admin/newsletter/subscribers?${queryString({ limit: 30, ...params })}`,
+    ),
+
+  audiobooks: (params: { search?: string; status?: ProductStatus | ''; page?: number }) =>
+    authFetch<Paginated<AdminAudiobook>>(
+      `/admin/audiobooks?${queryString({ limit: 20, page: params.page ?? 1, search: params.search, status: params.status })}`,
+    ),
+  audiobook: (id: string) => authFetch<AdminAudiobook>(`/admin/audiobooks/${id}`),
+  createAudiobook: (input: AudiobookInput) =>
+    authFetch<AdminAudiobook>('/admin/audiobooks', { method: 'POST', ...json(input) }),
+  updateAudiobook: (id: string, input: Partial<AudiobookInput>) =>
+    authFetch<AdminAudiobook>(`/admin/audiobooks/${id}`, { method: 'PATCH', ...json(input) }),
+  setAudiobookStatus: (id: string, status: ProductStatus) =>
+    authFetch<AdminAudiobook>(`/admin/audiobooks/${id}/status`, {
+      method: 'PATCH',
+      ...json({ status }),
+    }),
+  deleteAudiobook: (id: string) => authFetch<void>(`/admin/audiobooks/${id}`, { method: 'DELETE' }),
+  addChapter: (
+    id: string,
+    input: { title: string; durationSeconds: number; storageKey: string; isFreePreview: boolean },
+  ) => authFetch<unknown>(`/admin/audiobooks/${id}/chapters`, { method: 'POST', ...json(input) }),
+  updateChapter: (
+    id: string,
+    chapterId: string,
+    input: Partial<{ title: string; isFreePreview: boolean }>,
+  ) =>
+    authFetch<unknown>(`/admin/audiobooks/${id}/chapters/${chapterId}`, {
+      method: 'PATCH',
+      ...json(input),
+    }),
+  reorderChapters: (id: string, chapterIds: string[]) =>
+    authFetch<unknown>(`/admin/audiobooks/${id}/chapters/order`, {
+      method: 'PUT',
+      ...json({ chapterIds }),
+    }),
+  deleteChapter: (id: string, chapterId: string) =>
+    authFetch<void>(`/admin/audiobooks/${id}/chapters/${chapterId}`, { method: 'DELETE' }),
+  accessGrants: (id: string) => authFetch<AccessGrant[]>(`/admin/audiobooks/${id}/access`),
+  grantAccess: (id: string, email: string, expiresAt?: string) =>
+    authFetch<unknown>(`/admin/audiobooks/${id}/access`, {
+      method: 'POST',
+      ...json({ email, expiresAt: expiresAt || undefined }),
+    }),
+  revokeAccess: (id: string, userId: string) =>
+    authFetch<void>(`/admin/audiobooks/${id}/access/${userId}`, { method: 'DELETE' }),
 };
+
+export const AUDIO_TYPES = ['audio/mpeg', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/ogg'];
+export const MAX_AUDIO_BYTES = 500 * 1024 * 1024;
+
+/** CSV активных подписчиков — файлом (ответ API без обёртки). */
+export async function downloadSubscribersCsv(): Promise<void> {
+  const token = useAuth.getState().accessToken;
+  const response = await fetch(`${apiBaseUrl()}/admin/newsletter/subscribers/export`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok) throw new Error(`Export failed: ${response.status}`);
+  const url = URL.createObjectURL(await response.blob());
+  const link = Object.assign(document.createElement('a'), {
+    href: url,
+    download: 'oku24-subscribers.csv',
+  });
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;

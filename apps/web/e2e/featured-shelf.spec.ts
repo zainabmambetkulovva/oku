@@ -9,14 +9,12 @@ test.describe('featured shelf', () => {
     await expect(shelf.getByTestId('featured-cover')).toHaveCount(5);
 
     const title = shelf.getByTestId('featured-title');
-    // Автопрокрутку останавливаем, чтобы проверка не зависела от таймера
-    await shelf.getByRole('button', { name: 'Пауза' }).click();
-    await shelf.getByRole('button', { name: 'Показать «Жомоктор кемеси»' }).first().click();
-    await expect(title).toHaveText('Жомоктор кемеси');
-    await shelf.getByRole('button', { name: 'Вперёд' }).click();
+    // Кнопок нет: книга выбирается нажатием на обложку (и свайпом/стрелками)
+    await shelf.getByRole('button', { name: 'Показать «Билимпоз»' }).click();
     await expect(title).toHaveText('Билимпоз');
-    await shelf.getByRole('button', { name: 'Показать «Адептуулук алиппеси»' }).first().click();
+    await shelf.getByRole('button', { name: 'Показать «Адептуулук алиппеси»' }).click();
     await expect(title).toHaveText('Адептуулук алиппеси');
+    await expect(shelf.getByRole('button', { name: /Пауза|Назад|Вперёд/ })).toHaveCount(0);
   });
 
   test('links only to products that exist in the catalog', async ({ page }) => {

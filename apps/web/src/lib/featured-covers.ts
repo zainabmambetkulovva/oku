@@ -14,6 +14,8 @@ export interface FeaturedCover {
   height: number;
   /** Плоская лицевая обложка — для каталога, корзины, кабинета */
   flat: string;
+  /** Главный цвет обложки: подсветка витрины и название книги */
+  accent: string;
 }
 
 export const FEATURED_COVERS: FeaturedCover[] = [
@@ -22,6 +24,7 @@ export const FEATURED_COVERS: FeaturedCover[] = [
     title: 'Жомоктор кемеси',
     src: '/covers/zhomoktor-kemesi.webp',
     flat: '/covers/flat/zhomoktor-kemesi.webp',
+    accent: '#D6303F',
     width: 565,
     height: 840,
   },
@@ -30,6 +33,7 @@ export const FEATURED_COVERS: FeaturedCover[] = [
     title: 'Билимпоз',
     src: '/covers/bilimpoz.webp',
     flat: '/covers/flat/bilimpoz.webp',
+    accent: '#C8166B',
     width: 596,
     height: 840,
   },
@@ -38,6 +42,7 @@ export const FEATURED_COVERS: FeaturedCover[] = [
     title: 'Пайгамбарларымды жакшы көрөмүн',
     src: '/covers/paigambarlarymdy-jakshy-koromun.webp',
     flat: '/covers/flat/paigambarlarymdy-jakshy-koromun.webp',
+    accent: '#1F8A3D',
     width: 620,
     height: 840,
   },
@@ -46,6 +51,7 @@ export const FEATURED_COVERS: FeaturedCover[] = [
     title: 'Менин адеп-ахлагым',
     src: '/covers/menin-adep-akhlagym.webp',
     flat: '/covers/flat/menin-adep-akhlagym.webp',
+    accent: '#1F7FC0',
     width: 624,
     height: 840,
   },
@@ -54,6 +60,7 @@ export const FEATURED_COVERS: FeaturedCover[] = [
     title: 'Адептуулук алиппеси',
     src: '/covers/adeptuuluk-alippesi.webp',
     flat: '/covers/flat/adeptuuluk-alippesi.webp',
+    accent: '#D3407F',
     width: 807,
     height: 840,
   },

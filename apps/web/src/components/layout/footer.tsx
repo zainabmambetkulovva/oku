@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { OFFICIAL_CATEGORIES, PICKUP, SITE_CONTACTS } from '@/lib/site';
-import { NewsletterForm } from '../home/newsletter';
 import { CornerOrnament } from '../ornaments/ornaments';
 import { HeartIcon, InstagramIcon, MailIcon, PhoneIcon } from '../ui/icons';
 import { LanguageSwitcher } from './language-switcher';
@@ -155,9 +154,7 @@ export async function Footer() {
         </nav>
 
         <div>
-          <h2 className={heading}>{t('newsletterTitle')}</h2>
-          <NewsletterForm />
-          <LanguageSwitcher className="mt-6 text-milk" />
+          <LanguageSwitcher className="text-milk" />
         </div>
       </div>
 

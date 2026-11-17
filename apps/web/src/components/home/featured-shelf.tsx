@@ -22,6 +22,30 @@ export interface FeaturedShelfItem {
 
 const AUTOPLAY_MS = 4500;
 
+/** Цветные кусочки вокруг витрины — в цветах обложек. */
+const CONFETTI: {
+  left: string;
+  top: string;
+  size: number;
+  color: string;
+  shape: 'circle' | 'square' | 'diamond';
+}[] = [
+  { left: '3%', top: '10%', size: 18, color: '#F7B500', shape: 'circle' },
+  { left: '14%', top: '82%', size: 14, color: '#1F7FC0', shape: 'diamond' },
+  { left: '26%', top: '4%', size: 12, color: '#D6303F', shape: 'diamond' },
+  { left: '34%', top: '64%', size: 10, color: '#1F8A3D', shape: 'circle' },
+  { left: '44%', top: '90%', size: 16, color: '#3BA7E5', shape: 'circle' },
+  { left: '48%', top: '14%', size: 11, color: '#C8166B', shape: 'square' },
+  { left: '56%', top: '4%', size: 14, color: '#1F8A3D', shape: 'square' },
+  { left: '62%', top: '94%', size: 12, color: '#F7B500', shape: 'diamond' },
+  { left: '76%', top: '2%', size: 10, color: '#3BA7E5', shape: 'diamond' },
+  { left: '80%', top: '92%', size: 15, color: '#D3407F', shape: 'square' },
+  { left: '91%', top: '14%', size: 18, color: '#C8166B', shape: 'circle' },
+  { left: '96%', top: '48%', size: 12, color: '#F7B500', shape: 'diamond' },
+  { left: '93%', top: '80%', size: 14, color: '#1F8A3D', shape: 'circle' },
+  { left: '7%', top: '50%', size: 9, color: '#D6303F', shape: 'circle' },
+];
+
 /** Знаковое расстояние по кругу: соседи слева отрицательные, справа положительные. */
 function circularOffset(index: number, active: number, total: number): number {
   let offset = index - active;
@@ -39,7 +63,6 @@ function circularOffset(index: number, active: number, total: number): number {
 export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
   const t = useTranslations('sections');
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -67,7 +90,7 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
     return () => observer.disconnect();
   }, []);
 
-  const autoplay = visible && !paused && !hovered && !focused && !reduced && total > 1;
+  const autoplay = visible && !hovered && !focused && !reduced && total > 1;
   useEffect(() => {
     if (!autoplay) return;
     const timer = window.setInterval(() => go(1), AUTOPLAY_MS);
@@ -76,6 +99,7 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
 
   if (total === 0) return null;
   const current = items[active];
+  const accent = current.cover.accent;
 
   return (
     <section
@@ -83,11 +107,37 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
       aria-labelledby="featured-title"
       data-testid="featured-shelf"
     >
-      {/* мягкое золотое свечение за витриной */}
-      <div
-        className="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgb(214_168_92/0.28),transparent_65%)] lg:left-[65%]"
-        aria-hidden="true"
-      />
+      {/* Цветной фон: пятно в цвет активной обложки и «конфетти» из цветов всех обложек */}
+      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+        <div
+          className="absolute top-[11rem] left-1/2 size-[30rem] sm:top-[13rem] lg:top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60 blur-3xl transition-[background-color] duration-1000 sm:size-[38rem] lg:left-[66%]"
+          style={{ backgroundColor: accent }}
+        />
+        <div
+          className="absolute top-[11rem] left-1/2 size-[19rem] sm:top-[13rem] lg:top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-[18px] opacity-25 transition-[border-color] duration-1000 sm:size-[24rem] lg:left-[66%] lg:size-[27rem]"
+          style={{ borderColor: accent }}
+        />
+        <div className="absolute top-[8%] left-[2%] size-72 rounded-full bg-[#F7B500]/40 blur-3xl" />
+        <div className="absolute right-[4%] bottom-[2%] size-80 rounded-full bg-[#3BA7E5]/30 blur-3xl" />
+        {CONFETTI.map((piece, index) => (
+          <span
+            key={index}
+            className="absolute motion-safe:animate-float"
+            style={{
+              left: piece.left,
+              top: piece.top,
+              width: piece.size,
+              height: piece.size,
+              background: piece.color,
+              borderRadius: piece.shape === 'circle' ? '9999px' : '0.3rem',
+              transform: piece.shape === 'diamond' ? 'rotate(45deg)' : undefined,
+              opacity: 0.9,
+              animationDelay: `${index * -0.7}s`,
+              animationDuration: `${5 + (index % 4)}s`,
+            }}
+          />
+        ))}
+      </div>
       <div className="container-page grid items-center gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-10">
         <div className="order-2 lg:order-1">
           <h2
@@ -96,14 +146,24 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
           >
             {t('featuredTitle')}
           </h2>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink/70">
+          <div className="mt-3 flex gap-1.5" aria-hidden="true">
+            {items.map((item, index) => (
+              <span
+                key={item.cover.key}
+                className={`h-1.5 rounded-full transition-all duration-700 ${index === active ? 'w-12' : 'w-6'}`}
+                style={{ backgroundColor: item.cover.accent }}
+              />
+            ))}
+          </div>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink/75">
             {t('featuredSubtitle')}
           </p>
 
           <div className="mt-6 min-h-[8.5rem]" aria-live={autoplay ? 'off' : 'polite'}>
             <h3
               key={current.cover.key}
-              className="font-display text-2xl leading-snug font-semibold text-ink motion-safe:animate-[page-in_0.5s_ease-out]"
+              className="font-display text-[1.7rem] leading-snug font-semibold transition-colors duration-700 motion-safe:animate-[page-in_0.5s_ease-out]"
+              style={{ color: accent }}
               data-testid="featured-title"
             >
               {current.cover.title}
@@ -121,7 +181,8 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
               {current.audiobook && (
                 <Link
                   href={`/audiobooks/${current.audiobook.slug}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-gold bg-gold/15 px-4 py-2 text-sm font-semibold text-cocoa transition-colors hover:bg-gold/30"
+                  className="inline-flex items-center gap-2 rounded-full border-2 bg-white/70 px-4 py-2 text-sm font-semibold text-cocoa transition-colors hover:bg-white"
+                  style={{ borderColor: accent }}
                   data-testid="featured-audio-link"
                 >
                   <HeadphonesIcon className="size-4" />
@@ -129,49 +190,6 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
                 </Link>
               )}
             </div>
-          </div>
-
-          <div className="mt-2 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              aria-label={t('prev')}
-              className="grid size-10 place-items-center rounded-full border border-cocoa/25 text-cocoa transition-colors hover:bg-cocoa hover:text-milk"
-            >
-              <ArrowRight className="size-4 rotate-180" />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              aria-label={t('next')}
-              className="grid size-10 place-items-center rounded-full border border-cocoa/25 text-cocoa transition-colors hover:bg-cocoa hover:text-milk"
-            >
-              <ArrowRight className="size-4" />
-            </button>
-            {!reduced && total > 1 && (
-              <button
-                type="button"
-                onClick={() => setPaused((value) => !value)}
-                aria-pressed={paused}
-                className="ml-1 rounded-full px-3 py-2 text-xs font-semibold text-cocoa/80 underline-offset-4 hover:underline"
-              >
-                {paused ? t('featuredPlay') : t('featuredPause')}
-              </button>
-            )}
-          </div>
-          <div className="mt-4 flex gap-2" role="group" aria-label={t('featuredLabel')}>
-            {items.map((item, index) => (
-              <button
-                key={item.cover.key}
-                type="button"
-                onClick={() => setActive(index)}
-                aria-label={t('featuredShow', { title: item.cover.title })}
-                aria-current={index === active ? 'true' : undefined}
-                className={`h-2 rounded-full transition-all duration-500 ${
-                  index === active ? 'w-8 bg-gold' : 'w-2 bg-cocoa/25 hover:bg-cocoa/45'
-                }`}
-              />
-            ))}
           </div>
         </div>
 

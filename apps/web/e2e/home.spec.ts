@@ -103,17 +103,6 @@ test.describe('home page', () => {
     await expect(page.getByRole('button', { name: 'Убрать из избранного' }).first()).toBeVisible();
   });
 
-  test('subscribes to the newsletter', async ({ page }) => {
-    await page.goto('/ru');
-    await page.getByLabel('Ваш e-mail').fill('not-an-email');
-    await page.getByRole('button', { name: 'Подписаться' }).click();
-    await expect(page.getByText('Введите корректный e-mail')).toBeVisible();
-
-    await page.getByLabel('Ваш e-mail').fill(`e2e-${Date.now()}@example.kg`);
-    await page.getByRole('button', { name: 'Подписаться' }).click();
-    await expect(page.getByTestId('newsletter-success')).toBeVisible();
-  });
-
   test('plays the free chapter and asks guests to sign in for paid ones', async ({ page }) => {
     await page.goto('/ru');
     const player = page.getByTestId('audio-player');

@@ -5,7 +5,10 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-/** Раскрытая книга: две стопки страниц под углом и обложка снизу. */
+/**
+ * Раскрытая книга: две половины поднимаются от корешка («V»), страницы сверху,
+ * обложка снизу — читатель видит развёрнутые страницы, а не обложку.
+ */
 function OpenBook({
   color,
   ...transform
@@ -30,7 +33,7 @@ function OpenBook({
     [color],
   );
   const half = (side: 1 | -1) => (
-    <group rotation={[0, 0, side * -0.32]}>
+    <group rotation={[0, 0, side * 0.3]}>
       <mesh position={[side * 0.68, 0.06, 0]} material={pages}>
         <boxGeometry args={[1.3, 0.12, 1.9]} />
       </mesh>

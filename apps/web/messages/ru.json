@@ -54,10 +54,7 @@
     "featuredSubtitle": "Читайте книгу или слушайте аудиокнигу — выбирайте, как удобнее",
     "featuredBook": "Книга",
     "featuredAudio": "Аудиокнига",
-    "featuredPause": "Пауза",
-    "featuredPlay": "Продолжить",
-    "featuredShow": "Показать «{title}»",
-    "featuredLabel": "Витрина новых книг"
+    "featuredShow": "Показать «{title}»"
   },
   "product": {
     "addToCart": "В корзину",
@@ -112,14 +109,6 @@
       "support": "Поддержка покупателей"
     }
   },
-  "newsletter": {
-    "text": "Новинки, подборки и скидки — не чаще одного письма в неделю.",
-    "placeholder": "Ваш e-mail",
-    "submit": "Подписаться",
-    "success": "Готово! Проверьте почту — мы отправили письмо.",
-    "invalid": "Введите корректный e-mail",
-    "error": "Не получилось подписаться. Попробуйте позже."
-  },
   "footer": {
     "tagline": "Чтение объединяет",
     "navigation": "Навигация",
@@ -128,7 +117,6 @@
     "catalog": "Каталог",
     "buyers": "Покупателям",
     "follow": "Мы в соцсетях",
-    "newsletterTitle": "Новинки и подборки",
     "writeUs": "Напишите нам"
   },
   "units": {

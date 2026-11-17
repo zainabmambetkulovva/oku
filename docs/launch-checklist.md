@@ -12,7 +12,7 @@
 | `DATABASE_URL`, `DIRECT_URL` | Строки подключения Neon (pooled и direct) |
 | `JWT_SECRET` | Случайная строка от 32 символов |
 | `INTERNAL_API_TOKEN` | Случайная строка от 32 символов (общая для api и web) |
-| `FRONTEND_URL`, `CORS_ORIGINS`, `API_PUBLIC_URL` | Адрес сайта, например `https://oku24.vercel.app` |
+| `FRONTEND_URL`, `CORS_ORIGINS`, `API_PUBLIC_URL` | Адрес сайта, например `https://oku-24.vercel.app`. На Vercel можно не задавать — берётся production-домен проекта; задать обязательно при своём домене |
 | `NEXT_PUBLIC_SITE_URL` | Тот же адрес — для canonical, sitemap.xml и robots.txt (без него берётся домен Vercel) |
 | `COOKIE_SECURE` | `true` |
 | `JOBS_ENABLED` | `false` |
@@ -26,7 +26,7 @@
 | `SWAGGER_ENABLED` | Не задавать (в production документация API выключена) |
 | `NEXT_PUBLIC_CONTACT_WHATSAPP`, `NEXT_PUBLIC_CONTACT_PHONE`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_INSTAGRAM_URL` | Контакты в подвале |
 
-После изменения переменных — **Redeploy** (переменные `NEXT_PUBLIC_*` встраиваются при сборке).
+После изменения переменных — **Redeploy** (переменные `NEXT_PUBLIC_*` встраиваются при сборке). Затем откройте `/api/v1/health`: при ошибке в настройках там будет список `configProblems` — какие переменные исправить.
 
 ## 2. База данных
 

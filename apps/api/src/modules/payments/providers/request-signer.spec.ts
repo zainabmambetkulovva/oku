@@ -1,5 +1,11 @@
 import { generateKeyPairSync } from 'crypto';
-import { canonicalRequest, pemFromEnv, signRequest, verifyRequest } from './request-signer';
+import {
+  canonicalRequest,
+  isReadableKey,
+  pemFromEnv,
+  signRequest,
+  verifyRequest,
+} from './request-signer';
 
 /**
  * Эталон — тестовые данные библиотеки @mancho.devs/authorizer (разработчики Finik):
@@ -72,5 +78,32 @@ describe('request signer (Finik / AversPay)', () => {
     expect(pemFromEnv('-----BEGIN KEY-----\\nabc\\n-----END KEY-----')).toBe(
       '-----BEGIN KEY-----\nabc\n-----END KEY-----',
     );
+  });
+
+  describe('keys pasted into hosting settings', () => {
+    const { privateKey, publicKey } = generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+    const body = (pem: string) => pem.replace(/-----[A-Z ]+-----/g, '').replace(/\s+/g, '');
+
+    it('reads a key pasted on one line with spaces instead of line breaks', () => {
+      const oneLine = privateKey.trim().replace(/\n/g, ' ');
+      expect(isReadableKey(pemFromEnv(oneLine, 'private'), 'private')).toBe(true);
+    });
+
+    it('adds the BEGIN/END lines when only the key body is pasted', () => {
+      expect(isReadableKey(pemFromEnv(body(privateKey), 'private'), 'private')).toBe(true);
+      expect(isReadableKey(pemFromEnv(body(publicKey), 'public'), 'public')).toBe(true);
+    });
+
+    it('strips quotes around the value', () => {
+      expect(isReadableKey(pemFromEnv(`"${publicKey.trim()}"`, 'public'), 'public')).toBe(true);
+    });
+
+    it('reports keys that cannot be read', () => {
+      expect(isReadableKey(pemFromEnv('not a key', 'private'), 'private')).toBe(false);
+    });
   });
 });

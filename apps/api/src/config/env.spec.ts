@@ -1,4 +1,11 @@
+import { generateKeyPairSync } from 'crypto';
 import { validateEnv } from './env';
+
+const finikKeys = generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
+  privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+});
 
 const base = {
   DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
@@ -43,8 +50,9 @@ describe('validateEnv', () => {
       PAYMENT_PROVIDER: 'finik',
       FINIK_API_KEY: 'key',
       FINIK_ACCOUNT_ID: 'account',
-      FINIK_PRIVATE_KEY: 'private',
-      FINIK_PUBLIC_KEY: 'public',
+      FINIK_PRIVATE_KEY: finikKeys.privateKey,
+      FINIK_PUBLIC_KEY: finikKeys.publicKey,
+      API_PUBLIC_URL: 'https://oku24.kg',
     };
 
     expect(validateEnv(production).SWAGGER_ENABLED).toBe(false);
@@ -142,5 +150,50 @@ describe('validateEnv', () => {
     expect(() =>
       validateEnv({ ...base, MAIL_TRANSPORT: 'smtp', SMTP_HOST: 'smtp.example.com' }),
     ).not.toThrow();
+  });
+
+  describe('Vercel and Finik in production', () => {
+    const { privateKey, publicKey } = finikKeys;
+    const production = {
+      ...base,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'x'.repeat(32),
+      COOKIE_SECURE: 'true',
+      PAYMENT_PROVIDER: 'finik',
+      FINIK_API_KEY: 'key',
+      FINIK_ACCOUNT_ID: 'account',
+      FINIK_PRIVATE_KEY: privateKey,
+      FINIK_PUBLIC_KEY: publicKey,
+    };
+
+    it('takes site addresses from the Vercel production domain when not set', () => {
+      const env = validateEnv({
+        ...production,
+        VERCEL_PROJECT_PRODUCTION_URL: 'oku-24.vercel.app',
+      });
+      expect(env.FRONTEND_URL).toBe('https://oku-24.vercel.app');
+      expect(env.API_PUBLIC_URL).toBe('https://oku-24.vercel.app');
+      expect(env.CORS_ORIGINS).toEqual(['https://oku-24.vercel.app']);
+    });
+
+    it('keeps explicitly set addresses', () => {
+      const env = validateEnv({
+        ...production,
+        VERCEL_PROJECT_PRODUCTION_URL: 'oku-24.vercel.app',
+        FRONTEND_URL: 'https://oku24.kg',
+      });
+      expect(env.FRONTEND_URL).toBe('https://oku24.kg');
+    });
+
+    it('rejects a localhost webhook address and unreadable keys', () => {
+      expect(() => validateEnv(production)).toThrow(/API_PUBLIC_URL/);
+      expect(() =>
+        validateEnv({
+          ...production,
+          API_PUBLIC_URL: 'https://oku-24.vercel.app',
+          FINIK_PRIVATE_KEY: 'broken',
+        }),
+      ).toThrow(/FINIK_PRIVATE_KEY: не удалось прочитать/);
+    });
   });
 });

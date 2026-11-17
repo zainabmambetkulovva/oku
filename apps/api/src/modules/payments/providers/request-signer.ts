@@ -1,4 +1,4 @@
-import { createSign, createVerify } from 'crypto';
+import { createPrivateKey, createPublicKey, createSign, createVerify } from 'crypto';
 
 /**
  * Подпись запросов в формате Finik / AversPay (тот же алгоритм, что в библиотеке
@@ -82,7 +82,44 @@ export function verifyRequest(
   }
 }
 
-/** PEM из переменной окружения: допускает переводы строк, записанные как \\n. */
-export function pemFromEnv(value: string): string {
-  return value.replace(/\\n/g, '\n').trim();
+/**
+ * PEM из переменной окружения. Терпит то, как ключ обычно вставляют в настройки
+ * хостинга: переводы строк в виде \\n, кавычки вокруг, ключ в одну строку
+ * и ключ без строк -----BEGIN/END----- (тогда они добавляются по типу ключа).
+ */
+export function pemFromEnv(value: string, kind?: 'private' | 'public'): string {
+  const text = value
+    .trim()
+    .replace(/^(['"])([\s\S]*)\1$/, '$2')
+    .replace(/\\n/g, '\n')
+    .trim();
+  const match = text.match(/^(-----BEGIN [A-Z ]+-----)\s*([\s\S]*?)\s*(-----END [A-Z ]+-----)$/);
+  if (match) {
+    // Ключ одной строкой (пробелы вместо переводов строк) — тело переносим заново
+    return `${match[1]}\n${wrapBase64(match[2])}\n${match[3]}`;
+  }
+  if (!kind || !text) return text;
+
+  const body = wrapBase64(text);
+  const labels =
+    kind === 'private' ? ['PRIVATE KEY', 'RSA PRIVATE KEY'] : ['PUBLIC KEY', 'RSA PUBLIC KEY'];
+  const candidates = labels.map(
+    (label) => `-----BEGIN ${label}-----\n${body}\n-----END ${label}-----`,
+  );
+  return candidates.find((pem) => isReadableKey(pem, kind)) ?? candidates[0];
+}
+
+function wrapBase64(body: string): string {
+  return (body.replace(/\s+/g, '').match(/.{1,64}/g) ?? []).join('\n');
+}
+
+/** Ключ читается Node.js (без раскрытия содержимого в ошибках). */
+export function isReadableKey(pem: string, kind: 'private' | 'public'): boolean {
+  try {
+    if (kind === 'private') createPrivateKey(pem);
+    else createPublicKey(pem);
+    return true;
+  } catch {
+    return false;
+  }
 }

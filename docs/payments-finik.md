@@ -39,7 +39,7 @@
    openssl rsa -in finik_private.pem -pubout -out finik_public.pem
    ```
 
-   `finik_public.pem` передать в Finik. Содержимое `finik_private.pem` → `FINIK_PRIVATE_KEY` (одной строкой, переводы строк — `\n`). Закрытый ключ не коммитить и никому не передавать.
+   `finik_public.pem` передать в Finik. Содержимое `finik_private.pem` → `FINIK_PRIVATE_KEY`. Ключ можно вставить как есть (с переводами строк), одной строкой, с `\n` вместо переводов строк или даже без строк `-----BEGIN/END-----` — сервер приведёт его к нужному виду и проверит при запуске. Закрытый ключ не коммитить и никому не передавать.
 4. **Публичный ключ Finik** для проверки вебхуков — свой для beta и prod, из документации Finik → `FINIK_PUBLIC_KEY`.
 5. **Адрес вебхука**: `https://<API_PUBLIC_URL>/api/v1/payments/webhooks/finik`. Нужен публичный домен с HTTPS; `localhost` не подойдёт.
 
@@ -59,7 +59,9 @@
 
 1. Получить в Finik ключи **beta** (API-ключ, accountId, публичный ключ Finik для beta) и зарегистрировать публичный ключ магазина (см. выше).
 2. Vercel → Environment Variables (лучше в Preview-окружении или на время теста в Production):
-   `PAYMENT_PROVIDER=finik`, `FINIK_ENV=beta`, `FINIK_API_KEY`, `FINIK_ACCOUNT_ID`, `FINIK_PRIVATE_KEY`, `FINIK_PUBLIC_KEY` (все — Sensitive). `API_PUBLIC_URL` — адрес сайта. Redeploy.
+   `PAYMENT_PROVIDER=finik`, `FINIK_ENV=beta`, `FINIK_API_KEY`, `FINIK_ACCOUNT_ID`, `FINIK_PRIVATE_KEY`, `FINIK_PUBLIC_KEY` (все — Sensitive). `API_PUBLIC_URL` — адрес сайта (на Vercel можно не задавать: берётся production-домен проекта). Redeploy.
+
+   Проверка после Redeploy: откройте `https://<сайт>/api/v1/health`. `"status":"ok"` — всё настроено. Ответ 503 с `configProblems` перечисляет переменные, которые нужно исправить (только имена и причины, без значений).
 3. В кабинете Finik указать вебхук `SITE/api/v1/payments/webhooks/finik`.
 4. Сценарии проверки:
    - книга, самовывоз, онлайн → оплатить тестовым способом Finik → страница заказа сама меняется на «Оплачен»;

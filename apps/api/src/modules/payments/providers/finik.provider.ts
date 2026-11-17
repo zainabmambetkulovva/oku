@@ -17,6 +17,7 @@ export const FINIK_HOSTS = {
 } as const;
 export const FINIK_PAYMENT_PATH = '/v1/payment';
 export const FINIK_WEBHOOK_PATH = '/api/v1/payments/webhooks/finik';
+const FINIK_TIMEOUT_MS = 15_000;
 
 const STATUS_MAP: Record<string, PaymentEventStatus> = {
   SUCCEEDED: 'SUCCEEDED',
@@ -51,8 +52,8 @@ export class FinikPaymentProvider implements PaymentProvider {
     this.host = FINIK_HOSTS[config.get('FINIK_ENV', { infer: true })];
     this.apiKey = config.get('FINIK_API_KEY', { infer: true }) ?? '';
     this.accountId = config.get('FINIK_ACCOUNT_ID', { infer: true }) ?? '';
-    this.privateKey = pemFromEnv(config.get('FINIK_PRIVATE_KEY', { infer: true }) ?? '');
-    this.publicKey = pemFromEnv(config.get('FINIK_PUBLIC_KEY', { infer: true }) ?? '');
+    this.privateKey = pemFromEnv(config.get('FINIK_PRIVATE_KEY', { infer: true }) ?? '', 'private');
+    this.publicKey = pemFromEnv(config.get('FINIK_PUBLIC_KEY', { infer: true }) ?? '', 'public');
 
     const apiUrl = new URL(config.get('API_PUBLIC_URL', { infer: true }));
     this.webhookUrl = new URL(FINIK_WEBHOOK_PATH, apiUrl).toString();
@@ -91,6 +92,8 @@ export class FinikPaymentProvider implements PaymentProvider {
       response = await fetch(`https://${this.host}${FINIK_PAYMENT_PATH}`, {
         method: 'POST',
         redirect: 'manual',
+        // Не держать покупателя дольше 15 секунд, если Finik не отвечает
+        signal: AbortSignal.timeout(FINIK_TIMEOUT_MS),
         headers: {
           'content-type': 'application/json',
           'x-api-key': headers['x-api-key'],

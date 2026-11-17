@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isReadableKey, pemFromEnv } from '../modules/payments/providers/request-signer';
 
 /**
  * Переменные окружения backend. Проверяются при старте приложения:
@@ -165,6 +166,32 @@ export const envSchema = z
           issue(name, 'обязателен при PAYMENT_PROVIDER=finik');
         }
       }
+      // Ключи проверяются сразу при запуске, а не при первой оплате покупателя
+      if (
+        env.FINIK_PRIVATE_KEY &&
+        !isReadableKey(pemFromEnv(env.FINIK_PRIVATE_KEY, 'private'), 'private')
+      ) {
+        issue(
+          'FINIK_PRIVATE_KEY',
+          'не удалось прочитать закрытый ключ (нужен PEM-ключ из кабинета Finik)',
+        );
+      }
+      if (
+        env.FINIK_PUBLIC_KEY &&
+        !isReadableKey(pemFromEnv(env.FINIK_PUBLIC_KEY, 'public'), 'public')
+      ) {
+        issue('FINIK_PUBLIC_KEY', 'не удалось прочитать публичный ключ Finik (PEM)');
+      }
+      // Finik присылает подтверждение оплаты на API_PUBLIC_URL — localhost он не увидит
+      if (
+        env.NODE_ENV === 'production' &&
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(env.API_PUBLIC_URL)
+      ) {
+        issue(
+          'API_PUBLIC_URL',
+          'укажите адрес сайта (https://…): на него Finik присылает подтверждение оплаты',
+        );
+      }
     }
 
     const storageVars = [
@@ -191,9 +218,17 @@ export type Env = z.infer<typeof envSchema>;
 
 export function validateEnv(config: Record<string, unknown>): Env {
   // Пустая строка в .env (например, S3_ENDPOINT=) означает «не задано»
-  const cleaned = Object.fromEntries(
+  const cleaned: Record<string, unknown> = Object.fromEntries(
     Object.entries(config).map(([key, value]) => [key, value === '' ? undefined : value]),
   );
+  // На Vercel сайт и API на одном домене: если адреса не заданы, берём production-домен проекта
+  const vercelHost = cleaned.VERCEL_PROJECT_PRODUCTION_URL;
+  if (typeof vercelHost === 'string' && vercelHost) {
+    const site = `https://${vercelHost}`;
+    for (const name of ['FRONTEND_URL', 'API_PUBLIC_URL', 'CORS_ORIGINS']) {
+      cleaned[name] ??= site;
+    }
+  }
   const result = envSchema.safeParse(cleaned);
   if (!result.success) {
     const problems = result.error.issues

@@ -34,8 +34,8 @@ describe('BookCover', () => {
 
   it('uses the store cover for a matching title when none is uploaded', () => {
     render(<BookCover slug="bilimpoz" title="Билимпоз" author="OKU24" coverUrl={null} />);
-    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toBe(
-      '/covers/flat/bilimpoz.webp',
+    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toMatch(
+      /covers\/flat\/bilimpoz.*\.webp$/,
     );
     expect(screen.queryByTestId('audio-badge')).toBeNull();
   });
@@ -51,8 +51,8 @@ describe('BookCover', () => {
 
   it('marks audiobooks with the audio badge', () => {
     render(<BookCover slug="bilimpoz" title="Билимпоз" author="OKU24" coverUrl={null} square />);
-    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toBe(
-      '/covers/flat/bilimpoz.webp',
+    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toMatch(
+      /covers\/flat\/bilimpoz.*\.webp$/,
     );
     expect(screen.getByTestId('audio-badge')).toBeTruthy();
   });

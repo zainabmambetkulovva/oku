@@ -1,4 +1,6 @@
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
+import { footerBook } from '@/assets/illustrations';
 import { Link } from '@/i18n/navigation';
 import { OFFICIAL_CATEGORIES, PICKUP, SITE_CONTACTS } from '@/lib/site';
 import { CornerOrnament } from '../ornaments/ornaments';
@@ -21,6 +23,48 @@ function WhatsAppIcon({ className = 'size-4' }: { className?: string }) {
       <path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z" />
       <path d="M9.5 9.5c.3 1.6 2.4 3.7 4 4l1-1 1.7.8c-.2 1-1 1.7-2 1.7-2.8-.2-5.5-2.9-5.7-5.7 0-1 .7-1.8 1.7-2l.8 1.7z" />
     </svg>
+  );
+}
+
+/** Искры над летящей страницей: позиции в процентах от картинки книги. */
+const SPARKS = [
+  { left: '79%', top: '7%', size: 22, delay: '0s' },
+  { left: '87%', top: '-1%', size: 12, delay: '0.9s' },
+  { left: '90%', top: '10%', size: 8, delay: '1.7s' },
+  { left: '85%', top: '15%', size: 6, delay: '0.4s' },
+];
+
+/** Раскрытая книга в подвале: медленно парит, над страницей мерцают искры. */
+function FooterBook() {
+  return (
+    <div
+      className="relative mx-auto mt-8 w-full max-w-[15rem] motion-safe:animate-float [animation-duration:8s] sm:max-w-[17rem] md:mx-0 lg:mt-6"
+      aria-hidden="true"
+    >
+      {/* тёплое свечение под книгой */}
+      <span className="absolute inset-x-[10%] top-[30%] bottom-[5%] rounded-full bg-gold/25 blur-2xl" />
+      <Image
+        src={footerBook}
+        alt=""
+        width={900}
+        height={638}
+        sizes="17rem"
+        className="relative h-auto w-full drop-shadow-[0_18px_22px_rgb(0_0_0/0.45)]"
+      />
+      {SPARKS.map((spark) => (
+        <span
+          key={spark.left + spark.top}
+          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,#fff6d6_0%,#ffc35a_35%,rgb(255_150_40/0.35)_60%,transparent_72%)] motion-safe:animate-[twinkle_2.6s_ease-in-out_infinite]"
+          style={{
+            left: spark.left,
+            top: spark.top,
+            width: spark.size,
+            height: spark.size,
+            animationDelay: spark.delay,
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -153,8 +197,9 @@ export async function Footer() {
           </ul>
         </nav>
 
-        <div>
+        <div className="flex flex-col">
           <LanguageSwitcher className="text-milk" />
+          <FooterBook />
         </div>
       </div>
 

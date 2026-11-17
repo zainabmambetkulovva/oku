@@ -49,7 +49,15 @@
     "audiobooksSubtitle": "Үйдө, жолдо жана тоодо угуңуз",
     "prev": "Мурунку",
     "next": "Кийинки",
-    "toCatalog": "Каталогго өтүү"
+    "toCatalog": "Каталогго өтүү",
+    "featuredTitle": "Жаңы келген китептер",
+    "featuredSubtitle": "Китепти окуңуз же аудиокитеп болуп угуңуз — өзүңүзгө ыңгайлуусун тандаңыз",
+    "featuredBook": "Китеп",
+    "featuredAudio": "Аудиокитеп",
+    "featuredPause": "Токтотуу",
+    "featuredPlay": "Улантуу",
+    "featuredShow": "«{title}» китебин көрсөтүү",
+    "featuredLabel": "Жаңы китептердин витринасы"
   },
   "product": {
     "addToCart": "Себетке",

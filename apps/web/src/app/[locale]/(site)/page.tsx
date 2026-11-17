@@ -2,6 +2,7 @@ import { alternates } from '@/lib/seo';
 import { setRequestLocale } from 'next-intl/server';
 import { CategoriesSection } from '@/components/home/categories-section';
 import { CommunitySection, ReviewsSection } from '@/components/home/community-sections';
+import { FeaturedShelfSection } from '@/components/home/featured-shelf-section';
 import { Hero } from '@/components/home/hero';
 import { AboutSection, StripSection } from '@/components/home/info-sections';
 import { InteractiveTeaser } from '@/components/community/interactive-teaser';
@@ -70,6 +71,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <Hero />
+      <FeaturedShelfSection />
       <Reveal>
         <CategoriesSection categories={categories} />
       </Reveal>

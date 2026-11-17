@@ -49,7 +49,15 @@
     "audiobooksSubtitle": "Слушайте дома, в дороге и в горах",
     "prev": "Назад",
     "next": "Вперёд",
-    "toCatalog": "Перейти в каталог"
+    "toCatalog": "Перейти в каталог",
+    "featuredTitle": "Новые поступления",
+    "featuredSubtitle": "Читайте книгу или слушайте аудиокнигу — выбирайте, как удобнее",
+    "featuredBook": "Книга",
+    "featuredAudio": "Аудиокнига",
+    "featuredPause": "Пауза",
+    "featuredPlay": "Продолжить",
+    "featuredShow": "Показать «{title}»",
+    "featuredLabel": "Витрина новых книг"
   },
   "product": {
     "addToCart": "В корзину",

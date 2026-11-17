@@ -31,4 +31,29 @@ describe('BookCover', () => {
   it('picks the same placeholder colors for the same book everywhere', () => {
     expect(coverColors('shakhmat')).toEqual(coverColors('shakhmat'));
   });
+
+  it('uses the store cover for a matching title when none is uploaded', () => {
+    render(<BookCover slug="bilimpoz" title="Билимпоз" author="OKU24" coverUrl={null} />);
+    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toBe(
+      '/covers/flat/bilimpoz.webp',
+    );
+    expect(screen.queryByTestId('audio-badge')).toBeNull();
+  });
+
+  it('prefers the uploaded cover over the store cover', () => {
+    render(
+      <BookCover slug="bilimpoz" title="Билимпоз" author="OKU24" coverUrl="https://cdn/x.webp" />,
+    );
+    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toBe(
+      'https://cdn/x.webp',
+    );
+  });
+
+  it('marks audiobooks with the audio badge', () => {
+    render(<BookCover slug="bilimpoz" title="Билимпоз" author="OKU24" coverUrl={null} square />);
+    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toBe(
+      '/covers/flat/bilimpoz.webp',
+    );
+    expect(screen.getByTestId('audio-badge')).toBeTruthy();
+  });
 });

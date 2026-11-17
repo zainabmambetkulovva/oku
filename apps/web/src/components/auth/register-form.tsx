@@ -77,16 +77,21 @@ export function RegisterForm() {
       <OrDivider />
       <form noValidate onSubmit={onSubmit} className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-ink/85">
+          {/* Подпись «Фамилия (необязательно)» бывает в две строки — поля выравниваются по низу */}
+          <label className="flex flex-col text-sm font-medium text-ink/85">
             {tr('firstName')}
+            <span className="grow" aria-hidden="true" />
             <input
               autoComplete="given-name"
               {...register('firstName')}
               className={textInputClass}
             />
           </label>
-          <label className="block text-sm font-medium text-ink/85">
-            {tr('lastName')} <span className="font-normal text-muted">({tr('optional')})</span>
+          <label className="flex flex-col text-sm font-medium text-ink/85">
+            <span>
+              {tr('lastName')} <span className="font-normal text-muted">({tr('optional')})</span>
+            </span>
+            <span className="grow" aria-hidden="true" />
             <input
               autoComplete="family-name"
               {...register('lastName')}

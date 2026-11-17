@@ -4,30 +4,40 @@ import { NestFactory } from '@nestjs/core';
 import { createServer } from 'http';
 import { SWAGGER_PATH, configureApp } from './app.setup';
 import { Env, validateEnv } from './config/env';
-import { configErrorHandler } from './config/config-error';
+import { configErrorHandler, startupErrorHandler } from './config/config-error';
 
 /**
  * Настройки окружения неверны: вместо падения (на Vercel — FUNCTION_INVOCATION_FAILED
  * без объяснений) отвечаем 503, а /api/v1/health называет переменные, которые нужно
  * исправить. Значения переменных никогда не выводятся.
  */
-function serveConfigError(error: Error) {
-  Logger.error(error.message, 'Bootstrap');
+function serveUnavailable(handler: ReturnType<typeof configErrorHandler>) {
   const port = Number(process.env.PORT) || 3000;
-  createServer(configErrorHandler(error.message)).listen(port);
+  createServer(handler).listen(port);
 }
 
 async function bootstrap() {
   try {
     validateEnv(process.env);
   } catch (error) {
-    serveConfigError(error as Error);
+    Logger.error((error as Error).message, 'Bootstrap');
+    serveUnavailable(configErrorHandler((error as Error).message));
     return;
   }
+  try {
+    await start();
+  } catch (error) {
+    // Полный текст — только в логах хостинга
+    Logger.error((error as Error)?.stack ?? String(error), 'Bootstrap');
+    serveUnavailable(startupErrorHandler(error));
+  }
+}
 
+async function start() {
   // Модуль приложения проверяет окружение уже при загрузке, поэтому подключается после проверки
   const { AppModule } = await import('./app.module');
-  const app = await NestFactory.create(AppModule);
+  // abortOnError: false — ошибка запуска выбрасывается, а не завершает процесс
+  const app = await NestFactory.create(AppModule, { abortOnError: false });
   configureApp(app);
 
   const config = app.get<ConfigService<Env, true>>(ConfigService);

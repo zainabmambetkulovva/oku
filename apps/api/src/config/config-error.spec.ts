@@ -1,4 +1,4 @@
-import { configErrorHandler, parseConfigProblems } from './config-error';
+import { configErrorHandler, describeStartupError, parseConfigProblems } from './config-error';
 
 const message =
   'Некорректные переменные окружения:\n  - PAYMENT_PROVIDER: тестовый провайдер в production запрещён\n  - FINIK_PUBLIC_KEY: обязателен при PAYMENT_PROVIDER=finik';
@@ -28,5 +28,18 @@ describe('config error mode', () => {
     const other = call('/api/v1/books?limit=1');
     expect(other.status).toBe(503);
     expect(other.body.configProblems).toBeUndefined();
+  });
+
+  it('describes startup failures by type and code only', () => {
+    const prisma = Object.assign(new Error("Can't reach database server at secret-host:5432"), {
+      name: 'PrismaClientInitializationError',
+      errorCode: 'P1001',
+    });
+    expect(describeStartupError(prisma)).toEqual({
+      error: 'PrismaClientInitializationError',
+      code: 'P1001',
+    });
+    expect(JSON.stringify(describeStartupError(prisma))).not.toContain('secret-host');
+    expect(describeStartupError(new Error('x'))).toEqual({ error: 'Error' });
   });
 });

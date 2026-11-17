@@ -13,16 +13,37 @@ export function parseConfigProblems(message: string): ConfigProblem[] {
   }));
 }
 
+/**
+ * Сбой при запуске (не настройки): только тип ошибки и её код — например,
+ * PrismaClientInitializationError / P1001 «база недоступна». Текст ошибки не
+ * показывается: в нём могут быть адреса и имена из строк подключения.
+ */
+export function describeStartupError(error: unknown): { error: string; code?: string } {
+  const value = error as { name?: unknown; code?: unknown; errorCode?: unknown } | null;
+  const name = typeof value?.name === 'string' ? value.name : 'Error';
+  const rawCode = value?.errorCode ?? value?.code;
+  const code =
+    typeof rawCode === 'string' && /^[A-Z0-9_]{2,40}$/.test(rawCode) ? rawCode : undefined;
+  return code ? { error: name, code } : { error: name };
+}
+
 /** Обработчик запросов, пока сервер не настроен: 503, подробности — только на /health. */
 export function configErrorHandler(message: string) {
-  const problems = parseConfigProblems(message);
+  return unavailableHandler({ configProblems: parseConfigProblems(message) });
+}
+
+export function startupErrorHandler(error: unknown) {
+  return unavailableHandler({ startupError: describeStartupError(error) });
+}
+
+function unavailableHandler(details: Record<string, unknown>) {
   return (request: IncomingMessage, response: ServerResponse) => {
     const path = (request.url ?? '').split('?')[0].replace(/\/+$/, '');
     const body = {
       statusCode: 503,
       error: 'Service Unavailable',
       message: 'Server configuration is incomplete',
-      ...(path === '/api/v1/health' && { configProblems: problems }),
+      ...(path === '/api/v1/health' && details),
     };
     response.writeHead(503, {
       'content-type': 'application/json; charset=utf-8',

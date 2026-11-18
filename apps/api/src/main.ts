@@ -34,11 +34,8 @@ async function bootstrap() {
 }
 
 async function start() {
-  // Модуль приложения проверяет окружение уже при загрузке, поэтому подключается после
-  // проверки. Явный require (а не import()) — его надёжно находит сборка Vercel
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { AppModule } = require('./app.module') as typeof import('./app.module');
-  // abortOnError: false — ошибка запуска выбрасывается, а не завершает процесс
+  // Модуль приложения проверяет окружение уже при загрузке, поэтому подключается после проверки
+  const { AppModule } = await import('./app.module');
   const app = await NestFactory.create(AppModule, { abortOnError: false });
   configureApp(app);
 

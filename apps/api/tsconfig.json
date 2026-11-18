@@ -9,7 +9,7 @@
     // Vercel проверяет типы своим способом: через временный tsconfig вне проекта
     // и без раскрытия симлинков pnpm. typeRoots и прямая devDependency undici-types
     // нужны, чтобы там находились @types/node и тип Response у fetch
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
     "types": ["node", "jest"]
   },
   "include": ["src/**/*", "prisma/**/*", "test/**/*"]

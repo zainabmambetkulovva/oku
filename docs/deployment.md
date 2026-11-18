@@ -77,7 +77,7 @@ Backend читает `apps/api/.env`. Шаблон — `apps/api/.env.example`. 
 
 | Сервис | Папка | Фреймворк | Публичный путь |
 | --- | --- | --- | --- |
-| `api` | корень репозитория, вход `apps/api/dist/main.js` (иначе в функцию не попадают зависимости pnpm из корневого node_modules) | NestJS | `/api/*` (все маршруты API — `/api/v1/...`, Swagger — `/api/docs`) |
+| `api` | корень репозитория, вход `apps/api/src/main.ts` (иначе в функцию не попадают зависимости pnpm из корневого node_modules) | NestJS | `/api/*` (все маршруты API — `/api/v1/...`, Swagger — `/api/docs`) |
 | `web` | `apps/web` | Next.js | всё остальное (`/(.*)`) |
 
 - Сайт и API работают на одном домене, поэтому браузер обращается к `/api/v1` без CORS, а refresh-cookie остаётся first-party.

@@ -4,8 +4,8 @@
     "api": {
       "root": ".",
       "framework": "nestjs",
-      "entrypoint": "apps/api/dist/main.js",
-      "buildCommand": "pnpm --filter @oku_24/api build"
+      "entrypoint": "apps/api/src/main.ts",
+      "buildCommand": "pnpm --filter @oku_24/api exec prisma generate"
     },
     "web": {
       "root": "apps/web",

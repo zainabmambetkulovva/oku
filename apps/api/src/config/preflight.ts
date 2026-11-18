@@ -1,3 +1,5 @@
+import { createServer } from 'http';
+import { startupErrorHandler } from './config-error';
 import { validateEnv } from './env';
 
 /**
@@ -19,3 +21,16 @@ export const envError: Error | null = (() => {
 })();
 
 (globalThis as { __okuEnvError?: Error | null }).__okuEnvError = envError;
+
+/**
+ * Ошибка при загрузке модулей (например, сборка хостинга не положила пакет) случается
+ * до запуска main.ts и обычно просто убивает процесс. Пока модули грузятся, такую
+ * ошибку ловим и отвечаем 503: /api/v1/health покажет имя недостающего модуля.
+ * main.ts снимает этот обработчик, как только загрузка закончилась.
+ */
+export function onLoadError(error: Error) {
+  // eslint-disable-next-line no-console
+  console.error('Startup failed while loading modules', error);
+  createServer(startupErrorHandler(error)).listen(Number(process.env.PORT) || 3000);
+}
+process.once('uncaughtException', onLoadError);

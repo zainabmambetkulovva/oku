@@ -1,4 +1,4 @@
-import { envError } from './config/preflight';
+import { envError, onLoadError } from './config/preflight';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -19,6 +19,8 @@ function serveUnavailable(handler: ReturnType<typeof configErrorHandler>) {
 }
 
 async function bootstrap() {
+  // Модули загружены — дальше ошибки обрабатываются ниже
+  process.removeListener('uncaughtException', onLoadError);
   if (envError) {
     Logger.error(envError.message, 'Bootstrap');
     serveUnavailable(configErrorHandler(envError.message));

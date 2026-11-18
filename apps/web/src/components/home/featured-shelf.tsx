@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import type { FeaturedCover } from '@/lib/featured-covers';
 import { formatPrice } from '@/lib/format';
 import { ArrowRight } from '../ui/button';
+import { Sparkle } from '../ornaments/decor';
 import { HeadphonesIcon } from '../ui/icons';
 
 export interface FeaturedProduct {
@@ -107,36 +108,29 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
       aria-labelledby="featured-title"
       data-testid="featured-shelf"
     >
-      {/* Цветной фон: пятно в цвет активной обложки и «конфетти» из цветов всех обложек */}
+      {/* Тёплый фон в стиле магазина: мягкое золотое сияние с лёгким оттенком активной обложки и мерцающие золотые искры */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div
           className="absolute top-[11rem] left-1/2 size-[30rem] sm:top-[13rem] lg:top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-opacity duration-700 sm:size-[38rem] lg:left-[66%]"
           // Радиальный градиент вместо blur-фильтра: тот же мягкий край, но без нагрузки
           style={{
-            background: `radial-gradient(circle, ${accent}99 0%, ${accent}55 35%, ${accent}00 70%)`,
+            background: `radial-gradient(circle, color-mix(in srgb, ${accent} 22%, #f2cf98) 0%, rgb(242 207 152 / 0.45) 38%, transparent 70%)`,
           }}
         />
-        <div
-          className="absolute top-[11rem] left-1/2 size-[19rem] sm:top-[13rem] lg:top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-[18px] opacity-25 transition-[border-color] duration-1000 sm:size-[24rem] lg:left-[66%] lg:size-[27rem]"
-          style={{ borderColor: accent }}
-        />
-        <div className="absolute top-[8%] left-[2%] size-72 rounded-full bg-[radial-gradient(circle,rgb(247_181_0/0.4),transparent_70%)]" />
-        <div className="absolute right-[4%] bottom-[2%] size-80 rounded-full bg-[radial-gradient(circle,rgb(59_167_229/0.3),transparent_70%)]" />
+        <div className="absolute top-[11rem] left-1/2 size-[19rem] sm:top-[13rem] lg:top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-[14px] border-gold/20 sm:size-[24rem] lg:left-[66%] lg:size-[27rem]" />
+        <div className="absolute top-[8%] left-[2%] size-72 rounded-full bg-[radial-gradient(circle,rgb(232_196_143/0.35),transparent_70%)]" />
+        <div className="absolute right-[4%] bottom-[2%] size-80 rounded-full bg-[radial-gradient(circle,rgb(255_243_228/0.7),transparent_70%)]" />
         {CONFETTI.map((piece, index) => (
-          <span
+          <Sparkle
             key={index}
-            className="absolute motion-safe:animate-float"
+            className="absolute text-gold motion-safe:animate-[twinkle-soft_3.2s_ease-in-out_infinite]"
             style={{
               left: piece.left,
               top: piece.top,
               width: piece.size,
               height: piece.size,
-              background: piece.color,
-              borderRadius: piece.shape === 'circle' ? '9999px' : '0.3rem',
-              transform: piece.shape === 'diamond' ? 'rotate(45deg)' : undefined,
-              opacity: 0.9,
-              animationDelay: `${index * -0.7}s`,
-              animationDuration: `${5 + (index % 4)}s`,
+              opacity: 0.7,
+              animationDelay: `${index * -0.45}s`,
             }}
           />
         ))}
@@ -153,8 +147,7 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
             {items.map((item, index) => (
               <span
                 key={item.cover.key}
-                className={`h-1.5 rounded-full transition-all duration-700 ${index === active ? 'w-12' : 'w-6'}`}
-                style={{ backgroundColor: item.cover.accent }}
+                className={`h-1.5 rounded-full transition-all duration-700 ${index === active ? 'w-12 bg-gold' : 'w-6 bg-gold/30'}`}
               />
             ))}
           </div>
@@ -165,8 +158,7 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
           <div className="mt-6 min-h-[8.5rem]" aria-live={autoplay ? 'off' : 'polite'}>
             <h3
               key={current.cover.key}
-              className="font-display text-[1.7rem] leading-snug font-semibold transition-colors duration-700 motion-safe:animate-[page-in_0.5s_ease-out]"
-              style={{ color: accent }}
+              className="font-display text-[1.7rem] leading-snug font-semibold text-cocoa motion-safe:animate-[page-in_0.5s_ease-out]"
               data-testid="featured-title"
             >
               {current.cover.title}
@@ -184,8 +176,7 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
               {current.audiobook && (
                 <Link
                   href={`/audiobooks/${current.audiobook.slug}`}
-                  className="inline-flex items-center gap-2 rounded-full border-2 bg-white/70 px-4 py-2 text-sm font-semibold text-cocoa transition-colors hover:bg-white"
-                  style={{ borderColor: accent }}
+                  className="inline-flex items-center gap-2 rounded-full border border-gold bg-gold/15 px-4 py-2 text-sm font-semibold text-cocoa transition-colors hover:bg-gold/30"
                   data-testid="featured-audio-link"
                 >
                   <HeadphonesIcon className="size-4" />

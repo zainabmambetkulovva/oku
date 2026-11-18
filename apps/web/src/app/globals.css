@@ -180,9 +180,9 @@
     opacity: 0;
   }
 }
-@keyframes slide-in-left {
+@keyframes slide-in-right {
   from {
-    transform: translateX(-100%);
+    transform: translateX(100%);
   }
 }
 @keyframes ar-fallback {
@@ -190,6 +190,17 @@
     opacity: 1;
     transform: none;
     clip-path: none;
+  }
+}
+@keyframes twinkle-soft {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8) rotate(0deg);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.15) rotate(20deg);
   }
 }
 @keyframes rise-in {
@@ -487,7 +498,7 @@
     display: none;
   }
 
-  /* Плитки преимуществ: свой цвет (--tile), значок в цветном круге, подъём при наведении */
+  /* Плитки преимуществ в тёплой гамме магазина: значок в золотисто-коричневом круге (--tile), подъём и блик при наведении */
   .feature-tile {
     position: relative;
     display: flex;
@@ -495,14 +506,10 @@
     gap: 0.9rem;
     overflow: hidden;
     border-radius: 1.25rem;
-    border: 1px solid color-mix(in srgb, var(--tile) 28%, white);
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--tile) 20%, #fff8f0) 0%,
-      color-mix(in srgb, var(--tile) 7%, #fff8f0) 100%
-    );
+    border: 1px solid rgb(255 255 255 / 0.6);
+    background: linear-gradient(135deg, #fdf3e7 0%, #f6e3cf 100%);
     padding: 0.85rem 1rem;
-    box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--tile) 70%, transparent);
+    box-shadow: var(--shadow-card);
     transition:
       transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
       box-shadow 0.35s ease;
@@ -518,7 +525,7 @@
   }
   .feature-tile:hover {
     transform: translateY(-4px);
-    box-shadow: 0 18px 30px -16px color-mix(in srgb, var(--tile) 85%, transparent);
+    box-shadow: 0 18px 30px -16px rgb(91 56 30 / 0.45);
   }
   .feature-tile:hover::after {
     transform: translateX(120%);
@@ -530,9 +537,11 @@
     width: 2.9rem;
     height: 2.9rem;
     border-radius: 9999px;
-    color: white;
-    background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--tile) 70%, white), var(--tile));
-    box-shadow: 0 6px 14px -6px var(--tile);
+    color: #fff8ee;
+    background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--tile) 65%, #f7e2c2), var(--tile));
+    box-shadow:
+      0 6px 14px -6px rgb(91 56 30 / 0.55),
+      inset 0 0 0 1px rgb(255 255 255 / 0.25);
     perspective: 200px;
   }
   @media (prefers-reduced-motion: no-preference) {

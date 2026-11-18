@@ -4,9 +4,15 @@
  */
 
 /** Четырёхлучевая искра рядом с заголовками. */
-export function Sparkle({ className }: { className?: string }) {
+export function Sparkle({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" fill="currentColor">
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      style={style}
+      aria-hidden="true"
+      fill="currentColor"
+    >
       <path d="M12 0c.7 6.4 4.9 10.8 12 12-7.1 1.2-11.3 5.6-12 12-.7-6.4-4.9-10.8-12-12C7.1 10.8 11.3 6.4 12 0Z" />
     </svg>
   );

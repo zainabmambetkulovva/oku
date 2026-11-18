@@ -9,7 +9,7 @@ import { CloseIcon, MenuIcon } from '../ui/icons';
 import { LanguageSwitcher } from './language-switcher';
 import { LogoBadge } from './logo';
 
-/** Меню для телефонов: выезжает слева, закрывается по Esc и при переходе. */
+/** Меню для телефонов: выезжает справа, закрывается по Esc и при переходе. */
 export function MobileMenu() {
   const t = useTranslations('nav');
   const ta = useTranslations('auth.account');
@@ -69,7 +69,7 @@ export function MobileMenu() {
               aria-label={t('close')}
               onClick={() => setOpen(false)}
             />
-            <div className="absolute inset-y-0 left-0 flex w-[84%] max-w-sm flex-col overflow-y-auto bg-[#fbf3e8] p-6 shadow-2xl motion-safe:animate-[slide-in-left_0.35s_cubic-bezier(0.2,0.8,0.2,1)]">
+            <div className="absolute inset-y-0 right-0 flex w-[84%] max-w-sm flex-col overflow-y-auto bg-[#fbf3e8] p-6 shadow-2xl motion-safe:animate-[slide-in-right_0.35s_cubic-bezier(0.2,0.8,0.2,1)]">
               <div className="mb-8 flex items-center justify-between">
                 <LogoBadge className="size-10" />
                 <button

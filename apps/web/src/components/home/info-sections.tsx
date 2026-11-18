@@ -10,9 +10,9 @@ import { booksFlowers, readingRoom } from '@/assets/illustrations';
 export async function AboutSection() {
   const t = await getTranslations('about');
   const features = [
-    { key: 'quality', Icon: BookOpenIcon, color: '#C8963E', motion: 'icon-flip' },
-    { key: 'delivery', Icon: TruckIcon, color: '#2F8F74', motion: 'icon-drive' },
-    { key: 'support', Icon: SupportIcon, color: '#C2577A', motion: 'icon-bob' },
+    { key: 'quality', Icon: BookOpenIcon, color: '#B8874A', motion: 'icon-flip' },
+    { key: 'delivery', Icon: TruckIcon, color: '#8C5E3C', motion: 'icon-drive' },
+    { key: 'support', Icon: SupportIcon, color: '#A8744F', motion: 'icon-bob' },
   ] as const;
 
   return (
@@ -70,9 +70,9 @@ export async function AboutSection() {
 export async function StripSection() {
   const t = await getTranslations('strip');
   const items = [
-    { key: 'selected', Icon: LeafIcon, color: '#6F8A3A', motion: 'icon-sway' },
-    { key: 'delivery', Icon: TruckIcon, color: '#2F7FB8', motion: 'icon-drive' },
-    { key: 'love', Icon: HeartIcon, color: '#D04A5E', motion: 'icon-beat' },
+    { key: 'selected', Icon: LeafIcon, color: '#B8874A', motion: 'icon-sway' },
+    { key: 'delivery', Icon: TruckIcon, color: '#8C5E3C', motion: 'icon-drive' },
+    { key: 'love', Icon: HeartIcon, color: '#A8744F', motion: 'icon-beat' },
   ] as const;
 
   return (

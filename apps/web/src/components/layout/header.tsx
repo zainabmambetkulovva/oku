@@ -20,7 +20,6 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-40 bg-[#fbe8d8]/75 backdrop-blur-md supports-[backdrop-filter]:bg-[#fbe8d8]/55">
       <div className="container-page relative flex h-16 items-center gap-3 lg:h-[4.75rem]">
-        <MobileMenu />
         <Link href="/" className="flex items-center gap-2.5" aria-label="OKU24">
           <LogoBadge className="size-10 drop-shadow-sm transition-transform hover:scale-105 lg:size-12" />
         </Link>
@@ -69,6 +68,8 @@ export async function Header() {
         <div className="ml-auto flex items-center gap-2 sm:gap-5">
           <LanguageSwitcher className="hidden text-cocoa sm:flex" />
           <HeaderActions />
+          {/* Бургер на телефоне — справа, после корзины */}
+          <MobileMenu />
         </div>
       </div>
     </header>

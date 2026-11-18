@@ -42,4 +42,16 @@ describe('config error mode', () => {
     expect(JSON.stringify(describeStartupError(prisma))).not.toContain('secret-host');
     expect(describeStartupError(new Error('x'))).toEqual({ error: 'Error' });
   });
+
+  it('names the missing module', () => {
+    const missing = Object.assign(
+      new Error("Cannot find module '.prisma/client/default'\nRequire stack:\n- /var/task/x.js"),
+      { code: 'MODULE_NOT_FOUND' },
+    );
+    expect(describeStartupError(missing)).toEqual({
+      error: 'Error',
+      code: 'MODULE_NOT_FOUND',
+      module: '.prisma/client/default',
+    });
+  });
 });

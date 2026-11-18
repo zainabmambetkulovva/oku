@@ -18,13 +18,27 @@ export function parseConfigProblems(message: string): ConfigProblem[] {
  * PrismaClientInitializationError / P1001 «база недоступна». Текст ошибки не
  * показывается: в нём могут быть адреса и имена из строк подключения.
  */
-export function describeStartupError(error: unknown): { error: string; code?: string } {
-  const value = error as { name?: unknown; code?: unknown; errorCode?: unknown } | null;
+export function describeStartupError(error: unknown): {
+  error: string;
+  code?: string;
+  module?: string;
+} {
+  const value = error as {
+    name?: unknown;
+    code?: unknown;
+    errorCode?: unknown;
+    message?: unknown;
+  } | null;
   const name = typeof value?.name === 'string' ? value.name : 'Error';
   const rawCode = value?.errorCode ?? value?.code;
   const code =
     typeof rawCode === 'string' && /^[A-Z0-9_]{2,40}$/.test(rawCode) ? rawCode : undefined;
-  return code ? { error: name, code } : { error: name };
+  // Для «модуль не найден» — имя модуля (имя пакета или файла, не секрет)
+  const missing =
+    code === 'MODULE_NOT_FOUND' && typeof value?.message === 'string'
+      ? value.message.match(/Cannot find module '([^'\s]{1,200})'/)?.[1]
+      : undefined;
+  return { error: name, ...(code && { code }), ...(missing && { module: missing }) };
 }
 
 /** Обработчик запросов, пока сервер не настроен: 503, подробности — только на /health. */

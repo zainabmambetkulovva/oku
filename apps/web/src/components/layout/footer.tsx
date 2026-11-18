@@ -88,8 +88,9 @@ export async function Footer() {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
       </div>
 
-      <div className="container-page relative grid gap-10 pt-14 pb-10 md:grid-cols-2 lg:grid-cols-[1.2fr_0.9fr_1fr_1.3fr]">
-        <div>
+      {/* На телефоне: контакты во всю ширину, «Каталог» и «Покупателям» — в два столбца рядом */}
+      <div className="container-page relative grid grid-cols-2 gap-x-6 gap-y-10 pt-14 pb-10 lg:grid-cols-[1.2fr_0.9fr_1fr_1.3fr]">
+        <div className="col-span-2 lg:col-span-1">
           <Link href="/" className="flex items-center gap-3" aria-label="OKU24">
             <LogoBadge className="size-14 rounded-full ring-2 ring-gold/40" />
             <span className="font-display text-2xl text-gold-light">OKU24</span>
@@ -197,7 +198,7 @@ export async function Footer() {
           </ul>
         </nav>
 
-        <div className="flex flex-col">
+        <div className="col-span-2 flex flex-col lg:col-span-1">
           <LanguageSwitcher className="text-milk" />
           <FooterBook />
         </div>

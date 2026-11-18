@@ -14,12 +14,19 @@ function supportsWebGL(): boolean {
   }
 }
 
+/** 3D только на компьютере с мышью и не самым слабым процессором. */
+function capableDevice(): boolean {
+  const desktop = window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)');
+  const cores = navigator.hardwareConcurrency ?? 4;
+  return desktop.matches && cores >= 4;
+}
+
 /**
- * 3D-книги поверх иллюстрации. Без WebGL сцена просто не показывается —
- * главная иллюстрация и анимации остаются.
+ * 3D-книги поверх иллюстрации. На телефонах, планшетах и без WebGL сцена не
+ * показывается (и three.js не загружается) — главная иллюстрация и анимации остаются.
  */
 export function HeroScene() {
   const [webgl, setWebgl] = useState(false);
-  useEffect(() => setWebgl(supportsWebGL()), []);
+  useEffect(() => setWebgl(capableDevice() && supportsWebGL()), []);
   return webgl ? <HeroBooks3D /> : null;
 }

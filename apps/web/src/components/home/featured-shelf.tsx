@@ -110,15 +110,18 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
       {/* Цветной фон: пятно в цвет активной обложки и «конфетти» из цветов всех обложек */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div
-          className="absolute top-[11rem] left-1/2 size-[30rem] sm:top-[13rem] lg:top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60 blur-3xl transition-[background-color] duration-1000 sm:size-[38rem] lg:left-[66%]"
-          style={{ backgroundColor: accent }}
+          className="absolute top-[11rem] left-1/2 size-[30rem] sm:top-[13rem] lg:top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-opacity duration-700 sm:size-[38rem] lg:left-[66%]"
+          // Радиальный градиент вместо blur-фильтра: тот же мягкий край, но без нагрузки
+          style={{
+            background: `radial-gradient(circle, ${accent}99 0%, ${accent}55 35%, ${accent}00 70%)`,
+          }}
         />
         <div
           className="absolute top-[11rem] left-1/2 size-[19rem] sm:top-[13rem] lg:top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-[18px] opacity-25 transition-[border-color] duration-1000 sm:size-[24rem] lg:left-[66%] lg:size-[27rem]"
           style={{ borderColor: accent }}
         />
-        <div className="absolute top-[8%] left-[2%] size-72 rounded-full bg-[#F7B500]/40 blur-3xl" />
-        <div className="absolute right-[4%] bottom-[2%] size-80 rounded-full bg-[#3BA7E5]/30 blur-3xl" />
+        <div className="absolute top-[8%] left-[2%] size-72 rounded-full bg-[radial-gradient(circle,rgb(247_181_0/0.4),transparent_70%)]" />
+        <div className="absolute right-[4%] bottom-[2%] size-80 rounded-full bg-[radial-gradient(circle,rgb(59_167_229/0.3),transparent_70%)]" />
         {CONFETTI.map((piece, index) => (
           <span
             key={index}

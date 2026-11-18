@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
 import { FlyingButterflies } from '@/components/ornaments/flying-butterflies';
+import { AutoReveal } from '@/components/ui/auto-reveal';
 import { InteractionEffects } from '@/components/ui/interaction-effects';
 import { Toaster } from '@/components/ui/toaster';
 import { StoreSync } from '@/components/layout/store-sync';
@@ -22,6 +23,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       <Header />
       <FlyingButterflies />
       <InteractionEffects />
+      <AutoReveal />
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </main>

@@ -87,7 +87,7 @@ export function Carousel({
       >
         <ArrowRight className="size-4 rotate-180" />
       </button>
-      <ul ref={row} className="scroll-row -mb-6 pt-3 pb-10">
+      <ul ref={row} className="scroll-row">
         {children}
       </ul>
       <button

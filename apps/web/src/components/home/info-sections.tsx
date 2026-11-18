@@ -10,9 +10,9 @@ import { booksFlowers, readingRoom } from '@/assets/illustrations';
 export async function AboutSection() {
   const t = await getTranslations('about');
   const features = [
-    { key: 'quality', Icon: BookOpenIcon },
-    { key: 'delivery', Icon: TruckIcon },
-    { key: 'support', Icon: SupportIcon },
+    { key: 'quality', Icon: BookOpenIcon, color: '#C8963E', motion: 'icon-flip' },
+    { key: 'delivery', Icon: TruckIcon, color: '#2F8F74', motion: 'icon-drive' },
+    { key: 'support', Icon: SupportIcon, color: '#C2577A', motion: 'icon-bob' },
   ] as const;
 
   return (
@@ -47,13 +47,17 @@ export async function AboutSection() {
           </Link>
         </div>
 
-        <ul className="card space-y-1 p-4">
-          {features.map(({ key, Icon }) => (
-            <li key={key} className="flex items-center gap-4 rounded-2xl p-2">
-              <span className="grid size-12 shrink-0 place-items-center rounded-full bg-cocoa-100 text-cocoa">
-                <Icon className="size-5" />
+        <ul className="grid gap-3">
+          {features.map(({ key, Icon, color, motion }) => (
+            <li
+              key={key}
+              className="feature-tile"
+              style={{ '--tile': color } as React.CSSProperties}
+            >
+              <span className="feature-icon">
+                <Icon className={`size-5 ${motion}`} />
               </span>
-              <span className="text-sm font-medium text-ink/85">{t(`features.${key}`)}</span>
+              <span className="text-sm font-semibold text-ink/90">{t(`features.${key}`)}</span>
             </li>
           ))}
         </ul>
@@ -66,21 +70,27 @@ export async function AboutSection() {
 export async function StripSection() {
   const t = await getTranslations('strip');
   const items = [
-    { key: 'selected', Icon: LeafIcon },
-    { key: 'delivery', Icon: TruckIcon },
-    { key: 'love', Icon: HeartIcon },
+    { key: 'selected', Icon: LeafIcon, color: '#6F8A3A', motion: 'icon-sway' },
+    { key: 'delivery', Icon: TruckIcon, color: '#2F7FB8', motion: 'icon-drive' },
+    { key: 'love', Icon: HeartIcon, color: '#D04A5E', motion: 'icon-beat' },
   ] as const;
 
   return (
     <section className="container-page mt-6" aria-label={t('label')}>
       <div className="card relative grid items-center gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,1.6fr)_auto_minmax(0,0.9fr)] lg:py-4">
-        <ul className="grid gap-5 sm:grid-cols-3">
-          {items.map(({ key, Icon }) => (
-            <li key={key} className="flex items-center gap-3">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-cocoa-100 text-[#6f7d42]">
-                <Icon className="size-5" />
+        <ul className="grid gap-3 sm:grid-cols-3">
+          {items.map(({ key, Icon, color, motion }) => (
+            <li
+              key={key}
+              className="feature-tile"
+              style={{ '--tile': color } as React.CSSProperties}
+            >
+              <span className="feature-icon">
+                <Icon className={`size-5 ${motion}`} />
               </span>
-              <span className="text-[0.82rem] leading-snug text-ink/85">{t(key)}</span>
+              <span className="text-[0.84rem] leading-snug font-semibold text-ink/90">
+                {t(key)}
+              </span>
             </li>
           ))}
         </ul>

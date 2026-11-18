@@ -130,9 +130,9 @@ export function HeroStage({ label }: { label: string }) {
 
       {/* Мягкие облака за книгой */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={layer(-4)}>
-        <span className="absolute top-[30%] left-[4%] h-[14%] w-[34%] animate-[cloud-drift_16s_ease-in-out_infinite] rounded-full bg-white/70 blur-2xl" />
-        <span className="absolute top-[22%] right-[2%] h-[12%] w-[30%] animate-[cloud-drift_20s_ease-in-out_infinite_reverse] rounded-full bg-white/60 blur-2xl" />
-        <span className="absolute bottom-[24%] left-[18%] h-[10%] w-[62%] animate-[cloud-drift_24s_ease-in-out_infinite] rounded-full bg-[#fff6ea]/80 blur-3xl" />
+        <span className="absolute top-[30%] left-[4%] h-[14%] w-[34%] animate-[cloud-drift_16s_ease-in-out_infinite] rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.7),transparent)]" />
+        <span className="absolute top-[22%] right-[2%] h-[12%] w-[30%] animate-[cloud-drift_20s_ease-in-out_infinite_reverse] rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.6),transparent)]" />
+        <span className="absolute bottom-[24%] left-[18%] h-[10%] w-[62%] animate-[cloud-drift_24s_ease-in-out_infinite] rounded-full bg-[radial-gradient(closest-side,rgb(255_246_234/0.8),transparent)]" />
       </div>
 
       {/* Раскрытая книга-мир: при загрузке раскрывается от корешка */}

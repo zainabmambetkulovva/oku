@@ -16,15 +16,17 @@ const FLIGHTS = [
  * экранным дикторам и не показываются при «уменьшить движение».
  */
 export function FlyingButterflies() {
-  const [enabled, setEnabled] = useState(false);
+  const [count, setCount] = useState(0);
   useEffect(() => {
-    setEnabled(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // На телефоне — две бабочки: меньше постоянной анимации поверх страницы
+    setCount(window.matchMedia('(max-width: 767px)').matches ? 2 : FLIGHTS.length);
   }, []);
-  if (!enabled) return null;
+  if (!count) return null;
 
   return (
     <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden" aria-hidden="true">
-      {FLIGHTS.map(({ route, duration, delay, size, start }) => (
+      {FLIGHTS.slice(0, count).map(({ route, duration, delay, size, start }) => (
         <span
           key={route}
           className={`absolute ${start} ${size}`}

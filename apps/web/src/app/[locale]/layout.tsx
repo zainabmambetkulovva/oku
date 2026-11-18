@@ -51,7 +51,16 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        {/* До первой отрисовки: включает анимацию появления (см. auto-reveal.tsx) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('anim-ready')}catch(e){}",
+          }}
+        />
+      </head>
       <body className="flex min-h-dvh flex-col">
         <NextIntlClientProvider>
           <QueryProvider>{children}</QueryProvider>

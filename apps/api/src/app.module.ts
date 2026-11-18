@@ -41,7 +41,12 @@ import { OrdersModule } from './modules/orders/orders.module';
       isGlobal: true,
       envFilePath: '.env',
       cache: true,
-      validate: validateEnv,
+      // Если main.ts уже нашёл ошибку в настройках (config/preflight.ts), не падать при
+      // загрузке модуля: main.ts сам ответит 503 с подсказкой. Иначе — строгая проверка
+      validate: (config) =>
+        (globalThis as { __okuEnvError?: Error | null }).__okuEnvError
+          ? (config as Env)
+          : validateEnv(config),
     }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],

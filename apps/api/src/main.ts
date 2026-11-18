@@ -1,9 +1,11 @@
+import { envError } from './config/preflight';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { createServer } from 'http';
 import { SWAGGER_PATH, configureApp } from './app.setup';
-import { Env, validateEnv } from './config/env';
+import { AppModule } from './app.module';
+import { Env } from './config/env';
 import { configErrorHandler, startupErrorHandler } from './config/config-error';
 
 /**
@@ -17,11 +19,9 @@ function serveUnavailable(handler: ReturnType<typeof configErrorHandler>) {
 }
 
 async function bootstrap() {
-  try {
-    validateEnv(process.env);
-  } catch (error) {
-    Logger.error((error as Error).message, 'Bootstrap');
-    serveUnavailable(configErrorHandler((error as Error).message));
+  if (envError) {
+    Logger.error(envError.message, 'Bootstrap');
+    serveUnavailable(configErrorHandler(envError.message));
     return;
   }
   try {
@@ -34,8 +34,6 @@ async function bootstrap() {
 }
 
 async function start() {
-  // Модуль приложения проверяет окружение уже при загрузке, поэтому подключается после проверки
-  const { AppModule } = await import('./app.module');
   const app = await NestFactory.create(AppModule, { abortOnError: false });
   configureApp(app);
 

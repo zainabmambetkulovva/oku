@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { createServer } from 'http';
 import { SWAGGER_PATH, configureApp } from './app.setup';
-import { AppModule } from './app.module';
 import { Env } from './config/env';
 import { configErrorHandler, startupErrorHandler } from './config/config-error';
 
@@ -36,6 +35,9 @@ async function bootstrap() {
 }
 
 async function start() {
+  // Модуль приложения подключается здесь, а не статическим импортом: если хостинг
+  // не положил какой-то пакет, ошибка попадёт в обработчик ниже и /health назовёт его
+  const { AppModule } = await import('./app.module');
   const app = await NestFactory.create(AppModule, { abortOnError: false });
   configureApp(app);
 

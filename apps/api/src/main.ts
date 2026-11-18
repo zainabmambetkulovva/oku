@@ -1,4 +1,5 @@
 import { envError, onLoadError } from './config/preflight';
+import './vercel-deps';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';

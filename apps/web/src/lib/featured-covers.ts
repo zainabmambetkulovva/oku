@@ -1,13 +1,13 @@
-import zhomoktorKemesi from '@/assets/covers/zhomoktor-kemesi.webp';
-import zhomoktorKemesiFlat from '@/assets/covers/flat/zhomoktor-kemesi.webp';
-import bilimpoz from '@/assets/covers/bilimpoz.webp';
-import bilimpozFlat from '@/assets/covers/flat/bilimpoz.webp';
-import paigambarlarymdyJakshyKoromun from '@/assets/covers/paigambarlarymdy-jakshy-koromun.webp';
-import paigambarlarymdyJakshyKoromunFlat from '@/assets/covers/flat/paigambarlarymdy-jakshy-koromun.webp';
 import meninAdepAkhlagym from '@/assets/covers/menin-adep-akhlagym.webp';
 import meninAdepAkhlagymFlat from '@/assets/covers/flat/menin-adep-akhlagym.webp';
 import adeptuulukAlippesi from '@/assets/covers/adeptuuluk-alippesi.webp';
 import adeptuulukAlippesiFlat from '@/assets/covers/flat/adeptuuluk-alippesi.webp';
+import kyrgyzJomoktorununAltynJyinagy from '@/assets/covers/kyrgyz-jomoktorunun-altyn-jyinagy.webp';
+import kyrgyzJomoktorununAltynJyinagyFlat from '@/assets/covers/flat/kyrgyz-jomoktorunun-altyn-jyinagy.webp';
+import ilmihalym from '@/assets/covers/ilmihalym.webp';
+import ilmihalymFlat from '@/assets/covers/flat/ilmihalym.webp';
+import asmaulHusnaAtlasy from '@/assets/covers/asmaul-husna-atlasy.webp';
+import asmaulHusnaAtlasyFlat from '@/assets/covers/flat/asmaul-husna-atlasy.webp';
 
 /**
  * Обложки книг, присланные магазином. Лежат в src/assets/covers и подключаются
@@ -35,39 +35,12 @@ export interface FeaturedCover {
 
 export const FEATURED_COVERS: FeaturedCover[] = [
   {
-    key: 'zhomoktor-kemesi',
-    title: 'Жомоктор кемеси',
-    src: url(zhomoktorKemesi),
-    flat: url(zhomoktorKemesiFlat),
-    accent: '#D6303F',
-    width: 565,
-    height: 840,
-  },
-  {
-    key: 'bilimpoz',
-    title: 'Билимпоз',
-    src: url(bilimpoz),
-    flat: url(bilimpozFlat),
-    accent: '#C8166B',
-    width: 596,
-    height: 840,
-  },
-  {
-    key: 'paigambarlarymdy-jakshy-koromun',
-    title: 'Пайгамбарларымды жакшы көрөмүн',
-    src: url(paigambarlarymdyJakshyKoromun),
-    flat: url(paigambarlarymdyJakshyKoromunFlat),
-    accent: '#1F8A3D',
-    width: 620,
-    height: 840,
-  },
-  {
     key: 'menin-adep-akhlagym',
     title: 'Менин адеп-ахлагым',
     src: url(meninAdepAkhlagym),
     flat: url(meninAdepAkhlagymFlat),
     accent: '#1F7FC0',
-    width: 624,
+    width: 623,
     height: 840,
   },
   {
@@ -76,7 +49,34 @@ export const FEATURED_COVERS: FeaturedCover[] = [
     src: url(adeptuulukAlippesi),
     flat: url(adeptuulukAlippesiFlat),
     accent: '#D3407F',
-    width: 807,
+    width: 794,
+    height: 840,
+  },
+  {
+    key: 'kyrgyz-jomoktorunun-altyn-jyinagy',
+    title: 'Кыргыз жомокторунун алтын жыйнагы',
+    src: url(kyrgyzJomoktorununAltynJyinagy),
+    flat: url(kyrgyzJomoktorununAltynJyinagyFlat),
+    accent: '#1F6B45',
+    width: 612,
+    height: 840,
+  },
+  {
+    key: 'ilmihalym',
+    title: 'Илмихалым',
+    src: url(ilmihalym),
+    flat: url(ilmihalymFlat),
+    accent: '#E08A1E',
+    width: 611,
+    height: 840,
+  },
+  {
+    key: 'asmaul-husna-atlasy',
+    title: 'Асмаул-Хусна атласы',
+    src: url(asmaulHusnaAtlasy),
+    flat: url(asmaulHusnaAtlasyFlat),
+    accent: '#2B3FA0',
+    width: 602,
     height: 840,
   },
 ];

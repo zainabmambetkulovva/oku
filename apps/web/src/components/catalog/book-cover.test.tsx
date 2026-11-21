@@ -33,26 +33,26 @@ describe('BookCover', () => {
   });
 
   it('uses the store cover for a matching title when none is uploaded', () => {
-    render(<BookCover slug="bilimpoz" title="Билимпоз" author="OKU24" coverUrl={null} />);
-    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toMatch(
-      /covers\/flat\/bilimpoz.*\.webp$/,
+    render(<BookCover slug="ilmihalym" title="Илмихалым" author="OKU24" coverUrl={null} />);
+    expect(screen.getByRole('img', { name: 'Илмихалым' }).getAttribute('src')).toMatch(
+      /covers\/flat\/ilmihalym.*\.webp$/,
     );
     expect(screen.queryByTestId('audio-badge')).toBeNull();
   });
 
   it('prefers the uploaded cover over the store cover', () => {
     render(
-      <BookCover slug="bilimpoz" title="Билимпоз" author="OKU24" coverUrl="https://cdn/x.webp" />,
+      <BookCover slug="ilmihalym" title="Илмихалым" author="OKU24" coverUrl="https://cdn/x.webp" />,
     );
-    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toBe(
+    expect(screen.getByRole('img', { name: 'Илмихалым' }).getAttribute('src')).toBe(
       'https://cdn/x.webp',
     );
   });
 
   it('marks audiobooks with the audio badge', () => {
-    render(<BookCover slug="bilimpoz" title="Билимпоз" author="OKU24" coverUrl={null} square />);
-    expect(screen.getByRole('img', { name: 'Билимпоз' }).getAttribute('src')).toMatch(
-      /covers\/flat\/bilimpoz.*\.webp$/,
+    render(<BookCover slug="ilmihalym" title="Илмихалым" author="OKU24" coverUrl={null} square />);
+    expect(screen.getByRole('img', { name: 'Илмихалым' }).getAttribute('src')).toMatch(
+      /covers\/flat\/ilmihalym.*\.webp$/,
     );
     expect(screen.getByTestId('audio-badge')).toBeTruthy();
   });

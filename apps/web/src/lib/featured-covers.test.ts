@@ -4,8 +4,10 @@ import { FEATURED_COVERS, featuredCoverFor, normalizeTitle } from './featured-co
 describe('featured covers', () => {
   it('matches titles regardless of case, spaces and dash style', () => {
     expect(featuredCoverFor('МЕНИН АДЕП – АХЛАГЫМ')?.key).toBe('menin-adep-akhlagym');
-    expect(featuredCoverFor('  жомоктор   кемеси ')?.key).toBe('zhomoktor-kemesi');
-    expect(featuredCoverFor('«Билимпоз»')?.key).toBe('bilimpoz');
+    expect(featuredCoverFor('  кыргыз   жомокторунун алтын жыйнагы ')?.key).toBe(
+      'kyrgyz-jomoktorunun-altyn-jyinagy',
+    );
+    expect(featuredCoverFor('«Илмихалым»')?.key).toBe('ilmihalym');
   });
 
   it('returns null for other books', () => {

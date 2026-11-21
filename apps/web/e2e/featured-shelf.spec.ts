@@ -10,8 +10,8 @@ test.describe('featured shelf', () => {
 
     const title = shelf.getByTestId('featured-title');
     // Кнопок нет: книга выбирается нажатием на обложку (и свайпом/стрелками)
-    await shelf.getByRole('button', { name: 'Показать «Билимпоз»' }).click();
-    await expect(title).toHaveText('Билимпоз');
+    await shelf.getByRole('button', { name: 'Показать «Илмихалым»' }).click();
+    await expect(title).toHaveText('Илмихалым');
     await shelf.getByRole('button', { name: 'Показать «Адептуулук алиппеси»' }).click();
     await expect(title).toHaveText('Адептуулук алиппеси');
     await expect(shelf.getByRole('button', { name: /Пауза|Назад|Вперёд/ })).toHaveCount(0);

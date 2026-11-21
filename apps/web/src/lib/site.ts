@@ -25,6 +25,7 @@ export const OFFICIAL_CATEGORIES = [
   { key: 'psychology', href: '/books?category=psychology' },
   { key: 'self-development', href: '/books?category=self-development' },
   { key: 'islamic-literature', href: '/books?category=islamic-literature' },
-  { key: 'kids', href: '/books?category=kids' },
+  // Детские книги — отдельный раздел со своей витриной
+  { key: 'kids', href: '/kids' },
   { key: 'audiobooks', href: '/audiobooks' },
 ] as const;

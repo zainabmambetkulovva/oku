@@ -25,14 +25,18 @@ test.describe('navigation and info pages', () => {
     await page.goto('/ru');
     const nav = page.getByRole('navigation', { name: 'Меню' });
     await nav.getByRole('button', { name: 'Каталог' }).hover();
-    const items = nav.locator('a[href*="category="], a[href$="/audiobooks"]');
+    const items = nav.locator('a[href*="category="], a[href$="/audiobooks"], a[href$="/kids"]');
     await expect(nav.getByRole('link', { name: 'Психология' })).toHaveAttribute(
       'href',
       '/ru/books?category=psychology',
     );
     await expect(nav.getByRole('link', { name: 'Саморазвитие' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Исламская литература' })).toBeVisible();
-    await expect(nav.getByRole('link', { name: 'Детские книги' })).toBeVisible();
+    // Детские книги — отдельный детский раздел
+    await expect(nav.getByRole('link', { name: 'Детские книги' })).toHaveAttribute(
+      'href',
+      '/ru/kids',
+    );
     // «Аудиокниги» — и в каталоге, и отдельным пунктом меню
     await expect(nav.getByRole('link', { name: 'Аудиокниги' })).toHaveCount(2);
     await expect(items).toHaveCount(6);

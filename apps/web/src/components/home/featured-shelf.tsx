@@ -61,7 +61,15 @@ function circularOffset(index: number, active: number, total: number): number {
  * листается свайпом, стрелками клавиатуры и кнопками.
  * При «уменьшить движение» — без автопрокрутки и парения.
  */
-export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
+export function FeaturedShelf({
+  items,
+  title,
+  subtitle,
+}: {
+  items: FeaturedShelfItem[];
+  title: string;
+  subtitle: string;
+}) {
   const t = useTranslations('sections');
   const [active, setActive] = useState(0);
   const [hovered, setHovered] = useState(false);
@@ -141,7 +149,7 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
             id="featured-title"
             className="text-[1.75rem] leading-tight font-medium text-cocoa sm:text-[2.05rem]"
           >
-            {t('featuredTitle')}
+            {title}
           </h2>
           <div className="mt-3 flex gap-1.5" aria-hidden="true">
             {items.map((item, index) => (
@@ -151,9 +159,7 @@ export function FeaturedShelf({ items }: { items: FeaturedShelfItem[] }) {
               />
             ))}
           </div>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink/75">
-            {t('featuredSubtitle')}
-          </p>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink/75">{subtitle}</p>
 
           <div className="mt-6 min-h-[8.5rem]" aria-live={autoplay ? 'off' : 'polite'}>
             <h3

@@ -2,10 +2,10 @@ import { expect, test } from '@playwright/test';
 
 test.describe('featured shelf', () => {
   test('shows the store covers and switches between them', async ({ page }) => {
-    await page.goto('/ru');
+    await page.goto('/ru/kids');
     const shelf = page.getByTestId('featured-shelf');
     await shelf.scrollIntoViewIfNeeded();
-    await expect(shelf.getByRole('heading', { level: 2 })).toHaveText('Новые поступления');
+    await expect(shelf.getByRole('heading', { level: 2 })).toHaveText('Книги для детей');
     await expect(shelf.getByTestId('featured-cover')).toHaveCount(5);
 
     const title = shelf.getByTestId('featured-title');
@@ -18,7 +18,7 @@ test.describe('featured shelf', () => {
   });
 
   test('links only to products that exist in the catalog', async ({ page }) => {
-    await page.goto('/ky');
+    await page.goto('/ky/kids');
     const shelf = page.getByTestId('featured-shelf');
     await shelf.scrollIntoViewIfNeeded();
     // Ссылки ведут только на реальные страницы товаров

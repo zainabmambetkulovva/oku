@@ -33,7 +33,8 @@ export interface FeaturedCover {
   accent: string;
 }
 
-export const FEATURED_COVERS: FeaturedCover[] = [
+/** Детские книги — витрина в детском разделе (/kids). */
+export const KIDS_COVERS: FeaturedCover[] = [
   {
     key: 'menin-adep-akhlagym',
     title: 'Менин адеп-ахлагым',
@@ -80,6 +81,15 @@ export const FEATURED_COVERS: FeaturedCover[] = [
     height: 840,
   },
 ];
+
+/**
+ * «Новые поступления» на главной — книги для взрослых. Пока пусто: блок на главной
+ * не показывается, пока магазин не пришлёт обложки.
+ */
+export const NEW_ARRIVAL_COVERS: FeaturedCover[] = [];
+
+/** Все присланные обложки — для подстановки в каталоге по названию. */
+export const FEATURED_COVERS: FeaturedCover[] = [...NEW_ARRIVAL_COVERS, ...KIDS_COVERS];
 
 /** Название без учёта регистра, лишних пробелов, вида тире и кавычек. */
 export function normalizeTitle(title: string): string {

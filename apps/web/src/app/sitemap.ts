@@ -49,6 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...OFFICIAL_CATEGORIES.filter((category) => category.key !== 'audiobooks').flatMap((category) =>
       entry(`/books?category=${category.key}`, { changeFrequency: 'daily', priority: 0.8 }),
     ),
+    ...['/kids'].flatMap((path) => entry(path, { changeFrequency: 'weekly', priority: 0.8 })),
     ...['/community', '/about', '/contacts', '/delivery', '/privacy', '/terms'].flatMap((path) =>
       entry(path, { changeFrequency: 'monthly', priority: 0.5 }),
     ),

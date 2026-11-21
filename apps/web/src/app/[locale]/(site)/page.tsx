@@ -1,5 +1,5 @@
 import { alternates } from '@/lib/seo';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { CategoriesSection } from '@/components/home/categories-section';
 import { CommunitySection, ReviewsSection } from '@/components/home/community-sections';
 import { FeaturedShelfSection } from '@/components/home/featured-shelf-section';
@@ -15,6 +15,7 @@ import {
 } from '@/components/home/products-section';
 import { Reveal } from '@/components/ui/reveal';
 import { apiFetch, apiFetchPage, safely } from '@/lib/api';
+import { NEW_ARRIVAL_COVERS } from '@/lib/featured-covers';
 import type {
   AudiobookDetails,
   AudiobookListItem,
@@ -42,6 +43,7 @@ const empty = { data: [], meta: { total: 0, page: 1, limit: 0, totalPages: 0 } }
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const ts = await getTranslations('sections');
 
   const [categories, popular, fresh, audiobooks, reviews, quote] = await Promise.all([
     safely(() => apiFetch<CategoryNode[]>('/categories'), [], 'categories'),
@@ -71,7 +73,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <Hero />
-      <FeaturedShelfSection />
+      {/* Новые поступления (книги для взрослых); пока обложек нет — блок не показывается */}
+      <FeaturedShelfSection
+        covers={NEW_ARRIVAL_COVERS}
+        title={ts('featuredTitle')}
+        subtitle={ts('featuredSubtitle')}
+      />
       <Reveal>
         <CategoriesSection categories={categories} />
       </Reveal>

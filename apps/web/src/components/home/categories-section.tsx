@@ -127,7 +127,7 @@ export async function CategoriesSection({ categories }: { categories: CategoryNo
             return (
               <li key={category.id} className="w-[46%] shrink-0 snap-start sm:w-auto">
                 <CategoryCard
-                  href={`/books?category=${category.slug}`}
+                  href={category.slug === 'kids' ? '/kids' : `/books?category=${category.slug}`}
                   delay={index * 0.8}
                   label={category.name}
                   ariaLabel={`${t('open')}: ${category.name}`}
